@@ -5,7 +5,6 @@ import {
   Toolbar,
   Typography,
   Box,
-  Button,
   Container,
   Drawer,
   List,
@@ -14,11 +13,14 @@ import {
   ListItemText,
   IconButton,
   Chip,
-  Grid
+  Grid,
+  Fab,
+  Zoom
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import AddIcon from '@mui/icons-material/Add';
 import BookFormModal from './components/BookFormModal.jsx';
-import { addBook, getAllBooks, initializeDefaultTags, getBookById, updateBook, deleteBook } from './lib/bookService.js';
+import { addBook, getAllBooks, initializeDefaultTags, updateBook, deleteBook } from './lib/bookService.js';
 
 const drawerWidth = 240;
 
@@ -109,12 +111,9 @@ export default function App() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div">
             Rose Library
           </Typography>
-          <Button color="inherit" onClick={handleOpenAdd}>
-            Add Book
-          </Button>
         </Toolbar>
       </AppBar>
       <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
@@ -132,11 +131,10 @@ export default function App() {
       </Box>
       <Box component="main" sx={{ flexGrow: 1, p: 3, width: { md: `calc(100% - ${drawerWidth}px)` } }}>
         <Toolbar />
-        <Container maxWidth="lg">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4">My Collection</Typography>
-            <Button variant="contained" onClick={handleOpenAdd}>Add Book</Button>
-          </Box>
+        <Container maxWidth="lg" sx={{ pb: 15 }}>
+          <Typography variant="h4" gutterBottom>
+            My Collection
+          </Typography>
           <Grid container spacing={3}>
             {books.map((b) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={b.id}>
@@ -161,12 +159,26 @@ export default function App() {
             {books.length === 0 && (
               <Grid item xs={12}>
                 <Typography variant="body1" color="text.secondary" textAlign="center">
-                  No books yet. Click "Add Book" to get started!
+                  No books yet. Tap + to add your first book!
                 </Typography>
               </Grid>
             )}
           </Grid>
         </Container>
+        <Zoom in={true}>
+          <Fab
+            color="primary"
+            aria-label="add"
+            onClick={handleOpenAdd}
+            sx={{
+              position: 'fixed',
+              bottom: 32,
+              right: 32
+            }}
+          >
+            <AddIcon />
+          </Fab>
+        </Zoom>
       </Box>
       <BookFormModal
         open={modalOpen}
