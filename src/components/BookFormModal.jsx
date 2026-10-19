@@ -11,7 +11,10 @@ import {
   MenuItem,
   Chip,
   OutlinedInput,
-  Stack
+  Stack,
+  Alert,
+  AlertTitle,
+  AlertDescription
 } from '@mui/material';
 
 const modalStyle = {
@@ -56,6 +59,9 @@ export default function BookFormModal({
   const [tags, setTags] = useState(initialValues.tags || []);
   const [status, setStatus] = useState(initialValues.status || 'want-to-read');
   const [progress, setProgress] = useState(initialValues.progress || 0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lookupResult, setLookupResult] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     setTitle(initialValues.title || '');
@@ -64,10 +70,15 @@ export default function BookFormModal({
     setTags(initialValues.tags || []);
     setStatus(initialValues.status || 'want-to-read');
     setProgress(initialValues.progress || 0);
+    setLookupResult(null);
+    setError('');
   }, [initialValues]);
 
   const handleSave = () => {
-    if (!title.trim() || !author.trim()) return;
+    if (!title.trim() || !author.trim()) {
+      setError('Title and Author are required');
+      return;
+    }
     onSave({
       title: title.trim(),
       author: author.trim(),
@@ -78,6 +89,30 @@ export default function BookFormModal({
     });
   };
 
+  const handleLookup = async () => {
+    const isbnValue = isbn.trim();
+    if (!isbnValue) {
+      setError('Please enter an ISBN');
+      return;
+    }
+    setIsLoading(true);
+    setError('');
+    setLookupResult(null);
+    try {
+      const result = await window.lookupByISBN(isbnValue);
+      setLookupResult(result);
+    } catch (err) {
+      setError(err.message || 'Lookup failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleManualEntry = () => {
+    // User wants to enter data manually - clear any lookup result
+    setLookupResult(null);
+  };
+
   return (
     <Modal open={open} onClose={onClose} aria-labelledby="book-modal-title">
       <Box sx={modalStyle} component="form" noValidate autoComplete="off">
@@ -85,27 +120,108 @@ export default function BookFormModal({
           {initialValues.id ? 'Edit Book' : 'Add New Book'}
         </Typography>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField
-            label="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            fullWidth
-            autoFocus
-          />
-          <TextField
-            label="Author"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            required
-            fullWidth
-          />
-          <TextField
-            label="ISBN"
-            value={isbn}
-            onChange={(e) => setIsbn(e.target.value)}
-            fullWidth
-          />
+          {error && (
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <Stack sx={{ mb: 1 }}>
+            <TextField
+              label="ISBN"
+              value={isbn}
+              onChange={(e) => {
+                setIsbn(e.target.value);
+                // Auto-clear lookup result when user types manually
+                setLookupResult(null);
+              }}
+              fullWidth
+              autoFocus
+              InputProps={{
+                startAdornment: (
+                  <React.Fragment>
+                    <InputAdornment position="start">
+                      <TextInputAdornment>ISBN</TextInputAdornment>
+                    </InputAdornment>
+                  </React.Fragment>
+                ),
+                endAdornment: isLoading ? (
+                  <CircularProgress size={20} />
+                ) : isLookupResult ? (
+                  <IconButton
+                    aria-label="clear lookup"
+                    onClick={() => {
+                      setLookupResult(null);
+                      setIsbn('');
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                ) : null,
+              }}
+            />
+          </Stack>
+
+          {lookupResult && (
+            <Box sx={{ p: 1, bgcolor: 'background.paper', borderRadius: 1, pt: 1 }}>
+              <Typography variant="h6" component="h6" sx={{ mb: 2 }}>
+                Auto-filled from ISBN
+              </Typography>
+              <Stack spacing={1}>
+                <TextField
+                  label="Title"
+                  value={lookupResult.title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  fullWidth
+                  disabled
+                />
+                <TextField
+                  label="Author"
+                  value={lookupResult.author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  fullWidth
+                  disabled
+                />
+                {lookupResult.publisher && (
+                  <TextField
+                    label="Publisher"
+                    value={lookupResult.publisher}
+                    onChange={(e) => setAuthor(e.target.value)} // TODO: add publisher state
+                    fullWidth
+                    disabled
+                  />
+                )}
+                <TextField
+                  label="Published"
+                  value={lookupResult.publishedDate}
+                  onChange={(e) => setProgress(e.target.value)} // TODO: add publishedDate state
+                  fullWidth
+                  disabled
+                />
+                <TextField
+                  label="Pages"
+                  value={lookupResult.pageCount}
+                  onChange={(e) => setProgress(e.target.value)} // TODO: add pageCount state
+                  fullWidth
+                  disabled
+                />
+              </Stack>
+              <Stack sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                <Button onClick={handleManualEntry} variant="outlined">
+                  Edit manually
+                </Button>
+                <Button onClick={() => {
+                  setTitle(lookupResult.title);
+                  setAuthor(lookupResult.author);
+                  setIsbn('');
+                  setLookupResult(null);
+                }} variant="contained">
+                  Use this data
+                </Button>
+              </Stack>
+            </Box>
+          )}
+
           <FormControl fullWidth>
             <InputLabel id="tags-label">Tags</InputLabel>
             <Select
@@ -117,6 +233,9 @@ export default function BookFormModal({
                 setTags(typeof val === 'string' ? val.split(',') : val);
               }}
               input={<OutlinedInput label="Tags" />}
+              MenuProps={{
+                PaperProps: { style: { maxHeight: 200 } }
+              }}
               renderValue={(selected) => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {selected.map((value) => (
@@ -159,11 +278,7 @@ export default function BookFormModal({
             <Button onClick={onClose} variant="outlined">
               Cancel
             </Button>
-            <Button
-              onClick={handleSave}
-              variant="contained"
-              disabled={!title.trim() || !author.trim()}
-            >
+            <Button onClick={handleSave} variant="contained" disabled={!title.trim() || !author.trim()}>
               Save
             </Button>
           </Box>
