@@ -1,4 +1,5 @@
 import { Modal, Box, Typography, Stack, Button } from '@mui/material';
+import { useState } from 'react';
 import Input from '../atoms/Input.jsx';
 import Select from '../atoms/Select.jsx';
 import { GENRES, STATUSES } from '../organisms/LibraryGrid.jsx';
@@ -33,7 +34,7 @@ export default function BookForm({ open, onClose, initialValues = {}, onSave }) 
           <Input name="isbn" label="ISBN" value={form.isbn} onChange={handleChange} />
           <Select name="genre" label="Genre" value={form.genre} onChange={handleChange} options={GENRES.map(g => ({ value: g, label: g }))} />
           <Select name="status" label="Status" value={form.status} onChange={handleChange} options={STATUSES.map(s => ({ value: s, label: s.replace('-', ' ') }))} />
-          <Stack direction="row" spacing={1} justifyContent="flex-end">
+          <Stack spacing={1} direction="row" justifyContent="flex-end">
             <Button variant="outlined" onClick={onClose}>Cancel</Button>
             <Button type="submit" onClick={handleSubmit}>Save</Button>
           </Stack>

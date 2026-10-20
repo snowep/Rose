@@ -26,10 +26,10 @@ export default function LibraryGrid() {
   const overLimit = total >= freeLimit;
 
   return (
-    <Paper sx={{ p:3 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Typography variant="h5">My Library</Typography>
-      </Stack>
+      <Paper sx={{ p:3 }}>
+        <Stack direction="row">
+          <Typography variant="h5">My Library</Typography>
+        </Stack>
       {user?.plan === 'free' && (
         <Box sx={{ mt:1 }}>
           <Chip label={`${total}/${freeLimit} books used`} color={overLimit ? 'error' : 'default'} size="small" />
