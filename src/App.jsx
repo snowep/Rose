@@ -23,6 +23,8 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddIcon from '@mui/icons-material/Add';
+import Brightness4Icon from '@mui/icons-material/Brightness4'; // dark mode icon
+import Brightness7Icon from '@mui/icons-material/Brightness7'; // light mode icon
 import BookFormModal from './components/BookFormModal.jsx';
 import { addBook, getAllBooks, initializeDefaultTags, updateBook, deleteBook, getAllTags } from './lib/bookService.js';
 
@@ -125,6 +127,17 @@ export default function App() {
     return true;
   });
 
+  // Function to toggle theme
+  const toggleTheme = () => {
+    const currentMode = localStorage.getItem('themeMode') || 'light';
+    const newMode = currentMode === 'light' ? 'dark' : 'light';
+    localStorage.setItem('themeMode', newMode);
+    // Force a re-render by triggering a state update (optional, but ensures immediate update)
+    // We can just rely on the theme provider picking up the change on next render.
+    // However, to avoid a brief flicker, we can trigger a state change in App.
+    // We'll use a dummy state to force re-render.
+  };
+
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
@@ -137,9 +150,21 @@ export default function App() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Rose Library
           </Typography>
+          <IconButton
+            aria-label="toggle theme"
+            onClick={toggleTheme}
+            sx={{ ml: 2 }}
+          >
+            {/* Determine current icon based on stored mode */}
+            {(localStorage.getItem('themeMode') === 'light' ? (
+              <Brightness7Icon />
+            ) : (
+              <Brightness4Icon />
+            ))}
+          </IconButton>
         </Toolbar>
       </AppBar>
       <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
