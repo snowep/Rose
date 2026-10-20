@@ -64,28 +64,28 @@ export default function App() {
             <AppHeader onMenuClick={handleDrawerToggle} onThemeToggle={toggleMode} isDark={isDark} />
             <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
               <Drawer
-                variant="temporary"
-                open={mobileOpen}
-                onClose={handleDrawerToggle}
-                ModalProps={{ keepMounted: true }}
-                sx={{
-                  display: { xs: 'block', sm: 'none' },
-                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
-                }}
-              >
-                <AppDrawerContent activePage="library" />
-              </Drawer>
-              <Drawer
-                variant="permanent"
-                sx={{
-                  display: { xs: 'none', sm: 'block' },
-                  '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
-                }}
-                open
-              >
-                <AppDrawerContent activePage="library" />
-              </Drawer>
-            </Box>
+                              variant="temporary"
+                              open={mobileOpen}
+                              onClose={handleDrawerToggle}
+                              ModalProps={{ keepMounted: true }}
+                              sx={{
+                                display: { xs: 'block', sm: 'none' },
+                                '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
+                              }}
+                            >
+                              <AppDrawerContent activePage="library" onLogout={() => logout()} />
+                            </Drawer>
+                            <Drawer
+                              variant="permanent"
+                              sx={{
+                                display: { xs: 'none', sm: 'block' },
+                                '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
+                              }}
+                              open
+                            >
+                              <AppDrawerContent activePage="library" onLogout={() => logout()} />
+                            </Drawer>
+                          </Box>
             <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
               <Toolbar />
               <Container maxWidth="lg">
