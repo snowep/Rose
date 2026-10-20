@@ -61,7 +61,7 @@ export default function App() {
           </Box>
         ) : (
           <Box sx={{ display: 'flex' }}>
-            <AppHeader onMenuClick={handleDrawerToggle} onThemeToggle={toggleMode} isDark={isDark} />
+            <AppHeader onMenuClick={handleDrawerToggle} onThemeToggle={toggleMode} isDark={isDark} onLogout={() => logout()} />
             <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
               <Drawer
                               variant="temporary"
