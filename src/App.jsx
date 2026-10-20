@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { ThemeProvider, createTheme, CssBaseline, Box, Container, Toolbar, Drawer } from '@mui/material'
 import AppHeader from './components/organisms/AppHeader.jsx'
 import AppDrawerContent from './components/organisms/AppDrawer.jsx'
-import { AuthProvider, ProtectedRoute } from './lib/AuthContext.jsx'
+import { AuthProvider, ProtectedRoute, useAuth } from './lib/AuthContext.jsx'
 import LoginPage from './components/pages/LoginPage.jsx'
 import RegisterPage from './components/pages/RegisterPage.jsx'
 import LibraryPage from './components/pages/LibraryPage.jsx'
@@ -25,7 +25,9 @@ function SimpleRouter() {
   )
 }
 
-export default function App() {
+function AuthenticatedApp() {
+  const { logout } = useAuth();
+  
   const [mode, setMode] = useState(() => {
     const saved = localStorage.getItem('themeMode')
     if (saved) return saved
@@ -52,49 +54,55 @@ export default function App() {
   const isAuthPage = path === '/login' || path === '/register'
 
   return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      {isAuthPage ? (
+        <Box>
+          <SimpleRouter />
+        </Box>
+      ) : (
+        <Box sx={{ display: 'flex' }}>
+          <AppHeader onMenuClick={handleDrawerToggle} onThemeToggle={toggleMode} isDark={isDark} onLogout={logout} />
+          <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
+            <Drawer
+              variant="temporary"
+              open={mobileOpen}
+              onClose={handleDrawerToggle}
+              ModalProps={{ keepMounted: true }}
+              sx={{
+                display: { xs: 'block', sm: 'none' },
+                '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
+              }}
+            >
+              <AppDrawerContent activePage="library" />
+            </Drawer>
+            <Drawer
+              variant="permanent"
+              sx={{
+                display: { xs: 'none', sm: 'block' },
+                '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
+              }}
+              open
+            >
+              <AppDrawerContent activePage="library" />
+            </Drawer>
+          </Box>
+          <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
+            <Toolbar />
+            <Container maxWidth="lg">
+              <SimpleRouter />
+            </Container>
+          </Box>
+        </Box>
+      )}
+    </ThemeProvider>
+  )
+}
+
+export default function App() {
+  return (
     <AuthProvider>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {isAuthPage ? (
-          <Box>
-            <SimpleRouter />
-          </Box>
-        ) : (
-          <Box sx={{ display: 'flex' }}>
-            <AppHeader onMenuClick={handleDrawerToggle} onThemeToggle={toggleMode} isDark={isDark} onLogout={() => logout()} />
-            <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
-              <Drawer
-                              variant="temporary"
-                              open={mobileOpen}
-                              onClose={handleDrawerToggle}
-                              ModalProps={{ keepMounted: true }}
-                              sx={{
-                                display: { xs: 'block', sm: 'none' },
-                                '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
-                              }}
-                            >
-                              <AppDrawerContent activePage="library" />
-                            </Drawer>
-                            <Drawer
-                              variant="permanent"
-                              sx={{
-                                display: { xs: 'none', sm: 'block' },
-                                '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
-                              }}
-                              open
-                            >
-                              <AppDrawerContent activePage="library" />
-                            </Drawer>
-                          </Box>
-            <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
-              <Toolbar />
-              <Container maxWidth="lg">
-                <SimpleRouter />
-              </Container>
-            </Box>
-          </Box>
-        )}
-      </ThemeProvider>
+      <AuthenticatedApp />
     </AuthProvider>
   )
 }
