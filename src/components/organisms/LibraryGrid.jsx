@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Paper, Typography, Button, Stack, Box, Chip } from '@mui/material';
+import { Paper, Typography, Stack, Box, Chip, Fab, Zoom } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from '../../lib/AuthContext.jsx';
 import { bookService } from '../../lib/bookService.js';
 import BookForm from './BookForm.jsx';
+
+export const GENRES = ['Fiction','Non-Fiction','Sci-Fi','Fantasy','Mystery','Biography','History','Tech','Self-Help'];
+export const STATUSES = ['want-to-read','reading','completed','paused'];
 
 export default function LibraryGrid() {
   const { user } = useAuth();
@@ -25,7 +29,6 @@ export default function LibraryGrid() {
     <Paper sx={{ p:3 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="h5">My Library</Typography>
-        <Button variant="contained" onClick={()=>{ setEditing(null); setOpen(true); }} disabled={overLimit}>Add Book</Button>
       </Stack>
       {user?.plan === 'free' && (
         <Box sx={{ mt:1 }}>
@@ -40,7 +43,20 @@ export default function LibraryGrid() {
           </Box>
         ))}
       </Box>
-      <BookForm open={open} onClose={()=>setOpen(false)} initialValues={editing||{}} onSave={async()=>{ setOpen(false); load(); }} />
+      <Zoom in={!overLimit}>
+        <Fab color="primary" aria-label="add" onClick={()=>{ setEditing(null); setOpen(true); }} sx={{ position:'fixed', bottom:32, right:32 }}>
+          <AddIcon />
+        </Fab>
+      </Zoom>
+      <BookForm open={open} onClose={()=>setOpen(false)} initialValues={editing||{}} onSave={async form=>{ 
+  if (form.id) {
+    await bookService.update(form.id, form, user.id);
+  } else {
+    await bookService.create(form, user.id);
+  }
+  setOpen(false);
+  load();
+}} />
     </Paper>
   );
 }
