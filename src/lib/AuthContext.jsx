@@ -47,9 +47,12 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('rose_session');
-    setUser(null);
-  };
+      localStorage.removeItem('rose_session');
+      setUser(null);
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 100);
+    };
 
   const value = useMemo(() => ({ user, loading, login, register, logout }), [user, loading]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

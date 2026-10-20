@@ -13,7 +13,7 @@ export default function AppDrawerContent({ activePage, onLogout }) {
       <List>
         <NavItem icon={<DashboardIcon />} label="Dashboard" active={activePage === 'dashboard'} />
         <NavItem icon={<LibraryBooksIcon />} label="Library" active={activePage === 'library'} />
-        <NavItem component={Button} variant="text" sx={{ px: 2, my: 2, textTransform: 'none' }} onClick={onLogout}>
+              {/* Logout button removed from drawer - now in AppBar only */}
           <LogoutIcon />Logout
         </NavItem>
       </List>
