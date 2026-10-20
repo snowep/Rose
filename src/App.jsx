@@ -73,7 +73,7 @@ export default function App() {
                   '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
                 }}
               >
-                <AppDrawerContent />
+                <AppDrawerContent activePage="library" />
               </Drawer>
               <Drawer
                 variant="permanent"
@@ -83,7 +83,7 @@ export default function App() {
                 }}
                 open
               >
-                <AppDrawerContent />
+                <AppDrawerContent activePage="library" />
               </Drawer>
             </Box>
             <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
