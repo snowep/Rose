@@ -57,7 +57,7 @@ const darkTheme = createTheme({
 
 export { lightTheme, darkTheme };
 
-export default function ThemeProvider({ children }) {
+export function ThemeProvider({ children }) {
   // Get theme from localStorage or default to light
   const storedMode = localStorage.getItem('themeMode') || 'light';
   const theme = storedMode === 'dark' ? darkTheme : lightTheme;

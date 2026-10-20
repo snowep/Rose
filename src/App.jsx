@@ -41,42 +41,30 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [allTags, setAllTags] = useState([]);
-  const [view, setView] = useState('library'); // 'library' or 'stats'
+  const [view, setView] = useState('library');
   const [stats, setStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
   const drawer = (
     <Box sx={{ py: 3 }}>
       <Toolbar />
       <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => { setView('library'); handleDrawerToggle(); }}>
-            <ListItemText primary="Library" />
-          </ListItemButton>
+          <ListItemButton onClick={() => setView('library')}>Library</ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => { setView('stats'); handleDrawerToggle(); }}>
-            <ListItemText primary="Statistics" />
-          </ListItemButton>
+          <ListItemButton onClick={() => setView('stats')}>Statistics</ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => { setView('library'); handleDrawerToggle(); }}>
-            <ListItemText primary="Reading" />
-          </ListItemButton>
+          <ListItemButton onClick={() => setView('library')}>Reading</ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => { setView('library'); handleDrawerToggle(); }}>
-            <ListItemText primary="Completed" />
-          </ListItemButton>
+          <ListItemButton onClick={() => setView('library')}>Completed</ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => { setView('library'); handleDrawerToggle(); }}>
-            <ListItemText primary="Want to Read" />
-          </ListItemButton>
+          <ListItemButton onClick={() => setView('library')}>Want to Read</ListItemButton>
         </ListItem>
       </List>
     </Box>
@@ -89,7 +77,6 @@ export default function App() {
       setBooks(all);
       const tags = await getAllTags();
       setAllTags(tags);
-      // Load initial stats
       await loadStats();
     }
     init();
@@ -98,10 +85,10 @@ export default function App() {
   const loadStats = async () => {
     setLoadingStats(true);
     try {
-      const statsData = await getReadingStats();
-      setStats(statsData);
-    } catch (err) {
-      console.error('Failed to load stats:', err);
+      const data = await getReadingStats();
+      setStats(data);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoadingStats(false);
     }
@@ -120,46 +107,160 @@ export default function App() {
   const handleSave = async (data) => {
     if (editingBook) {
       await updateBook(editingBook.id, data);
-      setBooks(books.map(b => b.id === editingBook.id ? { ...b, ...data } : b));
+      setBooks(
+        books.map((b) => (b.id === editingBook.id ? { ...b, ...data } : b))
+      );
     } else {
       const id = await addBook(data);
       setBooks([...books, { ...data, id }]);
     }
     setModalOpen(false);
-    // Refresh stats after adding/updating a book
     await loadStats();
   };
 
   const handleDelete = async (id) => {
     await deleteBook(id);
-    setBooks(books.filter(b => b.id !== id));
+    setBooks(books.filter((b) => b.id !== id));
     await loadStats();
   };
 
   // Filter books
   const filteredBooks = books.filter((book) => {
-    // Text search
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      const matchesTitle = book.title?.toLowerCase().includes(query);
-      const matchesAuthor = book.author?.toLowerCase().includes(query);
-      if (!matchesTitle && !matchesAuthor) return false;
+      const q = searchQuery.toLowerCase();
+      const t = book.title?.toLowerCase?.() ?? '';
+      const a = book.author?.toLowerCase?.() ?? '';
+      if (!t.includes(q) && !a.includes(q)) return false;
     }
-    // Tag filter (AND: book must have ALL selected tags)
     if (selectedTags.length > 0) {
-      const bookTags = book.tags || [];
-      return selectedTags.every(tag => bookTags.includes(tag));
+      const bt = book.tags ?? [];
+      return selectedTags.every((t) => bt.includes(t));
     }
     return true;
   });
 
-  // Function to toggle theme
   const toggleTheme = () => {
-    const currentMode = localStorage.getItem('themeMode') || 'light';
-    const newMode = currentMode === 'light' ? 'dark' : 'light';
-    localStorage.setItem('themeMode', newMode);
-    // No need to force re-render; ThemeProvider will pick up the change on next render
+    const cur = localStorage.getItem('themeMode') ?? 'light';
+    localStorage.setItem('themeMode', cur === 'light' ? 'dark' : 'light');
   };
+
+  function renderBooks() {
+    return (
+      <Grid container spacing={3}>
+        {filteredBooks.length === 0 ? (
+          <Grid item xs={12}>
+            <Typography variant="body1" color="text.secondary" textAlign="center">
+              No books match your filters.
+            </Typography>
+          </Grid>
+        ) : (
+          <>
+            {filteredBooks.map(
+              (b) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={b.id}>
+                <Box
+                  sx={{
+                    p: 2,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 2,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 0.5,
+                      mb: 1,
+                    }}>
+                    {b.tags?.map((tag) => (
+                      <Chip key={tag} label={tag} size="small" variant="outlined" />
+                    ))}
+                  </Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    {b.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {b.author}</Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    style={{ mt: 1 }}>
+                    {b.status === 'reading' && b.progress !== undefined
+                      ? `Progress: ${b.progress}%`
+                      : b.status}
+                  </Typography>
+                  <Box sx={{ mt: 'auto', display: 'flex', gap: 1, pt: 2 }}>
+                    <Button size="small" onClick={() => handleEdit(b)}>
+                      Edit
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDelete(b.id)}>
+                      Delete
+                    </Button>
+                  </Box>
+                </Box>
+              </Grid>
+            ))}
+          </>
+        )}
+      </Grid>
+    )
+  }
+
+  function renderStats() {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h4">Reading Statistics</Typography>
+        {loadingStats ? (
+          <CircularProgress size={48} />
+        ) : stats ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
+            <Box sx={{ display: 'flex', gap: 3, mb: 4 }}>
+              <Box sx={{ textAlign: 'center', minWidth: 96 }}>
+                <Typography variant="h5">{stats.totalBooks}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total Books
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center', minWidth: 96 }}>
+                <Typography variant="h5">{stats.completedBooks}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Completed
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center', minWidth: 96 }}>
+                <Typography variant="h5">{stats.readingBooks}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Currently Reading
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center', minWidth: 96 }}>
+                <Typography variant="h5">{stats.wantToReadBooks}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Want to Read
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h5">Average Progress</Typography>
+              <Typography variant="h4" style={{ mt: 1 }}>
+                {stats.avgProgress !== null && stats.avgProgress !== undefined
+                  ? `${stats.avgProgress}%`
+                  : '0%'}
+              </Typography>
+            </Box>
+          </Box>
+        ) : (
+          <Typography variant="body1">No data available</Typography>
+        )}
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -169,8 +270,7 @@ export default function App() {
             color="inherit"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: 'none' } }}
-          >
+            sx={{ mr: 2, display: { md: 'none' } }}>
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
@@ -179,9 +279,7 @@ export default function App() {
           <IconButton
             aria-label="toggle theme"
             onClick={toggleTheme}
-            sx={{ ml: 2 }}
-          >
-            {/* Determine current icon based on stored mode */}
+            sx={{ ml: 2 }}>
             {(localStorage.getItem('themeMode') === 'light' ? (
               <Brightness7Icon />
             ) : (
@@ -197,7 +295,7 @@ export default function App() {
           onClose={handleDrawerToggle}
           ModalProps={{ keepMounted: true }}
           sx={{
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
           }}
         >
           {drawer}
@@ -206,157 +304,18 @@ export default function App() {
       <Box component="main" sx={{ flexGrow: 1, p: 3, width: { md: `calc(100% - ${drawerWidth}px)` } }}>
         <Toolbar />
         <Container maxWidth="lg" sx={{ pb: 15 }}>
-          {view === 'library' ? (
-            <>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h4">My Collection</Typography>
-                <Button variant="contained" onClick={handleOpenAdd}>Add Book</Button>
-              </Box>
-              {/* Filter Bar */}
-              <Box sx={{ mb: 3, p: 1, bgcolor: 'background.paper', borderRadius: 1 }}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <TextField
-                    label="Search by title or author"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    sx={{ flexGrow: 1, minWidth: 200 }}
-                  />
-                  {allTags.length > 0 && (
-                    <Autocomplete
-                      multiple
-                      options={allTags}
-                      value={selectedTags}
-                      onChange={(event, newValue) => {
-                        setSelectedTags(newValue);
-                      }}
-                      renderTags={(value, getTagProps) =>
-                        value.map((option, index) => (
-                          <Chip
-                            label={option}
-                            size="small"
-                            {...getTagProps({ index })}
-                            sx={{ m: 0.5 }}
-                          />
-                        ))
-                      }
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Filter by tags"
-                          placeholder="Select tags"
-                          InputLabelProps={{ shrink: true }}
-                        />
-                      )}
-                      sx={{ minWidth: 200 }}
-                    />
-                  )}
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSelectedTags([]);
-                    }}
-                    disabled={searchQuery === '' && selectedTags.length === 0}
-                  >
-                    Clear
-                  </Button>
-                </Stack>
-              </Box>
-              <Grid container spacing={3}>
-                {filteredBooks.length === 0 ? (
-                  <Grid item xs={12}>
-                    <Typography variant="body1" color="text.secondary" textAlign="center">
-                      No books match your filters.
-                    </Typography>
-                  </Grid>
-                ) : (
-                  filteredBooks.map((b) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={b.id}>
-                      <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
-                          {b.tags?.map((tag) => (
-                            <Chip key={tag} label={tag} size="small" variant="outlined" />
-                          ))}
-                        </Box>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{b.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">{b.author}</Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                          {b.status === 'reading' && b.progress !== undefined ? `Progress: ${b.progress}%` : b.status}
-                        </Typography>
-                        <Box sx={{ mt: 'auto', display: 'flex', gap: 1, pt: 2 }}>
-                          <Button size="small" onClick={() => handleEdit(b)}>Edit</Button>
-                          <Button size="small" variant="outlined" color="error" onClick={() => handleDelete(b.id)}>Delete</Button>
-                        </Box>
-                      </Box>
-                    ))}
-                  )}
-                )}
-              </Grid>
-            </>
-          ) : (
-            // Stats View
-            <Box sx={{ p: 3, textAlign: 'center' }}>
-              <Typography variant="h4">Reading Statistics</Typography>
-              {loadingStats ? (
-                <CircularProgress size={48} />
-              ) : stats ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
-                  <Box sx={{ display: 'flex', gap: 3, mb: 4 }}>
-                    <Box sx={{ textAlign: 'center', minWidth: 96 }}>
-                      <Typography variant="h5">{stats.totalBooks}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Total Books
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center', minWidth: 96 }}>
-                      <Typography variant="h5">{stats.completedBooks}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Completed
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center', minWidth: 96 }}>
-                      <Typography variant="h5">{stats.readingBooks}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Currently Reading
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center', minWidth: 96 }}>
-                      <Typography variant="h5">{stats.wantToReadBooks}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Want to Read
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ mt: 4 }}>
-                    <Typography variant="h5">Average Progress (Reading Books)</Typography>
-                    <Typography variant="h4" sx={{ mt: 1 }}>
-                      {stats.avgProgress !== null && stats.avgProgress !== undefined ? `${stats.avgProgress}%` : '0%'}
-                    </Typography>
-                  </Box>
-                </>
-              ) : (
-                <Typography variant="body1">No data available</Typography>
-              )}
-            </Box>
-          )}
+          {view === 'library' ? renderBooks() : renderStats()}
         </Container>
-        <Zoom in={true}>
-          <Fab
-            color="primary"
-            aria-label="add"
-            onClick={handleOpenAdd}
-            sx={{
-              position: 'fixed',
-              bottom: 32,
-              right: 32
-            }}
-          >
-            <AddIcon />
-          </Fab>
-        </Zoom>
       </Box>
+      <Zoom in={true}>
+        <Fab
+          color="primary"
+          aria-label="add"
+          onClick={handleOpenAdd}
+          sx={{ position: 'fixed', bottom: 32, right: 32 }}>
+          <AddIcon />
+        </Fab>
+      </Zoom>
       <BookFormModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
