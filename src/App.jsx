@@ -20,13 +20,14 @@ import {
   TextField,
   Autocomplete,
   Stack,
+  CircularProgress,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddIcon from '@mui/icons-material/Add';
-import Brightness4Icon from '@mui/icons-material/Brightness4'; // dark mode icon
-import Brightness7Icon from '@mui/icons-material/Brightness7'; // light mode icon
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import BookFormModal from './components/BookFormModal.jsx';
-import { addBook, getAllBooks, initializeDefaultTags, updateBook, deleteBook, getAllTags } from './lib/bookService.js';
+import { addBook, getAllBooks, initializeDefaultTags, updateBook, deleteBook, getAllTags, getReadingStats } from './lib/bookService.js';
 
 const drawerWidth = 240;
 
@@ -40,6 +41,9 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [allTags, setAllTags] = useState([]);
+  const [view, setView] = useState('library'); // 'library' or 'stats'
+  const [stats, setStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -50,22 +54,27 @@ export default function App() {
       <Toolbar />
       <List>
         <ListItem disablePadding>
-          <ListItemButton>
-            <ListItemText primary="All Books" />
+          <ListItemButton onClick={() => { setView('library'); handleDrawerToggle(); }}>
+            <ListItemText primary="Library" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton>
+          <ListItemButton onClick={() => { setView('stats'); handleDrawerToggle(); }}>
+            <ListItemText primary="Statistics" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => { setView('library'); handleDrawerToggle(); }}>
             <ListItemText primary="Reading" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton>
+          <ListItemButton onClick={() => { setView('library'); handleDrawerToggle(); }}>
             <ListItemText primary="Completed" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton>
+          <ListItemButton onClick={() => { setView('library'); handleDrawerToggle(); }}>
             <ListItemText primary="Want to Read" />
           </ListItemButton>
         </ListItem>
@@ -80,9 +89,23 @@ export default function App() {
       setBooks(all);
       const tags = await getAllTags();
       setAllTags(tags);
+      // Load initial stats
+      await loadStats();
     }
     init();
   }, []);
+
+  const loadStats = async () => {
+    setLoadingStats(true);
+    try {
+      const statsData = await getReadingStats();
+      setStats(statsData);
+    } catch (err) {
+      console.error('Failed to load stats:', err);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingBook(null);
@@ -103,11 +126,14 @@ export default function App() {
       setBooks([...books, { ...data, id }]);
     }
     setModalOpen(false);
+    // Refresh stats after adding/updating a book
+    await loadStats();
   };
 
   const handleDelete = async (id) => {
     await deleteBook(id);
     setBooks(books.filter(b => b.id !== id));
+    await loadStats();
   };
 
   // Filter books
@@ -132,10 +158,7 @@ export default function App() {
     const currentMode = localStorage.getItem('themeMode') || 'light';
     const newMode = currentMode === 'light' ? 'dark' : 'light';
     localStorage.setItem('themeMode', newMode);
-    // Force a re-render by triggering a state update (optional, but ensures immediate update)
-    // We can just rely on the theme provider picking up the change on next render.
-    // However, to avoid a brief flicker, we can trigger a state change in App.
-    // We'll use a dummy state to force re-render.
+    // No need to force re-render; ThemeProvider will pick up the change on next render
   };
 
   return (
@@ -183,92 +206,141 @@ export default function App() {
       <Box component="main" sx={{ flexGrow: 1, p: 3, width: { md: `calc(100% - ${drawerWidth}px)` } }}>
         <Toolbar />
         <Container maxWidth="lg" sx={{ pb: 15 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h4">My Collection</Typography>
-            <Button variant="contained" onClick={handleOpenAdd}>Add Book</Button>
-          </Box>
-          {/* Filter Bar */}
-          <Box sx={{ mb: 3, p: 1, bgcolor: 'background.paper', borderRadius: 1 }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField
-                label="Search by title or author"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                sx={{ flexGrow: 1, minWidth: 200 }}
-              />
-              {allTags.length > 0 && (
-                <Autocomplete
-                  multiple
-                  options={allTags}
-                  value={selectedTags}
-                  onChange={(event, newValue) => {
-                    setSelectedTags(newValue);
-                  }}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        label={option}
-                        size="small"
-                        {...getTagProps({ index })}
-                        sx={{ m: 0.5 }}
-                      />
-                    ))
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Filter by tags"
-                      placeholder="Select tags"
-                      InputLabelProps={{ shrink: true }}
+          {view === 'library' ? (
+            <>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h4">My Collection</Typography>
+                <Button variant="contained" onClick={handleOpenAdd}>Add Book</Button>
+              </Box>
+              {/* Filter Bar */}
+              <Box sx={{ mb: 3, p: 1, bgcolor: 'background.paper', borderRadius: 1 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <TextField
+                    label="Search by title or author"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search..."
+                    sx={{ flexGrow: 1, minWidth: 200 }}
+                  />
+                  {allTags.length > 0 && (
+                    <Autocomplete
+                      multiple
+                      options={allTags}
+                      value={selectedTags}
+                      onChange={(event, newValue) => {
+                        setSelectedTags(newValue);
+                      }}
+                      renderTags={(value, getTagProps) =>
+                        value.map((option, index) => (
+                          <Chip
+                            label={option}
+                            size="small"
+                            {...getTagProps({ index })}
+                            sx={{ m: 0.5 }}
+                          />
+                        ))
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Filter by tags"
+                          placeholder="Select tags"
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      )}
+                      sx={{ minWidth: 200 }}
                     />
                   )}
-                  sx={{ minWidth: 200 }}
-                />
-              )}
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedTags([]);
-                }}
-                disabled={searchQuery === '' && selectedTags.length === 0}
-              >
-                Clear
-              </Button>
-            </Stack>
-          </Box>
-          <Grid container spacing={3}>
-            {filteredBooks.length === 0 ? (
-              <Grid item xs={12}>
-                <Typography variant="body1" color="text.secondary" textAlign="center">
-                  No books match your filters.
-                </Typography>
-              </Grid>
-            ) : (
-              filteredBooks.map((b) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={b.id}>
-                  <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
-                      {b.tags?.map((tag) => (
-                        <Chip key={tag} label={tag} size="small" variant="outlined" />
-                      ))}
-                    </Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{b.title}</Typography>
-                    <Typography variant="body2" color="text.secondary">{b.author}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                      {b.status === 'reading' && b.progress !== undefined ? `Progress: ${b.progress}%` : b.status}
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedTags([]);
+                    }}
+                    disabled={searchQuery === '' && selectedTags.length === 0}
+                  >
+                    Clear
+                  </Button>
+                </Stack>
+              </Box>
+              <Grid container spacing={3}>
+                {filteredBooks.length === 0 ? (
+                  <Grid item xs={12}>
+                    <Typography variant="body1" color="text.secondary" textAlign="center">
+                      No books match your filters.
                     </Typography>
-                    <Box sx={{ mt: 'auto', display: 'flex', gap: 1, pt: 2 }}>
-                      <Button size="small" onClick={() => handleEdit(b)}>Edit</Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => handleDelete(b.id)}>Delete</Button>
+                  </Grid>
+                ) : (
+                  filteredBooks.map((b) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={b.id}>
+                      <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                          {b.tags?.map((tag) => (
+                            <Chip key={tag} label={tag} size="small" variant="outlined" />
+                          ))}
+                        </Box>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{b.title}</Typography>
+                        <Typography variant="body2" color="text.secondary">{b.author}</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                          {b.status === 'reading' && b.progress !== undefined ? `Progress: ${b.progress}%` : b.status}
+                        </Typography>
+                        <Box sx={{ mt: 'auto', display: 'flex', gap: 1, pt: 2 }}>
+                          <Button size="small" onClick={() => handleEdit(b)}>Edit</Button>
+                          <Button size="small" variant="outlined" color="error" onClick={() => handleDelete(b.id)}>Delete</Button>
+                        </Box>
+                      </Box>
+                    ))}
+                  )}
+                )}
+              </Grid>
+            </>
+          ) : (
+            // Stats View
+            <Box sx={{ p: 3, textAlign: 'center' }}>
+              <Typography variant="h4">Reading Statistics</Typography>
+              {loadingStats ? (
+                <CircularProgress size={48} />
+              ) : stats ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
+                  <Box sx={{ display: 'flex', gap: 3, mb: 4 }}>
+                    <Box sx={{ textAlign: 'center', minWidth: 96 }}>
+                      <Typography variant="h5">{stats.totalBooks}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Total Books
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center', minWidth: 96 }}>
+                      <Typography variant="h5">{stats.completedBooks}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Completed
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center', minWidth: 96 }}>
+                      <Typography variant="h5">{stats.readingBooks}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Currently Reading
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center', minWidth: 96 }}>
+                      <Typography variant="h5">{stats.wantToReadBooks}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Want to Read
+                      </Typography>
                     </Box>
                   </Box>
-                </Grid>
-              ))
-            )}
-          </Grid>
+                  <Box sx={{ mt: 4 }}>
+                    <Typography variant="h5">Average Progress (Reading Books)</Typography>
+                    <Typography variant="h4" sx={{ mt: 1 }}>
+                      {stats.avgProgress !== null && stats.avgProgress !== undefined ? `${stats.avgProgress}%` : '0%'}
+                    </Typography>
+                  </Box>
+                </>
+              ) : (
+                <Typography variant="body1">No data available</Typography>
+              )}
+            </Box>
+          )}
         </Container>
         <Zoom in={true}>
           <Fab
