@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react'
-import { ThemeProvider, createTheme, CssBaseline, Box, Container, Paper, Typography, Button, Toolbar, Drawer } from '@mui/material'
+import { ThemeProvider, createTheme, CssBaseline, Box, Container, Toolbar, Drawer } from '@mui/material'
 import AppHeader from './components/organisms/AppHeader.jsx'
 import AppDrawerContent from './components/organisms/AppDrawer.jsx'
 import { AuthProvider, ProtectedRoute } from './lib/AuthContext.jsx'
 import LoginPage from './components/pages/LoginPage.jsx'
 import RegisterPage from './components/pages/RegisterPage.jsx'
+import LibraryPage from './components/pages/LibraryPage.jsx'
 
 const drawerWidth = 240
 
@@ -19,21 +20,7 @@ function SimpleRouter() {
   
   return (
     <ProtectedRoute>
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h5" gutterBottom>Rose</Typography>
-        <Typography variant="body1" color="text.secondary">
-          Personal home library manager built with atomic design.
-        </Typography>
-        <Box sx={{ mt: 2 }}>
-          <Button variant="contained">Create Book</Button>
-        </Box>
-      </Paper>
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h6">Free tier</Typography>
-        <Typography variant="body2" color="text.secondary">
-          Free tier limit: 50 books • Owner only • Manual entry
-        </Typography>
-      </Paper>
+      <LibraryPage />
     </ProtectedRoute>
   )
 }
