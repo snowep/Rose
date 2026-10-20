@@ -1,10 +1,9 @@
-import { Box, Toolbar, Typography, List, Drawer, Button } from '@mui/material'
+import { Box, Toolbar, Typography, List } from '@mui/material'
 import NavItem from '../molecules/NavItem.jsx'
-import LogoutIcon from '@mui/icons-material/Logout'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks'
 
-export default function AppDrawerContent({ activePage, onLogout }) {
+export default function AppDrawerContent({ activePage }) {
   return (
     <Box sx={{ overflow: 'auto' }}>
       <Toolbar>
@@ -13,9 +12,6 @@ export default function AppDrawerContent({ activePage, onLogout }) {
       <List>
         <NavItem icon={<DashboardIcon />} label="Dashboard" active={activePage === 'dashboard'} />
         <NavItem icon={<LibraryBooksIcon />} label="Library" active={activePage === 'library'} />
-              {/* Logout button removed from drawer - now in AppBar only */}
-          <LogoutIcon />Logout
-        </NavItem>
       </List>
     </Box>
   )
