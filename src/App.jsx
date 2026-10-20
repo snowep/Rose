@@ -5,6 +5,7 @@ import {
   Toolbar,
   Typography,
   Box,
+  Button,
   Container,
   Drawer,
   List,
@@ -15,12 +16,15 @@ import {
   Chip,
   Grid,
   Fab,
-  Zoom
+  Zoom,
+  TextField,
+  Autocomplete,
+  Stack,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddIcon from '@mui/icons-material/Add';
 import BookFormModal from './components/BookFormModal.jsx';
-import { addBook, getAllBooks, initializeDefaultTags, updateBook, deleteBook } from './lib/bookService.js';
+import { addBook, getAllBooks, initializeDefaultTags, updateBook, deleteBook, getAllTags } from './lib/bookService.js';
 
 const drawerWidth = 240;
 
@@ -31,6 +35,9 @@ export default function App() {
   const [books, setBooks] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [allTags, setAllTags] = useState([]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -69,6 +76,8 @@ export default function App() {
       await initializeDefaultTags();
       const all = await getAllBooks();
       setBooks(all);
+      const tags = await getAllTags();
+      setAllTags(tags);
     }
     init();
   }, []);
@@ -98,6 +107,23 @@ export default function App() {
     await deleteBook(id);
     setBooks(books.filter(b => b.id !== id));
   };
+
+  // Filter books
+  const filteredBooks = books.filter((book) => {
+    // Text search
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = book.title?.toLowerCase().includes(query);
+      const matchesAuthor = book.author?.toLowerCase().includes(query);
+      if (!matchesTitle && !matchesAuthor) return false;
+    }
+    // Tag filter (AND: book must have ALL selected tags)
+    if (selectedTags.length > 0) {
+      const bookTags = book.tags || [];
+      return selectedTags.every(tag => bookTags.includes(tag));
+    }
+    return true;
+  });
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -132,36 +158,90 @@ export default function App() {
       <Box component="main" sx={{ flexGrow: 1, p: 3, width: { md: `calc(100% - ${drawerWidth}px)` } }}>
         <Toolbar />
         <Container maxWidth="lg" sx={{ pb: 15 }}>
-          <Typography variant="h4" gutterBottom>
-            My Collection
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h4">My Collection</Typography>
+            <Button variant="contained" onClick={handleOpenAdd}>Add Book</Button>
+          </Box>
+          {/* Filter Bar */}
+          <Box sx={{ mb: 3, p: 1, bgcolor: 'background.paper', borderRadius: 1 }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <TextField
+                label="Search by title or author"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                sx={{ flexGrow: 1, minWidth: 200 }}
+              />
+              {allTags.length > 0 && (
+                <Autocomplete
+                  multiple
+                  options={allTags}
+                  value={selectedTags}
+                  onChange={(event, newValue) => {
+                    setSelectedTags(newValue);
+                  }}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        label={option}
+                        size="small"
+                        {...getTagProps({ index })}
+                        sx={{ m: 0.5 }}
+                      />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Filter by tags"
+                      placeholder="Select tags"
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  )}
+                  sx={{ minWidth: 200 }}
+                />
+              )}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedTags([]);
+                }}
+                disabled={searchQuery === '' && selectedTags.length === 0}
+              >
+                Clear
+              </Button>
+            </Stack>
+          </Box>
           <Grid container spacing={3}>
-            {books.map((b) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={b.id}>
-                <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
-                    {b.tags?.map((tag) => (
-                      <Chip key={tag} label={tag} size="small" variant="outlined" />
-                    ))}
-                  </Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{b.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">{b.author}</Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                    {b.status === 'reading' && b.progress !== undefined ? `Progress: ${b.progress}%` : b.status}
-                  </Typography>
-                  <Box sx={{ mt: 'auto', display: 'flex', gap: 1, pt: 2 }}>
-                    <Button size="small" onClick={() => handleEdit(b)}>Edit</Button>
-                    <Button size="small" variant="outlined" color="error" onClick={() => handleDelete(b.id)}>Delete</Button>
-                  </Box>
-                </Box>
-              </Grid>
-            ))}
-            {books.length === 0 && (
+            {filteredBooks.length === 0 ? (
               <Grid item xs={12}>
                 <Typography variant="body1" color="text.secondary" textAlign="center">
-                  No books yet. Tap + to add your first book!
+                  No books match your filters.
                 </Typography>
               </Grid>
+            ) : (
+              filteredBooks.map((b) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={b.id}>
+                  <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                      {b.tags?.map((tag) => (
+                        <Chip key={tag} label={tag} size="small" variant="outlined" />
+                      ))}
+                    </Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{b.title}</Typography>
+                    <Typography variant="body2" color="text.secondary">{b.author}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                      {b.status === 'reading' && b.progress !== undefined ? `Progress: ${b.progress}%` : b.status}
+                    </Typography>
+                    <Box sx={{ mt: 'auto', display: 'flex', gap: 1, pt: 2 }}>
+                      <Button size="small" onClick={() => handleEdit(b)}>Edit</Button>
+                      <Button size="small" variant="outlined" color="error" onClick={() => handleDelete(b.id)}>Delete</Button>
+                    </Box>
+                  </Box>
+                </Grid>
+              ))
             )}
           </Grid>
         </Container>
