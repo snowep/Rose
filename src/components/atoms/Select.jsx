@@ -1,6 +1,6 @@
-import { Select as MuiSelect, FormControl, InputLabel, MenuItem } from '@mui/material';
+import { Select as MuiSelect, FormControl, InputLabel } from '@mui/material';
 
-export default function Select({ label, value, onChange, options=[], multiple=false, id, ...props }) {
+export default function Select({ label, value, onChange, options=[], multiple=false, id, name, ...props }) {
   const inputId = id || `select-${label.toLowerCase().replace(/\s+/g, '-')}`;
   return (
     <FormControl fullWidth {...props}>
@@ -11,6 +11,7 @@ export default function Select({ label, value, onChange, options=[], multiple=fa
         value={value}
         onChange={onChange}
         id={inputId}
+        name={name}
         labelId={`${inputId}-label`}
       >
         <option value="" />
