@@ -10,13 +10,19 @@ export default function BookForm({ open, onClose, initialValues = {}, onSave }) 
     author: initialValues.author || '',
     isbn: initialValues.isbn || '',
     year: initialValues.year || '',
-    genre: initialValues.genre || '',
+    genre: initialValues.genre || [],
     status: initialValues.status || 'want-to-read',
     notes: initialValues.notes || ''
   });
 
-  const handleChange = (e) =>
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    const { name, value, multiple } = e.target;
+    if (multiple) {
+      setForm(f => ({ ...f, [name]: value }));
+    } else {
+      setForm(f => ({ ...f, [name]: value }));
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -32,7 +38,7 @@ export default function BookForm({ open, onClose, initialValues = {}, onSave }) 
           <Input name="title" label="Title *" value={form.title} onChange={handleChange} required />
           <Input name="author" label="Author" value={form.author} onChange={handleChange} />
           <Input name="isbn" label="ISBN" value={form.isbn} onChange={handleChange} />
-          <Select name="genre" label="Genre" value={form.genre} onChange={handleChange} options={GENRES.map(g => ({ value: g, label: g }))} />
+          <Select name="genre" label="Genre" value={form.genre} onChange={handleChange} options={GENRES.map(g => ({ value: g, label: g }))} multiple />
           <Select name="status" label="Status" value={form.status} onChange={handleChange} options={STATUSES.map(s => ({ value: s, label: s.replace('-', ' ') }))} />
           <Stack spacing={1} direction="row" justifyContent="flex-end">
             <Button variant="outlined" onClick={onClose}>Cancel</Button>
