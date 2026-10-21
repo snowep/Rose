@@ -8,7 +8,7 @@ export default function Select({ label, value, onChange, options=[], multiple=fa
       <MuiSelect
         multiple={multiple}
         value={multiple ? (value || []) : (value || '')}
-        onChange={(value) => onChange(value)}
+        onChange={(event) => onChange(event.target.value)}
         id={inputId}
         name={name}
         labelId={`${inputId}-label`}

@@ -2,8 +2,11 @@ import { db } from './db.js';
 
 export const bookService = {
   async create(data, userId) {
-    // Validate ISBN uniqueness per user
-    const existing = await db.books.where('user_id').equals(userId).filter(b => b.isbn === data.isbn.trim()).first();
+    // Validate ISBN uniqueness per user (only when ISBN is provided)
+    const isbn = data.isbn?.trim() || '';
+    const existing = isbn
+      ? await db.books.where('user_id').equals(userId).filter(b => b.isbn === isbn).first()
+      : null;
     if (existing) throw new Error('ISBN already exists for your account');
 
     const genre = Array.isArray(data.genre) ? data.genre.join(', ') : (data.genre || '');
@@ -43,8 +46,11 @@ export const bookService = {
   async update(id, updates, userId) {
       const book = await db.books.get(id);
       if (!book || book.user_id !== userId) throw new Error('Not found');
-      // Validate ISBN uniqueness - exclude current book
-      const existing = await db.books.where('user_id').equals(userId).filter(b => b.isbn === updates.isbn && b.id !== id).first();
+      // Validate ISBN uniqueness - exclude current book (only when ISBN is provided)
+      const isbn = updates.isbn?.trim() || '';
+      const existing = isbn
+        ? await db.books.where('user_id').equals(userId).filter(b => b.isbn === isbn && b.id !== id).first()
+        : null;
       if (existing) throw new Error('ISBN already exists for your account');
       // Normalize genre to string
       const genre = Array.isArray(updates.genre) ? updates.genre.join(', ') : (updates.genre || '');
