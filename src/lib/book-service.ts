@@ -92,8 +92,56 @@ export const BookService = {
   },
 
   async addDailyLog(id: string, date: string, pagesRead: number): Promise<void> {
+    const book = await (db as any).books.get(id)
+    if (!book) return
+
+    const currentLog = book.dailyLog || []
+    const existingIndex = currentLog.findIndex((log: any) => log.date === date)
+    
+    let updatedLog
+    if (existingIndex >= 0) {
+      // Update existing log entry
+      updatedLog = [...currentLog]
+      updatedLog[existingIndex] = { ...updatedLog[existingIndex], pagesRead: updatedLog[existingIndex].pagesRead + pagesRead }
+    } else {
+      // Add new log entry
+      updatedLog = [...currentLog, { date, pagesRead }]
+    }
+
+    // Calculate total pages read
+    const totalPagesRead = updatedLog.reduce((sum: number, log: any) => sum + (log.pagesRead || 0), 0)
+    
+    // Calculate progress if book has total pages
+    let progress = book.progress || 0
+    if (book.pages && book.pages > 0) {
+      progress = Math.min(100, Math.round((totalPagesRead / book.pages) * 100))
+    }
+
+    // Determine status changes
+    let status = book.status
+    let startedAt = book.startedAt
+    let finishedAt = book.finishedAt
+    const now = new Date().toISOString()
+
+    // First log -> mark as reading
+    if (status === 'want-to-read' && currentLog.length === 0) {
+      status = 'reading'
+      startedAt = now
+    }
+
+    // Progress reaches 100% -> mark as read
+    if (progress >= 100 && status !== 'read') {
+      status = 'read'
+      finishedAt = now
+    }
+
+    // Update all fields
     await db.books.update(id, {
-      dailyLog: [...(await db.books.get(id))!.dailyLog || [], { date, pagesRead }],
+      dailyLog: updatedLog,
+      progress,
+      status,
+      startedAt,
+      finishedAt,
       updatedAt: new Date().toISOString(),
     })
   },
