@@ -71,7 +71,9 @@ export function BookCard({ id, title, author, status, genre, rating, pages, prog
             <RatingDisplay rating={rating} />
           </Box>
 
-          <ProgressBar pages={pages} progress={progress} status={status} sx={{ mt: 'auto' }} />
+          <Box sx={{ mt: 'auto' }}>
+            <ProgressBar pages={pages} progress={progress} status={status} />
+          </Box>
 
           <TagList tags={tags} />
         </CardContent>
