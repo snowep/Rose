@@ -11,7 +11,7 @@ export function BooksListView({ books, loading }: { books: any[]; loading: boole
   return (
     <List>
       {books.map((book) => (
-        <ListItem key={book.id} sx={{ py: 1, borderBottom: '1px solid #424242' }}>
+        <ListItem key={book.id}>
           <BookCard
             id={book.id}
             title={book.title}

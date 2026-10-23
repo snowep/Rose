@@ -4,12 +4,12 @@ import { ListItem, ListItemButton, ListItemText } from '@mui/material'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-export function NavItem({ key, label, href }: { key: string; label: string; href: string }) {
+export function NavItem({ label, href }: { label: string; href: string }) {
   const pathname = usePathname()
   const isActive = pathname === href
 
   return (
-    <ListItem key={key} disablePadding>
+    <ListItem disablePadding>
       <ListItemButton
         component={Link}
         href={href}
