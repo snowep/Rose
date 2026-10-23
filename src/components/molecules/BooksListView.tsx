@@ -1,17 +1,17 @@
 'use client'
 
-import { List, ListItem, Typography } from '@mui/material'
+import { Box, Grid2 as Grid, Typography } from '@mui/material'
 import { BookCard } from '@/components/molecules/BookCard'
 
 export function BooksListView({ books, loading }: { books: any[]; loading: boolean }) {
   if (loading) {
-    return <ListItem><Typography>Loading...</Typography></ListItem>
+    return <Typography>Loading...</Typography>
   }
 
   return (
-    <List>
+    <Grid container spacing={3}>
       {books.map((book) => (
-        <ListItem key={book.id}>
+        <Grid item key={book.id} xs={12} sm={6} md={4} lg={3}>
           <BookCard
             id={book.id}
             title={book.title}
@@ -23,8 +23,8 @@ export function BooksListView({ books, loading }: { books: any[]; loading: boole
             progress={book.progress}
             tags={book.tags}
           />
-        </ListItem>
+        </Grid>
       ))}
-    </List>
+    </Grid>
   )
 }

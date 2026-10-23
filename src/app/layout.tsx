@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ThemeProvider } from '@/providers/ThemeProvider'
+import { EmotionCacheProvider } from '@/providers/EmotionCacheProvider'
 import { Layout } from '@/components/organisms/Layout'
 
 export const metadata: Metadata = {
@@ -15,11 +16,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ThemeProvider>
-          <Layout>
-            {children}
-          </Layout>
-        </ThemeProvider>
+        <EmotionCacheProvider>
+          <ThemeProvider>
+            <Layout>
+              {children}
+            </Layout>
+          </ThemeProvider>
+        </EmotionCacheProvider>
       </body>
     </html>
   )
