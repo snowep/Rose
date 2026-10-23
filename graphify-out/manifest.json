@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1792728995.6006258,
-    "seen": 1792733277.3975132,
-    "ast_hash": "576284056bdddfc76dddf24eb846313d",
+    "mtime": 1792734092.3899071,
+    "seen": 1792740140.629323,
+    "ast_hash": "a3cfba91ae3e562eb567c49528c67616",
     "semantic_hash": ""
   },
   "src/app/layout.tsx": {
@@ -48,9 +48,9 @@
     "semantic_hash": ""
   },
   "src/components/atoms/BookCard.tsx": {
-    "mtime": 1792729968.6394362,
-    "seen": 1792733277.397574,
-    "ast_hash": "7162a77fccad715379fe58ee92d8de9e",
+    "mtime": 1792738830.5697231,
+    "seen": 1792740140.6293573,
+    "ast_hash": "146467b18aae6ab72887ce73fd87e5a2",
     "semantic_hash": ""
   },
   "src/components/atoms/HeatmapCell.tsx": {
@@ -72,15 +72,15 @@
     "semantic_hash": ""
   },
   "src/components/molecules/BookModal.tsx": {
-    "mtime": 1792730048.4381516,
-    "seen": 1792733277.3976038,
-    "ast_hash": "322c123f13b2d3ee3e56c3eb5413c639",
+    "mtime": 1792737129.8966942,
+    "seen": 1792740140.6293852,
+    "ast_hash": "528055d03fb43c23e7f3eb10241b17bc",
     "semantic_hash": ""
   },
   "src/components/molecules/BooksList.tsx": {
-    "mtime": 1792729990.2817845,
-    "seen": 1792733277.3976104,
-    "ast_hash": "579ea1979fc392576c4ec8f642109b51",
+    "mtime": 1792737570.7847016,
+    "seen": 1792740140.629389,
+    "ast_hash": "132a1fef9a7cd4b9c3e2f6589091eb3c",
     "semantic_hash": ""
   },
   "src/components/molecules/Heatmap.tsx": {
@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "src/components/molecules/NavDrawer.tsx": {
-    "mtime": 1792731695.8145723,
-    "seen": 1792733277.39763,
-    "ast_hash": "b3d8b0ff7f15c3cd53647665581d07c0",
+    "mtime": 1792737416.4008737,
+    "seen": 1792740140.629419,
+    "ast_hash": "9846dae6b7d82d371adb44c29dbe7655",
     "semantic_hash": ""
   },
   "src/components/organisms/AddBookFab.tsx": {
@@ -150,9 +150,39 @@
     "semantic_hash": ""
   },
   "MEMORY.md": {
-    "mtime": 1792727980.9285944,
-    "seen": 1792733277.3980145,
-    "ast_hash": "ee53cf33012f8b5b5e4f4c000c359b5d",
+    "mtime": 1792739797.6922574,
+    "seen": 1792740140.6294816,
+    "ast_hash": "110e322d1a3329425ea3e5ede064de63",
+    "semantic_hash": ""
+  },
+  "src/app/library/detail/[id]/page.tsx": {
+    "mtime": 1792738393.755261,
+    "seen": 1792740140.6293347,
+    "ast_hash": "d2399c20e7f6804a9aa22d6bb9e8328e",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/LogProgressModal.tsx": {
+    "mtime": 1792738277.1077683,
+    "seen": 1792740140.6293716,
+    "ast_hash": "2f911981a9c97f568f79f17c235bdcd7",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/BookDetailFixed.tsx": {
+    "mtime": 1792739764.6199293,
+    "seen": 1792740140.62938,
+    "ast_hash": "8d6998de4bdfb88d2f880ddfa7dd90bc",
+    "semantic_hash": ""
+  },
+  "src/lib/book-service.ts": {
+    "mtime": 1792736609.6191795,
+    "seen": 1792740140.6294672,
+    "ast_hash": "62a4f1da88943f8f9415c8b414345137",
+    "semantic_hash": ""
+  },
+  "src/lib/db.ts": {
+    "mtime": 1792737163.845204,
+    "seen": 1792740140.6294708,
+    "ast_hash": "96b092e0ba1be714ac7817a26f5fd1ce",
     "semantic_hash": ""
   }
 }

@@ -20,17 +20,17 @@
       "source_location": "L14"
     },
     {
-      "id": "src_components_atoms_bookcard_bookprops",
-      "label": "BookProps",
+      "id": "src_components_molecules_bookdetailfixed_bookdetailprops",
+      "label": "BookDetailProps",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "BooksList.tsx",
+      "community_name": "BooksList",
       "file_type": "code",
-      "norm_label": "bookprops",
-      "source_file": "src/components/atoms/BookCard.tsx",
-      "source_location": "L5"
+      "norm_label": "bookdetailprops",
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L8"
     },
     {
       "id": "src_components_molecules_bookmodal_bookmodalprops",
@@ -39,11 +39,50 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "BooksList.tsx",
+      "community_name": "BooksList",
       "file_type": "code",
       "norm_label": "bookmodalprops",
       "source_file": "src/components/molecules/BookModal.tsx",
       "source_location": "L8"
+    },
+    {
+      "id": "src_lib_book_service_bookservice",
+      "label": "BookService",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "BooksList",
+      "file_type": "code",
+      "norm_label": "bookservice",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_lib_db_book",
+      "label": "Book",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "BooksList",
+      "file_type": "code",
+      "norm_label": "book",
+      "source_file": "src/lib/db.ts",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_components_atoms_heatmapcell_heatmapcellprops",
+      "label": "HeatmapCellProps",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "Heatmap.tsx",
+      "file_type": "code",
+      "norm_label": "heatmapcellprops",
+      "source_file": "src/components/atoms/HeatmapCell.tsx",
+      "source_location": "L5"
     },
     {
       "id": "src_components_atoms_heatmapheader_heatmapmode",
@@ -72,26 +111,13 @@
       "source_location": "L8"
     },
     {
-      "id": "src_components_atoms_heatmapcell_heatmapcellprops",
-      "label": "HeatmapCellProps",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "HeatmapGrid.tsx",
-      "file_type": "code",
-      "norm_label": "heatmapcellprops",
-      "source_file": "src/components/atoms/HeatmapCell.tsx",
-      "source_location": "L5"
-    },
-    {
       "id": "src_components_molecules_heatmapgrid_heatmapcelldata",
       "label": "HeatmapCellData",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 6,
-      "community_name": "HeatmapGrid.tsx",
+      "community": 5,
+      "community_name": "Heatmap.tsx",
       "file_type": "code",
       "norm_label": "heatmapcelldata",
       "source_file": "src/components/molecules/HeatmapGrid.tsx",
@@ -103,12 +129,51 @@
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 6,
-      "community_name": "HeatmapGrid.tsx",
+      "community": 5,
+      "community_name": "Heatmap.tsx",
       "file_type": "code",
       "norm_label": "heatmapgridprops",
       "source_file": "src/components/molecules/HeatmapGrid.tsx",
       "source_location": "L11"
+    },
+    {
+      "id": "src_components_atoms_bookcard_bookprops",
+      "label": "BookProps",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "bookprops",
+      "source_file": "src/components/atoms/BookCard.tsx",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_components_atoms_logprogressmodal_logprogressmodalprops",
+      "label": "LogProgressModalProps",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "logprogressmodalprops",
+      "source_file": "src/components/atoms/LogProgressModal.tsx",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_lib_db_rosedb",
+      "label": "RoseDB",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "rosedb",
+      "source_file": "src/lib/db.ts",
+      "source_location": "L24"
     },
     {
       "id": "src_app_layout_rootlayout",
@@ -180,7 +245,7 @@
       "file_type": "code",
       "norm_label": "navdrawer()",
       "source_file": "src/components/molecules/NavDrawer.tsx",
-      "source_location": "L14"
+      "source_location": "L15"
     },
     {
       "id": "src_components_organisms_addbookfab_addbookfab",
@@ -224,35 +289,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "BooksList.tsx",
+      "community_name": "BooksList",
       "file_type": "code",
       "norm_label": "librarypage()",
       "source_file": "src/app/library/page.tsx",
       "source_location": "L3"
-    },
-    {
-      "id": "src_components_atoms_bookcard_bookcard",
-      "label": "BookCard()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "BooksList.tsx",
-      "file_type": "code",
-      "norm_label": "bookcard()",
-      "source_file": "src/components/atoms/BookCard.tsx",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_components_molecules_bookmodal_bookmodal",
-      "label": "BookModal()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "BooksList.tsx",
-      "file_type": "code",
-      "norm_label": "bookmodal()",
-      "source_file": "src/components/molecules/BookModal.tsx",
-      "source_location": "L15"
     },
     {
       "id": "src_components_molecules_bookslist_bookslist",
@@ -260,11 +301,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "BooksList.tsx",
+      "community_name": "BooksList",
       "file_type": "code",
       "norm_label": "bookslist()",
       "source_file": "src/components/molecules/BooksList.tsx",
-      "source_location": "L14"
+      "source_location": "L11"
     },
     {
       "id": "src_components_templates_hometemplate_hometemplate",
@@ -272,7 +313,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "BooksList.tsx",
+      "community_name": "BooksList",
       "file_type": "code",
       "norm_label": "hometemplate()",
       "source_file": "src/components/templates/HomeTemplate.tsx",
@@ -284,11 +325,95 @@
       "_callable": true,
       "_origin": "ast",
       "community": 4,
-      "community_name": "BooksList.tsx",
+      "community_name": "BooksList",
       "file_type": "code",
       "norm_label": "librarytemplate()",
       "source_file": "src/components/templates/LibraryTemplate.tsx",
       "source_location": "L6"
+    },
+    {
+      "id": "src_lib_book_service_bookservice_adddailylog",
+      "label": ".addDailyLog()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "BooksList",
+      "file_type": "code",
+      "norm_label": ".adddailylog()",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L43"
+    },
+    {
+      "id": "src_lib_book_service_bookservice_create",
+      "label": ".create()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "BooksList",
+      "file_type": "code",
+      "norm_label": ".create()",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L14"
+    },
+    {
+      "id": "src_lib_book_service_bookservice_delete",
+      "label": ".delete()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "BooksList",
+      "file_type": "code",
+      "norm_label": ".delete()",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L32"
+    },
+    {
+      "id": "src_lib_book_service_bookservice_getall",
+      "label": ".getAll()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "BooksList",
+      "file_type": "code",
+      "norm_label": ".getall()",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_lib_book_service_bookservice_getbyid",
+      "label": ".getById()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "BooksList",
+      "file_type": "code",
+      "norm_label": ".getbyid()",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_lib_book_service_bookservice_update",
+      "label": ".update()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "BooksList",
+      "file_type": "code",
+      "norm_label": ".update()",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L25"
+    },
+    {
+      "id": "src_lib_book_service_bookservice_updateprogress",
+      "label": ".updateProgress()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "BooksList",
+      "file_type": "code",
+      "norm_label": ".updateprogress()",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L36"
     },
     {
       "id": "src_app_page_page",
@@ -301,6 +426,30 @@
       "norm_label": "page()",
       "source_file": "src/app/page.tsx",
       "source_location": "L3"
+    },
+    {
+      "id": "src_components_atoms_heatmapcell_getcolor",
+      "label": "getColor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "Heatmap.tsx",
+      "file_type": "code",
+      "norm_label": "getcolor()",
+      "source_file": "src/components/atoms/HeatmapCell.tsx",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_components_atoms_heatmapcell_heatmapcell",
+      "label": "HeatmapCell()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "Heatmap.tsx",
+      "file_type": "code",
+      "norm_label": "heatmapcell()",
+      "source_file": "src/components/atoms/HeatmapCell.tsx",
+      "source_location": "L19"
     },
     {
       "id": "src_components_atoms_heatmapheader_heatmapheader",
@@ -387,28 +536,88 @@
       "source_location": "L6"
     },
     {
-      "id": "src_components_atoms_heatmapcell_getcolor",
-      "label": "getColor()",
+      "id": "src_app_library_detail_id_page_librarydetailpage",
+      "label": "LibraryDetailPage()",
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "HeatmapGrid.tsx",
+      "community_name": "BooksList.tsx",
       "file_type": "code",
-      "norm_label": "getcolor()",
-      "source_file": "src/components/atoms/HeatmapCell.tsx",
-      "source_location": "L11"
+      "norm_label": "librarydetailpage()",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L12"
     },
     {
-      "id": "src_components_atoms_heatmapcell_heatmapcell",
-      "label": "HeatmapCell()",
+      "id": "src_components_atoms_bookcard_bookcard",
+      "label": "BookCard()",
       "_callable": true,
       "_origin": "ast",
       "community": 6,
-      "community_name": "HeatmapGrid.tsx",
+      "community_name": "BooksList.tsx",
       "file_type": "code",
-      "norm_label": "heatmapcell()",
-      "source_file": "src/components/atoms/HeatmapCell.tsx",
+      "norm_label": "bookcard()",
+      "source_file": "src/components/atoms/BookCard.tsx",
       "source_location": "L19"
+    },
+    {
+      "id": "src_components_atoms_logprogressmodal_logprogressmodal",
+      "label": "LogProgressModal()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "logprogressmodal()",
+      "source_file": "src/components/atoms/LogProgressModal.tsx",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_components_molecules_bookdetailfixed_bookdetail",
+      "label": "BookDetail()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "bookdetail()",
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_components_molecules_bookmodal_bookmodal",
+      "label": "BookModal()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "bookmodal()",
+      "source_file": "src/components/molecules/BookModal.tsx",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_lib_db_rosedb_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/lib/db.ts",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_lib_db_seedinitialbooks",
+      "label": "seedInitialBooks()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "seedinitialbooks()",
+      "source_file": "src/lib/db.ts",
+      "source_location": "L46"
     },
     {
       "id": "src_app_layout",
@@ -496,7 +705,7 @@
       "file_type": "code",
       "norm_label": "menuitems",
       "source_file": "src/components/molecules/NavDrawer.tsx",
-      "source_location": "L8"
+      "source_location": "L9"
     },
     {
       "id": "src_components_organisms_addbookfab",
@@ -543,17 +752,6 @@
       "source_location": "L7"
     },
     {
-      "id": "ref_mui_icons_material",
-      "label": "@mui/icons-material",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "@mui/material",
-      "file_type": "concept",
-      "norm_label": "@mui/icons-material",
-      "source_file": "package.json",
-      "source_location": "L14"
-    },
-    {
       "id": "ref_mui_material",
       "label": "@mui/material",
       "_origin": "ast",
@@ -563,17 +761,6 @@
       "norm_label": "@mui/material",
       "source_file": "package.json",
       "source_location": "L15"
-    },
-    {
-      "id": "ref_react",
-      "label": "react",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "@mui/material",
-      "file_type": "concept",
-      "norm_label": "react",
-      "source_file": "package.json",
-      "source_location": "L22"
     },
     {
       "id": "tsconfig",
@@ -785,28 +972,6 @@
       "source_location": "L31"
     },
     {
-      "id": "next_config",
-      "label": "next.config.ts",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "package.json",
-      "file_type": "code",
-      "norm_label": "next.config.ts",
-      "source_file": "next.config.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "next_config_nextconfig",
-      "label": "nextConfig",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "package.json",
-      "file_type": "code",
-      "norm_label": "nextconfig",
-      "source_file": "next.config.ts",
-      "source_location": "L3"
-    },
-    {
       "id": "package",
       "label": "package.json",
       "_origin": "ast",
@@ -840,6 +1005,61 @@
       "source_location": "L4"
     },
     {
+      "id": "package_scripts",
+      "label": "scripts",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "package.json",
+      "file_type": "code",
+      "norm_label": "scripts",
+      "source_file": "package.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "package_scripts_build",
+      "label": "build",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "package.json",
+      "file_type": "code",
+      "norm_label": "build",
+      "source_file": "package.json",
+      "source_location": "L7"
+    },
+    {
+      "id": "package_scripts_dev",
+      "label": "dev",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "package.json",
+      "file_type": "code",
+      "norm_label": "dev",
+      "source_file": "package.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "package_scripts_lint",
+      "label": "lint",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "package.json",
+      "file_type": "code",
+      "norm_label": "lint",
+      "source_file": "package.json",
+      "source_location": "L9"
+    },
+    {
+      "id": "package_scripts_start",
+      "label": "start",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "package.json",
+      "file_type": "code",
+      "norm_label": "start",
+      "source_file": "package.json",
+      "source_location": "L8"
+    },
+    {
       "id": "package_version",
       "label": "version",
       "_origin": "ast",
@@ -851,13 +1071,13 @@
       "source_location": "L3"
     },
     {
-      "id": "ref_drizzle_orm",
-      "label": "drizzle-orm",
+      "id": "ref_dexie",
+      "label": "dexie",
       "_origin": "ast",
       "community": 2,
       "community_name": "package.json",
       "file_type": "concept",
-      "norm_label": "drizzle-orm",
+      "norm_label": "dexie",
       "source_file": "package.json",
       "source_location": "L19"
     },
@@ -884,28 +1104,6 @@
       "source_location": "L13"
     },
     {
-      "id": "ref_lucide_react",
-      "label": "lucide-react",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "package.json",
-      "file_type": "concept",
-      "norm_label": "lucide-react",
-      "source_file": "package.json",
-      "source_location": "L20"
-    },
-    {
-      "id": "ref_next",
-      "label": "next",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "package.json",
-      "file_type": "concept",
-      "norm_label": "next",
-      "source_file": "package.json",
-      "source_location": "L21"
-    },
-    {
       "id": "ref_react_dom",
       "label": "react-dom",
       "_origin": "ast",
@@ -914,29 +1112,7 @@
       "file_type": "concept",
       "norm_label": "react-dom",
       "source_file": "package.json",
-      "source_location": "L23"
-    },
-    {
-      "id": "ref_socket_io_client",
-      "label": "socket.io-client",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "package.json",
-      "file_type": "concept",
-      "norm_label": "socket.io-client",
-      "source_file": "package.json",
-      "source_location": "L24"
-    },
-    {
-      "id": "ref_supabase",
-      "label": "supabase",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "package.json",
-      "file_type": "concept",
-      "norm_label": "supabase",
-      "source_file": "package.json",
-      "source_location": "L25"
+      "source_location": "L22"
     },
     {
       "id": "ref_types_node",
@@ -980,7 +1156,7 @@
       "file_type": "concept",
       "norm_label": "typescript",
       "source_file": "package.json",
-      "source_location": "L26"
+      "source_location": "L23"
     },
     {
       "id": "package_dependencies",
@@ -994,13 +1170,13 @@
       "source_location": "L11"
     },
     {
-      "id": "package_dependencies_drizzle_orm",
-      "label": "drizzle-orm",
+      "id": "package_dependencies_dexie",
+      "label": "dexie",
       "_origin": "ast",
       "community": 3,
       "community_name": "dependencies",
       "file_type": "code",
-      "norm_label": "drizzle-orm",
+      "norm_label": "dexie",
       "source_file": "package.json",
       "source_location": "L19"
     },
@@ -1025,17 +1201,6 @@
       "norm_label": "@emotion/styled",
       "source_file": "package.json",
       "source_location": "L13"
-    },
-    {
-      "id": "package_dependencies_lucide_react",
-      "label": "lucide-react",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "dependencies",
-      "file_type": "code",
-      "norm_label": "lucide-react",
-      "source_file": "package.json",
-      "source_location": "L20"
     },
     {
       "id": "package_dependencies_mui_icons_material",
@@ -1068,7 +1233,7 @@
       "file_type": "code",
       "norm_label": "next",
       "source_file": "package.json",
-      "source_location": "L21"
+      "source_location": "L20"
     },
     {
       "id": "package_dependencies_react",
@@ -1079,7 +1244,7 @@
       "file_type": "code",
       "norm_label": "react",
       "source_file": "package.json",
-      "source_location": "L22"
+      "source_location": "L21"
     },
     {
       "id": "package_dependencies_react_dom",
@@ -1090,29 +1255,7 @@
       "file_type": "code",
       "norm_label": "react-dom",
       "source_file": "package.json",
-      "source_location": "L23"
-    },
-    {
-      "id": "package_dependencies_socket_io_client",
-      "label": "socket.io-client",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "dependencies",
-      "file_type": "code",
-      "norm_label": "socket.io-client",
-      "source_file": "package.json",
-      "source_location": "L24"
-    },
-    {
-      "id": "package_dependencies_supabase",
-      "label": "supabase",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "dependencies",
-      "file_type": "code",
-      "norm_label": "supabase",
-      "source_file": "package.json",
-      "source_location": "L25"
+      "source_location": "L22"
     },
     {
       "id": "package_dependencies_types_node",
@@ -1156,69 +1299,25 @@
       "file_type": "code",
       "norm_label": "typescript",
       "source_file": "package.json",
-      "source_location": "L26"
+      "source_location": "L23"
     },
     {
       "id": "src_app_library_page",
       "label": "library/page.tsx",
       "_origin": "ast",
       "community": 4,
-      "community_name": "BooksList.tsx",
+      "community_name": "BooksList",
       "file_type": "code",
       "norm_label": "library/page.tsx",
       "source_file": "src/app/library/page.tsx",
       "source_location": "L1"
     },
     {
-      "id": "src_components_atoms_bookcard",
-      "label": "BookCard.tsx",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "BooksList.tsx",
-      "file_type": "code",
-      "norm_label": "bookcard.tsx",
-      "source_file": "src/components/atoms/BookCard.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_components_molecules_bookmodal",
-      "label": "BookModal.tsx",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "BooksList.tsx",
-      "file_type": "code",
-      "norm_label": "bookmodal.tsx",
-      "source_file": "src/components/molecules/BookModal.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_components_molecules_bookslist",
-      "label": "BooksList.tsx",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "BooksList.tsx",
-      "file_type": "code",
-      "norm_label": "bookslist.tsx",
-      "source_file": "src/components/molecules/BooksList.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_components_molecules_bookslist_initialbooks",
-      "label": "initialBooks",
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "BooksList.tsx",
-      "file_type": "code",
-      "norm_label": "initialbooks",
-      "source_file": "src/components/molecules/BooksList.tsx",
-      "source_location": "L8"
-    },
-    {
       "id": "src_components_templates_hometemplate",
       "label": "HomeTemplate.tsx",
       "_origin": "ast",
       "community": 4,
-      "community_name": "BooksList.tsx",
+      "community_name": "BooksList",
       "file_type": "code",
       "norm_label": "hometemplate.tsx",
       "source_file": "src/components/templates/HomeTemplate.tsx",
@@ -1229,7 +1328,7 @@
       "label": "LibraryTemplate.tsx",
       "_origin": "ast",
       "community": 4,
-      "community_name": "BooksList.tsx",
+      "community_name": "BooksList",
       "file_type": "code",
       "norm_label": "librarytemplate.tsx",
       "source_file": "src/components/templates/LibraryTemplate.tsx",
@@ -1244,6 +1343,17 @@
       "file_type": "code",
       "norm_label": "app/page.tsx",
       "source_file": "src/app/page.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_components_atoms_heatmapcell",
+      "label": "HeatmapCell.tsx",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "Heatmap.tsx",
+      "file_type": "code",
+      "norm_label": "heatmapcell.tsx",
+      "source_file": "src/components/atoms/HeatmapCell.tsx",
       "source_location": "L1"
     },
     {
@@ -1269,6 +1379,17 @@
       "source_location": "L1"
     },
     {
+      "id": "src_components_molecules_heatmapgrid",
+      "label": "HeatmapGrid.tsx",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "Heatmap.tsx",
+      "file_type": "code",
+      "norm_label": "heatmapgrid.tsx",
+      "source_file": "src/components/molecules/HeatmapGrid.tsx",
+      "source_location": "L1"
+    },
+    {
       "id": "src_components_templates_dashboardtemplate",
       "label": "DashboardTemplate.tsx",
       "_origin": "ast",
@@ -1280,81 +1401,158 @@
       "source_location": "L1"
     },
     {
-      "id": "src_components_atoms_heatmapcell",
-      "label": "HeatmapCell.tsx",
+      "id": "next_config",
+      "label": "next.config.ts",
       "_origin": "ast",
       "community": 6,
-      "community_name": "HeatmapGrid.tsx",
+      "community_name": "BooksList.tsx",
       "file_type": "code",
-      "norm_label": "heatmapcell.tsx",
-      "source_file": "src/components/atoms/HeatmapCell.tsx",
+      "norm_label": "next.config.ts",
+      "source_file": "next.config.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_components_molecules_heatmapgrid",
-      "label": "HeatmapGrid.tsx",
+      "id": "next_config_nextconfig",
+      "label": "nextConfig",
       "_origin": "ast",
       "community": 6,
-      "community_name": "HeatmapGrid.tsx",
+      "community_name": "BooksList.tsx",
       "file_type": "code",
-      "norm_label": "heatmapgrid.tsx",
-      "source_file": "src/components/molecules/HeatmapGrid.tsx",
+      "norm_label": "nextconfig",
+      "source_file": "next.config.ts",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_app_library_detail_id_page",
+      "label": "[id]/page.tsx",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "[id]/page.tsx",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
       "source_location": "L1"
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
+      "id": "src_components_atoms_bookcard",
+      "label": "BookCard.tsx",
       "_origin": "ast",
-      "community": 7,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "BooksList.tsx",
       "file_type": "code",
-      "norm_label": "scripts",
-      "source_file": "package.json",
-      "source_location": "L5"
+      "norm_label": "bookcard.tsx",
+      "source_file": "src/components/atoms/BookCard.tsx",
+      "source_location": "L1"
     },
     {
-      "id": "package_scripts_build",
-      "label": "build",
+      "id": "src_components_atoms_logprogressmodal",
+      "label": "LogProgressModal.tsx",
       "_origin": "ast",
-      "community": 7,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "BooksList.tsx",
       "file_type": "code",
-      "norm_label": "build",
-      "source_file": "package.json",
-      "source_location": "L7"
+      "norm_label": "logprogressmodal.tsx",
+      "source_file": "src/components/atoms/LogProgressModal.tsx",
+      "source_location": "L1"
     },
     {
-      "id": "package_scripts_dev",
-      "label": "dev",
+      "id": "src_components_molecules_bookdetailfixed",
+      "label": "BookDetailFixed.tsx",
       "_origin": "ast",
-      "community": 7,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "BooksList.tsx",
       "file_type": "code",
-      "norm_label": "dev",
-      "source_file": "package.json",
-      "source_location": "L6"
+      "norm_label": "bookdetailfixed.tsx",
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L1"
     },
     {
-      "id": "package_scripts_lint",
-      "label": "lint",
+      "id": "src_components_molecules_bookmodal",
+      "label": "BookModal.tsx",
       "_origin": "ast",
-      "community": 7,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "BooksList.tsx",
       "file_type": "code",
-      "norm_label": "lint",
-      "source_file": "package.json",
-      "source_location": "L9"
+      "norm_label": "bookmodal.tsx",
+      "source_file": "src/components/molecules/BookModal.tsx",
+      "source_location": "L1"
     },
     {
-      "id": "package_scripts_start",
-      "label": "start",
+      "id": "src_components_molecules_bookslist",
+      "label": "BooksList.tsx",
       "_origin": "ast",
-      "community": 7,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "BooksList.tsx",
       "file_type": "code",
-      "norm_label": "start",
+      "norm_label": "bookslist.tsx",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_book_service",
+      "label": "book-service.ts",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "book-service.ts",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_db",
+      "label": "db.ts",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "db.ts",
+      "source_file": "src/lib/db.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_db_db",
+      "label": "db",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "code",
+      "norm_label": "db",
+      "source_file": "src/lib/db.ts",
+      "source_location": "L43"
+    },
+    {
+      "id": "ref_mui_icons_material",
+      "label": "@mui/icons-material",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "concept",
+      "norm_label": "@mui/icons-material",
       "source_file": "package.json",
-      "source_location": "L8"
+      "source_location": "L14"
+    },
+    {
+      "id": "ref_next",
+      "label": "next",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "concept",
+      "norm_label": "next",
+      "source_file": "package.json",
+      "source_location": "L20"
+    },
+    {
+      "id": "ref_react",
+      "label": "react",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "BooksList.tsx",
+      "file_type": "concept",
+      "norm_label": "react",
+      "source_file": "package.json",
+      "source_location": "L21"
     },
     {
       "id": "agents",
@@ -1419,6 +1617,78 @@
       "weight": 1.0
     },
     {
+      "source": "src_app_library_detail_id_page_librarydetailpage",
+      "target": "src_lib_book_service_bookservice_getbyid",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page_librarydetailpage",
+      "target": "src_lib_book_service_bookservice_update",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page_librarydetailpage",
+      "target": "src_lib_book_service_bookservice_adddailylog",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page_librarydetailpage",
+      "target": "src_components_molecules_bookdetailfixed_bookdetail",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page_librarydetailpage",
+      "target": "src_components_molecules_bookmodal_bookmodal",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page_librarydetailpage",
+      "target": "src_components_atoms_logprogressmodal_logprogressmodal",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
       "source": "src_app_library_page_librarypage",
       "target": "src_components_templates_librarytemplate_librarytemplate",
       "relation": "calls",
@@ -1468,6 +1738,66 @@
     },
     {
       "source": "src_components_molecules_bookslist_bookslist",
+      "target": "src_lib_db_seedinitialbooks",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist_bookslist",
+      "target": "src_lib_book_service_bookservice_getall",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist_bookslist",
+      "target": "src_lib_book_service_bookservice_update",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist_bookslist",
+      "target": "src_lib_book_service_bookservice_create",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist_bookslist",
+      "target": "src_lib_book_service_bookservice_delete",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist_bookslist",
       "target": "src_components_atoms_bookcard_bookcard",
       "relation": "calls",
       "_origin": "ast",
@@ -1475,7 +1805,31 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/components/molecules/BooksList.tsx",
-      "source_location": "L28",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist_bookslist",
+      "target": "src_components_organisms_addbookfab_addbookfab",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist_bookslist",
+      "target": "src_components_molecules_bookmodal_bookmodal",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -1635,15 +1989,123 @@
       "weight": 1.0
     },
     {
+      "source": "src_lib_book_service_bookservice_adddailylog",
+      "target": "src_lib_book_service_bookservice_update",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice_delete",
+      "target": "src_lib_book_service_bookservice_delete",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice_update",
+      "target": "src_lib_book_service_bookservice_update",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice_updateprogress",
+      "target": "src_lib_book_service_bookservice_update",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookdetailfixed_bookdetailprops",
+      "target": "src_lib_db_book",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "field",
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
       "source": "src_components_molecules_bookmodal_bookmodalprops",
-      "target": "src_components_atoms_bookcard_bookprops",
+      "target": "src_lib_db_book",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "src/components/molecules/BookModal.tsx",
-      "source_location": "L11",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice_create",
+      "target": "src_lib_db_book",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "generic_arg",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice_getall",
+      "target": "src_lib_db_book",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "generic_arg",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice_getbyid",
+      "target": "src_lib_db_book",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "generic_arg",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice_update",
+      "target": "src_lib_db_book",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "generic_arg",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -1732,7 +2194,7 @@
     },
     {
       "source": "package",
-      "target": "ref_drizzle_orm",
+      "target": "ref_dexie",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1744,7 +2206,7 @@
     },
     {
       "source": "package",
-      "target": "ref_lucide_react",
+      "target": "ref_next",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1756,7 +2218,7 @@
     },
     {
       "source": "package",
-      "target": "ref_next",
+      "target": "ref_react",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1768,7 +2230,7 @@
     },
     {
       "source": "package",
-      "target": "ref_react",
+      "target": "ref_react_dom",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1780,42 +2242,6 @@
     },
     {
       "source": "package",
-      "target": "ref_react_dom",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "package.json",
-      "source_location": "L23",
-      "weight": 1.0
-    },
-    {
-      "source": "package",
-      "target": "ref_socket_io_client",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "package.json",
-      "source_location": "L24",
-      "weight": 1.0
-    },
-    {
-      "source": "package",
-      "target": "ref_supabase",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "package.json",
-      "source_location": "L25",
-      "weight": 1.0
-    },
-    {
-      "source": "package",
       "target": "ref_typescript",
       "relation": "imports",
       "_origin": "ast",
@@ -1823,7 +2249,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -1848,6 +2274,66 @@
       "context": "import",
       "source_file": "src/app/layout.tsx",
       "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_lib_book_service_bookservice",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_lib_db_book",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_components_molecules_bookdetailfixed_bookdetail",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_components_molecules_bookmodal_bookmodal",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_components_atoms_logprogressmodal_logprogressmodal",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -1887,8 +2373,20 @@
       "weight": 1.0
     },
     {
+      "source": "src_components_molecules_bookdetailfixed",
+      "target": "src_lib_db_book",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
       "source": "src_components_molecules_bookmodal",
-      "target": "src_components_atoms_bookcard_bookprops",
+      "target": "src_lib_db_book",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1920,6 +2418,42 @@
       "context": "import",
       "source_file": "src/components/molecules/BooksList.tsx",
       "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist",
+      "target": "src_components_organisms_addbookfab_addbookfab",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist",
+      "target": "src_lib_book_service_bookservice",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist",
+      "target": "src_lib_db_seedinitialbooks",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L8",
       "weight": 1.0
     },
     {
@@ -2043,6 +2577,30 @@
       "weight": 1.0
     },
     {
+      "source": "src_lib_book_service",
+      "target": "src_lib_db_book",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service",
+      "target": "src_lib_db_db",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
       "source": "next_config",
       "target": "ref_next",
       "relation": "imports_from",
@@ -2090,6 +2648,90 @@
       "context": "import",
       "source_file": "src/app/layout.tsx",
       "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "ref_react",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "ref_next",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_lib_book_service",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_lib_db",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_components_molecules_bookdetailfixed",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_components_molecules_bookmodal",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_components_atoms_logprogressmodal",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -2189,6 +2831,18 @@
       "weight": 1.0
     },
     {
+      "source": "src_components_atoms_bookcard",
+      "target": "ref_mui_icons_material",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/atoms/BookCard.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
       "source": "src_components_atoms_heatmapcell",
       "target": "ref_mui_material",
       "relation": "imports_from",
@@ -2225,6 +2879,78 @@
       "weight": 1.0
     },
     {
+      "source": "src_components_atoms_logprogressmodal",
+      "target": "ref_mui_material",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/atoms/LogProgressModal.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_atoms_logprogressmodal",
+      "target": "ref_react",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/atoms/LogProgressModal.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookdetailfixed",
+      "target": "ref_mui_material",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookdetailfixed",
+      "target": "ref_mui_icons_material",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookdetailfixed",
+      "target": "ref_next",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookdetailfixed",
+      "target": "src_lib_db",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
       "source": "src_components_molecules_bookmodal",
       "target": "ref_mui_material",
       "relation": "imports_from",
@@ -2238,7 +2964,7 @@
     },
     {
       "source": "src_components_molecules_bookmodal",
-      "target": "src_components_atoms_bookcard",
+      "target": "src_lib_db",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -2298,7 +3024,7 @@
     },
     {
       "source": "src_components_molecules_bookslist",
-      "target": "ref_react",
+      "target": "src_components_organisms_addbookfab",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -2306,6 +3032,42 @@
       "context": "import",
       "source_file": "src/components/molecules/BooksList.tsx",
       "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist",
+      "target": "src_lib_book_service",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist",
+      "target": "src_lib_db",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookslist",
+      "target": "ref_react",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/molecules/BooksList.tsx",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -2389,7 +3151,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/components/molecules/NavDrawer.tsx",
-      "source_location": "L3",
+      "source_location": "L4",
       "weight": 1.0
     },
     {
@@ -2401,7 +3163,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/components/molecules/NavDrawer.tsx",
-      "source_location": "L4",
+      "source_location": "L5",
       "weight": 1.0
     },
     {
@@ -2570,6 +3332,30 @@
       "context": "import",
       "source_file": "src/components/templates/LibraryTemplate.tsx",
       "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service",
+      "target": "src_lib_db",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_db",
+      "target": "ref_dexie",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/db.ts",
+      "source_location": "L3",
       "weight": 1.0
     },
     {
@@ -2752,7 +3538,7 @@
     },
     {
       "source": "package_dependencies",
-      "target": "package_dependencies_drizzle_orm",
+      "target": "package_dependencies_dexie",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -2763,7 +3549,7 @@
     },
     {
       "source": "package_dependencies",
-      "target": "package_dependencies_lucide_react",
+      "target": "package_dependencies_next",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -2774,7 +3560,7 @@
     },
     {
       "source": "package_dependencies",
-      "target": "package_dependencies_next",
+      "target": "package_dependencies_react",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -2785,7 +3571,7 @@
     },
     {
       "source": "package_dependencies",
-      "target": "package_dependencies_react",
+      "target": "package_dependencies_react_dom",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -2796,46 +3582,13 @@
     },
     {
       "source": "package_dependencies",
-      "target": "package_dependencies_react_dom",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "package.json",
-      "source_location": "L23",
-      "weight": 1.0
-    },
-    {
-      "source": "package_dependencies",
-      "target": "package_dependencies_socket_io_client",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "package.json",
-      "source_location": "L24",
-      "weight": 1.0
-    },
-    {
-      "source": "package_dependencies",
-      "target": "package_dependencies_supabase",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "package.json",
-      "source_location": "L25",
-      "weight": 1.0
-    },
-    {
-      "source": "package_dependencies",
       "target": "package_dependencies_typescript",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -2902,6 +3655,17 @@
       "confidence_score": 1.0,
       "source_file": "src/app/layout.tsx",
       "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_library_detail_id_page",
+      "target": "src_app_library_detail_id_page_librarydetailpage",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/library/detail/[id]/page.tsx",
+      "source_location": "L12",
       "weight": 1.0
     },
     {
@@ -2978,7 +3742,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/atoms/BookCard.tsx",
-      "source_location": "L12",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -2989,7 +3753,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/atoms/BookCard.tsx",
-      "source_location": "L5",
+      "source_location": "L6",
       "weight": 1.0
     },
     {
@@ -3059,6 +3823,50 @@
       "weight": 1.0
     },
     {
+      "source": "src_components_atoms_logprogressmodal",
+      "target": "src_components_atoms_logprogressmodal_logprogressmodal",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/atoms/LogProgressModal.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_atoms_logprogressmodal",
+      "target": "src_components_atoms_logprogressmodal_logprogressmodalprops",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/atoms/LogProgressModal.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookdetailfixed",
+      "target": "src_components_molecules_bookdetailfixed_bookdetail",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_molecules_bookdetailfixed",
+      "target": "src_components_molecules_bookdetailfixed_bookdetailprops",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/molecules/BookDetailFixed.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
       "source": "src_components_molecules_bookmodal",
       "target": "src_components_molecules_bookmodal_bookmodal",
       "relation": "contains",
@@ -3088,18 +3896,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/molecules/BooksList.tsx",
-      "source_location": "L14",
-      "weight": 1.0
-    },
-    {
-      "source": "src_components_molecules_bookslist",
-      "target": "src_components_molecules_bookslist_initialbooks",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/molecules/BooksList.tsx",
-      "source_location": "L8",
+      "source_location": "L11",
       "weight": 1.0
     },
     {
@@ -3198,7 +3995,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/molecules/NavDrawer.tsx",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -3209,7 +4006,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/molecules/NavDrawer.tsx",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -3265,6 +4062,61 @@
       "confidence_score": 1.0,
       "source_file": "src/components/templates/LibraryTemplate.tsx",
       "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service",
+      "target": "src_lib_book_service_bookservice",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_db",
+      "target": "src_lib_db_rosedb",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/db.ts",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_db",
+      "target": "src_lib_db_db",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/db.ts",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_db",
+      "target": "src_lib_db_seedinitialbooks",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/db.ts",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_db",
+      "target": "src_lib_db_book",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/db.ts",
+      "source_location": "L5",
       "weight": 1.0
     },
     {
@@ -3486,8 +4338,96 @@
       "source_file": "tsconfig.json",
       "source_location": "L9",
       "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice",
+      "target": "src_lib_book_service_bookservice_getbyid",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice",
+      "target": "src_lib_book_service_bookservice_create",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice",
+      "target": "src_lib_book_service_bookservice_update",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice",
+      "target": "src_lib_book_service_bookservice_delete",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice",
+      "target": "src_lib_book_service_bookservice_updateprogress",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice",
+      "target": "src_lib_book_service_bookservice_adddailylog",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_book_service_bookservice",
+      "target": "src_lib_book_service_bookservice_getall",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/book-service.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_db_rosedb",
+      "target": "src_lib_db_rosedb_constructor",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/db.ts",
+      "source_location": "L27",
+      "weight": 1.0
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "f1d801af0a4266d84d3d8c32d5b50fe0e4440605"
+  "built_at_commit": "351f82f574823547992357bc29d8dc37a2b01855"
 }

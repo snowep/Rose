@@ -1,61 +1,120 @@
 'use client'
 
-import { db, Book } from '@/lib/db'
+import Dexie from 'dexie'
+import { Book } from '@/lib/db'
+import { createClient } from '@/lib/supabase/client'
 
-export class BookService {
-  static async getAll(): Promise<Book[]> {
-    return await db.books.toArray()
+const db = new Dexie('rose') as any
+export { db }
+
+db.version(1).stores({
+  books: 'id'
+})
+
+// Supabase sync helpers
+async function syncBookToSupabase(book: Book) {
+  try {
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('books')
+      .upsert({
+        id: book.id,
+        title: book.title,
+        author: book.author,
+        status: book.status,
+        genre: book.genre,
+        rating: book.rating,
+        pages: book.pages,
+        progress: book.progress,
+        started_at: book.startedAt,
+        finished_at: book.finishedAt,
+        cover_image: book.coverImage,
+        notes: book.notes,
+        tags: book.tags,
+        daily_log: book.dailyLog,
+        created_at: book.createdAt,
+        updated_at: book.updatedAt,
+      })
+    if (error) console.error('Supabase sync error:', error)
+  } catch (err) {
+    console.error('Supabase sync exception:', err)
   }
+}
 
-  static async getById(id: string): Promise<Book | undefined> {
-    return await db.books.get(id)
+async function syncBookDeleteFromSupabase(id: string) {
+  try {
+    const supabase = createClient()
+    const { error } = await supabase.from('books').delete().eq('id', id)
+    if (error) console.error('Supabase delete sync error:', error)
+  } catch (err) {
+    console.error('Supabase delete sync exception:', err)
   }
+}
 
-  static async create(book: Omit<Book, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+// CRUD operations with auto-sync to Supabase
+export const BookService = {
+  async getAll(): Promise<Book[]> {
+    return (db as any).books.toArray()
+  },
+
+  async getById(id: string): Promise<Book | undefined> {
+    return (db as any).books.get(id)
+  },
+
+  async create(book: Omit<Book, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     const id = crypto.randomUUID()
-    await db.books.add({
+    const now = new Date().toISOString()
+    const record = {
       ...book,
       id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    })
-    return id
-  }
+      createdAt: now,
+      updatedAt: now,
+    }
 
-  static async update(id: string, updates: Partial<Book>): Promise<void> {
+    ;(db as any).books.add(record)
+    void syncBookToSupabase(record).catch(console.error)
+
+    return id
+  },
+
+  async update(id: string, updates: Partial<Book>): Promise<void> {
     await db.books.update(id, {
       ...updates,
       updatedAt: new Date().toISOString(),
     })
-  }
 
-  static async delete(id: string): Promise<void> {
+    const record = await db.books.get(id)
+    if (record) {
+      void syncBookToSupabase(record).catch(console.error)
+    }
+  },
+
+  async delete(id: string): Promise<void> {
     await db.books.delete(id)
-  }
+    void syncBookDeleteFromSupabase(id).catch(console.error)
+  },
 
-  static async updateProgress(id: string, progress: number): Promise<void> {
+  async updateProgress(id: string, progress: number): Promise<void> {
     await db.books.update(id, {
       progress,
       updatedAt: new Date().toISOString(),
     })
-  }
 
-  static async addDailyLog(id: string, date: string, pagesRead: number): Promise<void> {
-    const book = await db.books.get(id)
-    if (!book) return
-    
-    const logs = book.dailyLog || []
-    const existing = logs.find(l => l.date === date)
-    
-    if (existing) {
-      existing.pagesRead += pagesRead
-    } else {
-      logs.push({ date, pagesRead })
+    const record = await db.books.get(id)
+    if (record) {
+      void syncBookToSupabase(record).catch(console.error)
     }
-    
+  },
+
+  async addDailyLog(id: string, date: string, pagesRead: number): Promise<void> {
     await db.books.update(id, {
-      dailyLog: logs,
+      dailyLog: [...(await db.books.get(id))!.dailyLog || [], { date, pagesRead }],
       updatedAt: new Date().toISOString(),
     })
+
+    const record = await db.books.get(id)
+    if (record) {
+      void syncBookToSupabase(record).catch(console.error)
+    }
   }
 }
