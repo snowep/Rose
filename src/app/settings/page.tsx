@@ -1,14 +1,16 @@
 'use client'
 
-import { Box, Typography, Button, Alert, AlertTitle } from '@mui/material'
+import { Box, Typography, Button, Alert, AlertTitle, Dialog, DialogTitle, DialogContent, DialogActions, Delete } from '@mui/material'
 import { CloudSync, CloudDownload, CloudUpload } from '@mui/icons-material'
 import { useState } from 'react'
-import { BookService } from '@/lib/book-service'
+import { BookService, db } from '@/lib/book-service'
 
 export default function SettingsPage() {
   const [syncStatus, setSyncStatus] = useState<{ success: number; failed: number; errors: string[] } | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [pulling, setPulling] = useState(false)
+  const [clearDialogOpen, setClearDialogOpen] = useState(false)
+  const [clearing, setClearing] = useState(false)
 
   const handleSyncToSupabase = async () => {
     setSyncing(true)
@@ -29,6 +31,17 @@ export default function SettingsPage() {
       setSyncStatus(result)
     } finally {
       setPulling(false)
+    }
+  }
+
+  const handleClearLocalData = async () => {
+    setClearing(true)
+    try {
+      await (db as any).books.clear()
+      setSyncStatus({ success: 0, failed: 0, errors: [] })
+    } finally {
+      setClearing(false)
+      setClearDialogOpen(false)
     }
   }
 
@@ -94,16 +107,51 @@ export default function SettingsPage() {
       </Box>
 
       <Box sx={{ p: 3, border: '1px solid #424242', borderRadius: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Data Management
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Your reading data is stored locally in your browser. It persists across sessions and works offline.
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="outlined" color="error">Clear Local Data</Button>
-        </Box>
-      </Box>
-    </Box>
-  )
-}
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Data Management
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Your reading data is stored locally in your browser. It persists across sessions and works offline.
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<Delete />}
+                  onClick={() => setClearDialogOpen(true)}
+                  disabled={clearing}
+                >
+                  {clearing ? 'Clearing...' : 'Clear Local Data'}
+                </Button>
+              </Box>
+            </Box>
+
+            <Dialog open={clearDialogOpen} onClose={() => setClearDialogOpen(false)} maxWidth="sm">
+              <DialogTitle>
+                <Delete color="error" sx={{ mr: 1 }} /> Clear All Local Data?
+              </DialogTitle>
+              <DialogContent>
+                <Typography variant="body1">
+                  This will permanently delete all your books from local IndexedDB storage. This action cannot be undone.
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Books already synced to Supabase will NOT be affected.
+                </Typography>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setClearDialogOpen(false)} variant="outlined">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleClearLocalData}
+                  variant="contained"
+                  color="error"
+                  disabled={clearing}
+                >
+                  {clearing ? 'Deleting...' : 'Delete All Data'}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
+        )
+      }
