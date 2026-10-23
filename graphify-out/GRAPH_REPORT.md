@@ -1,9 +1,7 @@
 # Graph Report - Rose  (2026-10-23)
 
 ## Corpus Check
-- 31 files · ~4,043 words
-- Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 1 file(s) not represented in the graph (top: (none) 1)
+- cluster-only mode — file stats not available
 
 ## Summary
 - 138 nodes · 244 edges · 9 communities (7 shown, 2 thin omitted)
@@ -33,21 +31,21 @@
 5. `BookService` - 10 edges
 6. `react` - 9 edges
 7. `Heatmap()` - 8 edges
-8. `LibraryDetailPage()` - 7 edges
-9. `Layout()` - 7 edges
+8. `Layout()` - 7 edges
+9. `LibraryDetailPage()` - 7 edges
 10. `next` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `BooksList()` --calls--> `BookCard()`  [EXTRACTED]
-  src/components/molecules/BooksList.tsx → src/components/atoms/BookCard.tsx
 - `BookDetailProps` --references--> `Book`  [EXTRACTED]
   src/components/molecules/BookDetailFixed.tsx → src/lib/db.ts
 - `BookModalProps` --references--> `Book`  [EXTRACTED]
   src/components/molecules/BookModal.tsx → src/lib/db.ts
-- `BooksList()` --calls--> `BookModal()`  [EXTRACTED]
-  src/components/molecules/BooksList.tsx → src/components/molecules/BookModal.tsx
 - `BooksList()` --calls--> `AddBookFab()`  [EXTRACTED]
   src/components/molecules/BooksList.tsx → src/components/organisms/AddBookFab.tsx
+- `BooksList()` --calls--> `BookCard()`  [EXTRACTED]
+  src/components/molecules/BooksList.tsx → src/components/atoms/BookCard.tsx
+- `BooksList()` --calls--> `BookModal()`  [EXTRACTED]
+  src/components/molecules/BooksList.tsx → src/components/molecules/BookModal.tsx
 
 ## Import Cycles
 - None detected.
@@ -83,7 +81,7 @@ Cohesion: 0.16
 Nodes (14): nextConfig, @mui/icons-material, next, react, LibraryDetailPage(), BookCard(), BookProps, LogProgressModal() (+6 more)
 
 ## Knowledge Gaps
-- **7 isolated node(s):** `@emotion/react`, `@emotion/styled`, `@types/node`, `@types/react`, `@types/react-dom` (+2 more)
+- **7 isolated node(s):** `@emotion/react`, `@emotion/styled`, `react-dom`, `@types/node`, `@types/react` (+2 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 60 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -92,7 +90,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `@mui/material` connect `@mui/material` to `package.json`, `BooksList`, `Heatmap.tsx`, `BooksList.tsx`?**
   _High betweenness centrality (0.340) - this node is a cross-community bridge._
-- **What connects `@emotion/react`, `@emotion/styled`, `@types/node` to the rest of the system?**
+- **What connects `@emotion/react`, `@emotion/styled`, `react-dom` to the rest of the system?**
   _7 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `compilerOptions` be split into smaller, more focused modules?**
   _Cohesion score 0.10526315789473684 - nodes in this community are weakly interconnected._

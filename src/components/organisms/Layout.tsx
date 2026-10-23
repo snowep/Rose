@@ -1,10 +1,8 @@
 'use client'
 
-import { Box, Toolbar } from '@mui/material'
-import { AppBar } from '@/components/atoms/AppBar'
-import { NavDrawer } from '@/components/molecules/NavDrawer'
-import { AddBookFab } from '@/components/organisms/AddBookFab'
-import { AddBookModal } from '@/components/atoms/AddBookModal'
+import { AppShell } from '@/components/organisms/AppShell'
+import { AddBookFab } from '@/components/atoms/AddBookFab'
+import { AddBookModal } from '@/components/molecules/AddBookModal'
 import * as React from 'react'
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -15,21 +13,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      <AppBar />
-      <NavDrawer />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          minWidth: 0,
-        }}
-      >
-        <Toolbar />
+    <>
+      <AppShell>
         {children}
-      </Box>
+      </AppShell>
       <AddBookFab onClick={() => setOpen(true)} />
       <AddBookModal open={open} onClose={() => setOpen(false)} onSave={handleSave} />
-    </Box>
+    </>
   )
 }

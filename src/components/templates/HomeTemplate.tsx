@@ -1,15 +1,12 @@
 'use client'
 
-import { Box, Typography } from '@mui/material'
-import { BooksList } from '@/components/molecules/BooksList'
+import { PageContainer } from '@/components/molecules/PageContainer'
+import { BooksList } from '@/components/organisms/BooksList'
 
 export function HomeTemplate() {
   return (
-      <Box sx={{ p: 4 }}>
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          Home
-        </Typography>
-        <BooksList />
-      </Box>
+    <PageContainer title="Home">
+      <BooksList />
+    </PageContainer>
   )
 }

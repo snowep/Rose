@@ -3,10 +3,9 @@
   "1": "compilerOptions",
   "2": "package.json",
   "3": "dependencies",
-  "4": "BooksList.tsx",
+  "4": "BooksList",
   "5": "Heatmap.tsx",
-  "6": "HeatmapGrid.tsx",
-  "7": "scripts",
+  "6": "BooksList.tsx",
   "8": "AGENTS.md",
   "9": "MEMORY.md"
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { AppBar as MuiAppBar, Toolbar, Typography } from '@mui/material'
+import { AppBar as MuiAppBar, Toolbar } from '@mui/material'
 import { Logo } from '@/components/atoms/Logo'
 
 export function AppBar() {

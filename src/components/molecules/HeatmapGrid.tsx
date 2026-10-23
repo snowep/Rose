@@ -8,12 +8,7 @@ type HeatmapCellData = {
   count: number
 }
 
-type HeatmapGridProps = {
-  cells: HeatmapCellData[]
-  mode: 'weekly' | 'monthly' | 'yearly'
-}
-
-export function HeatmapGrid({ cells, mode }: HeatmapGridProps) {
+export function HeatmapGrid({ cells, mode }: { cells: HeatmapCellData[]; mode: 'weekly' | 'monthly' | 'yearly' }) {
   const cellSize = mode === 'yearly' ? 10 : 16
 
   return (

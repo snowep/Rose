@@ -4,9 +4,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { BookService } from '@/lib/book-service'
 import { Book } from '@/lib/db'
-import { BookDetail } from '@/components/molecules/BookDetailFixed'
-import { BookModal } from '@/components/molecules/BookModal'
-import { LogProgressModal } from '@/components/atoms/LogProgressModal'
+import { BookDetail } from '@/components/organisms/BookDetailFixed'
+import { BookModal } from '@/components/organisms/BookModal'
+import { LogProgressModal } from '@/components/molecules/LogProgressModal'
 import { useEffect } from 'react'
 
 export default function LibraryDetailPage() {
