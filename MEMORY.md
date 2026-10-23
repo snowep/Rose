@@ -4,13 +4,23 @@
 - Templates: DashboardTemplate — NavDrawer + Heatmap + Library molecule + main content
 - CRUD: Library section with BooksList atom/molecule, FAB bottom-right for book entry, offline-first with cloud-integratable later
 - New pages: /library and /settings (standalone, MUI + Next.js App Router reference)
-- Graphify: code graph extracted — 20 files, 100 nodes, 145 edges, 7 communities (`.graphify-out/graph.json`)
-- NavDrawer: permanent, 240px, clipped under static AppBar, with Dashboard/Library/Settings links (next/link)
-- FAB: fixed bottom-right (bottom: 24, right: 24, zIndex: 1200) outside drawer, aria-label="Add a book"
-- Heatmap: GitHub-like contribution calendar (30 days) rendered in DashboardTemplate
-- BookCard atom: title, author, status, View link (for later detailed CRUD)
-- BooksList molecule: renders 3 cached books + "Add New Book" CTA
+- Graphify: code graph extracted — 26 files, 122 nodes, 181 edges, 10 communities (`graphify-out/graph.json`, updated 2026-10-23)
+- Discovered components: HeatmapCell, HeatmapGrid, HeatmapHeader, BookModal, BookModalProps, HeatmapMode
+- NavDrawer: permanent, 240px, clipped under static AppBar, with Dashboard/Library/Settings links (next/link), active state via usePathname
+- FAB: fixed bottom-right (bottom: 24, right: 24, zIndex: 1200) outside drawer, aria-label="Add a book", wired to BookModal via AddBookFab
+- Heatmap: GitHub-like contribution calendar (30 days) rendered in DashboardTemplate, split into HeatmapCell/Grid/Header atoms/molecules
+- BookCard atom: title, author, status, View link (for later detailed CRUD), now shows genre, rating, pages, progress, tags
+- BooksList molecule: renders from IndexedDB via BookService, displays book count, uses AddBookFab
+- BookModal: full form with title, author, status, genre, rating, pages, progress, tags, notes
+- BookDetail page: /library/detail/[id], shows full metadata, reading progress log, edit/delete/log buttons
+- LogProgressModal: date + pages read logging form, persists to dailyLog array
+- Dexie.js: IndexedDB store `rose` with books table, auto-creates UUID, createdAt/updatedAt hooks, seed data
+- BookService: CRUD + updateProgress + addDailyLog methods
+- Book type extended with genre, rating, pages, startedAt, finishedAt, coverImage, notes, tags, progress, dailyLog
+- BookCard: enhanced with progress bar, status chips, genre, rating stars, tags, hover effects
+- TypeScript: clean, no errors
 - Tailwind removed; vanilla CSS + MUI v9 styling used
 - .gitignore created with standard Next.js exclusions
 - Build compiles successfully (exit code 0); dev server running at http://localhost:3000
-- Routes: /, /library, /settings all confirmed rendering
+- Routes: /, /library, /library/detail/[id], /settings all confirmed rendering
+- Data state: IndexedDB via Dexie.js, no state management layer, offline-first

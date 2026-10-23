@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemText, Toolbar, Divider } from '@mui/material'
 
 const DRAWER_WIDTH = 240
@@ -12,6 +13,8 @@ const menuItems = [
 ]
 
 export function NavDrawer() {
+  const pathname = usePathname()
+  
   return (
     <Drawer
       variant="permanent"
@@ -24,13 +27,39 @@ export function NavDrawer() {
       <Toolbar />
       <Box sx={{ overflow: 'auto' }}>
         <List>
-          {menuItems.map((item) => (
-            <ListItem key={item.key} disablePadding>
-              <ListItemButton component={Link} href={item.href}>
-                <ListItemText primary={item.label} sx={{ pl: 2 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <ListItem key={item.key} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={item.href}
+                  selected={isActive}
+                  sx={{
+                    ...(isActive && {
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                      borderLeft: '3px solid',
+                      borderLeftColor: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                      }
+                    })
+                  }}
+                >
+                  <ListItemText 
+                    primary={item.label} 
+                    sx={{ 
+                      pl: 2,
+                      '& .MuiListItemText-primary': {
+                        fontWeight: isActive ? 600 : 400,
+                        color: isActive ? 'primary.main' : 'inherit'
+                      }
+                    }} 
+                  />
+                </ListItemButton>
+              </ListItem>
+            )
+          })}
         </List>
         <Divider />
       </Box>

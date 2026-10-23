@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import { Layout } from '@/components/organisms/Layout'
-import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Rose',

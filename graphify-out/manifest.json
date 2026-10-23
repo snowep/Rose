@@ -1,0 +1,158 @@
+{
+  "next.config.ts": {
+    "mtime": 1792673827.5648797,
+    "seen": 1792733277.3967047,
+    "ast_hash": "daf9c8b4480453cd5dece762ed7401e6",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1792728995.6006258,
+    "seen": 1792733277.3975132,
+    "ast_hash": "576284056bdddfc76dddf24eb846313d",
+    "semantic_hash": ""
+  },
+  "src/app/layout.tsx": {
+    "mtime": 1792730962.6048594,
+    "seen": 1792733277.3975253,
+    "ast_hash": "f15aca2f7b55e0ca4855d7211e8fcf02",
+    "semantic_hash": ""
+  },
+  "src/app/library/page.tsx": {
+    "mtime": 1792731116.4121718,
+    "seen": 1792733277.3975334,
+    "ast_hash": "f98c80a928ed9d53ec31f83e7163a1a9",
+    "semantic_hash": ""
+  },
+  "src/app/page.tsx": {
+    "mtime": 1792730968.7230723,
+    "seen": 1792733277.3975437,
+    "ast_hash": "030e92402a067ba8af7e74ddd40bb08d",
+    "semantic_hash": ""
+  },
+  "src/app/settings/page.tsx": {
+    "mtime": 1792731143.5549114,
+    "seen": 1792733277.3975508,
+    "ast_hash": "ff2445995daf767f24e05b1b9fb6770c",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/AddBookModal.tsx": {
+    "mtime": 1792727385.1890788,
+    "seen": 1792733277.3975606,
+    "ast_hash": "11b68b92566ffc65e0a98cc8a9dbf086",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/AppBar.tsx": {
+    "mtime": 1792721044.4175076,
+    "seen": 1792733277.3975675,
+    "ast_hash": "38d367c4f17c9a405677b2c4dd51f1e0",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/BookCard.tsx": {
+    "mtime": 1792729968.6394362,
+    "seen": 1792733277.397574,
+    "ast_hash": "7162a77fccad715379fe58ee92d8de9e",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/HeatmapCell.tsx": {
+    "mtime": 1792731379.4358087,
+    "seen": 1792733277.3975809,
+    "ast_hash": "666519dfc6bd0dc2c76aa7a0d60c00da",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/HeatmapHeader.tsx": {
+    "mtime": 1792731390.74641,
+    "seen": 1792733277.3975883,
+    "ast_hash": "134a4cb9e8811780d8e3d9b5163bdaee",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/Logo.tsx": {
+    "mtime": 1792708835.1450932,
+    "seen": 1792733277.397597,
+    "ast_hash": "b517fa224a781b38669f4eeff485faf7",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/BookModal.tsx": {
+    "mtime": 1792730048.4381516,
+    "seen": 1792733277.3976038,
+    "ast_hash": "322c123f13b2d3ee3e56c3eb5413c639",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/BooksList.tsx": {
+    "mtime": 1792729990.2817845,
+    "seen": 1792733277.3976104,
+    "ast_hash": "579ea1979fc392576c4ec8f642109b51",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/Heatmap.tsx": {
+    "mtime": 1792731419.883764,
+    "seen": 1792733277.3976166,
+    "ast_hash": "cb8c4be19aa2ea5bbe96e60a2b728eeb",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/HeatmapGrid.tsx": {
+    "mtime": 1792731401.671109,
+    "seen": 1792733277.3976235,
+    "ast_hash": "db690f72b04a7b1495741c05d4e2896d",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/NavDrawer.tsx": {
+    "mtime": 1792731695.8145723,
+    "seen": 1792733277.39763,
+    "ast_hash": "b3d8b0ff7f15c3cd53647665581d07c0",
+    "semantic_hash": ""
+  },
+  "src/components/organisms/AddBookFab.tsx": {
+    "mtime": 1792727394.75436,
+    "seen": 1792733277.3976362,
+    "ast_hash": "6a8ea9ef956dd6dd61b34ff6dc812238",
+    "semantic_hash": ""
+  },
+  "src/components/organisms/Layout.tsx": {
+    "mtime": 1792727410.6445143,
+    "seen": 1792733277.3976429,
+    "ast_hash": "c2ad13224c9eb484e1074786cfd006e1",
+    "semantic_hash": ""
+  },
+  "src/components/templates/DashboardTemplate.tsx": {
+    "mtime": 1792732583.1277976,
+    "seen": 1792733277.39765,
+    "ast_hash": "8aa9eca641f2375f16bbcee81eeff648",
+    "semantic_hash": ""
+  },
+  "src/components/templates/HomeTemplate.tsx": {
+    "mtime": 1792731194.5543063,
+    "seen": 1792733277.397656,
+    "ast_hash": "e9b97c270dda8f533e97a62b30041c32",
+    "semantic_hash": ""
+  },
+  "src/components/templates/LibraryTemplate.tsx": {
+    "mtime": 1792720942.823891,
+    "seen": 1792733277.3976626,
+    "ast_hash": "7491f66a3dda6a6357e7cb7ff1b3cead",
+    "semantic_hash": ""
+  },
+  "src/providers/ThemeProvider.tsx": {
+    "mtime": 1792673857.2292159,
+    "seen": 1792733277.3979917,
+    "ast_hash": "3aabb1d0fc11511039d1b4e55f88b612",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1792673975.4968174,
+    "seen": 1792733277.3980029,
+    "ast_hash": "7b1cb9d5fd6b31710eb2204a2050482d",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1792673976.9737756,
+    "seen": 1792733277.3980086,
+    "ast_hash": "c98dbebb744eadc1acc4b9f58bfe0f42",
+    "semantic_hash": ""
+  },
+  "MEMORY.md": {
+    "mtime": 1792727980.9285944,
+    "seen": 1792733277.3980145,
+    "ast_hash": "ee53cf33012f8b5b5e4f4c000c359b5d",
+    "semantic_hash": ""
+  }
+}
