@@ -10,17 +10,25 @@ type HeatmapCell = {
   count: number
 }
 
+// Deterministic pseudo-random using date string as seed
+function seededRandom(dateStr: string): number {
+  let hash = 0
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = ((hash << 5) - hash) + dateStr.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash) / 2147483647
+}
+
 function generateWeeklyCells(): HeatmapCell[] {
   const cells: HeatmapCell[] = []
   const now = new Date()
   for (let i = 6; i >= 0; i--) {
     const d = new Date(now)
     d.setDate(now.getDate() - i)
-    const count = Math.floor(Math.random() * 6)
-    cells.push({
-      date: d.toISOString().split('T')[0],
-      count,
-    })
+    const dateStr = d.toISOString().split('T')[0]
+    const count = Math.floor(seededRandom(dateStr) * 6)
+    cells.push({ date: dateStr, count })
   }
   return cells
 }
@@ -33,11 +41,9 @@ function generateMonthlyCells(): HeatmapCell[] {
   const daysInMonth = new Date(year, month + 1, 0).getDate()
 
   for (let d = 1; d <= daysInMonth; d++) {
-    const count = Math.floor(Math.random() * 6)
-    cells.push({
-      date: `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
-      count,
-    })
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    const count = Math.floor(seededRandom(dateStr) * 6)
+    cells.push({ date: dateStr, count })
   }
   return cells
 }
@@ -50,11 +56,9 @@ function generateYearCells(): HeatmapCell[] {
   for (let day = 0; day < 365; day++) {
     const date = new Date(year, 0, 1)
     date.setDate(1 + day)
-    const count = Math.floor(Math.random() * 6)
-    cells.push({
-      date: date.toISOString().split('T')[0],
-      count,
-    })
+    const dateStr = date.toISOString().split('T')[0]
+    const count = Math.floor(seededRandom(dateStr) * 6)
+    cells.push({ date: dateStr, count })
   }
   return cells
 }

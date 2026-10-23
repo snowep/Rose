@@ -8,10 +8,9 @@ const db = new Dexie('rose') as any
 export { db }
 
 db.version(1).stores({
-  books: 'id'
+  books: 'id, title, author, status, genre, rating, pages, progress, createdAt, updatedAt, dailyLog'
 })
 
-// Supabase sync helpers
 async function syncBookToSupabase(book: Book) {
   try {
     const supabase = createClient()
@@ -51,7 +50,6 @@ async function syncBookDeleteFromSupabase(id: string) {
   }
 }
 
-// CRUD operations with auto-sync to Supabase
 export const BookService = {
   async getAll(): Promise<Book[]> {
     return (db as any).books.toArray()
@@ -72,8 +70,6 @@ export const BookService = {
     }
 
     ;(db as any).books.add(record)
-    void syncBookToSupabase(record).catch(console.error)
-
     return id
   },
 
@@ -82,16 +78,10 @@ export const BookService = {
       ...updates,
       updatedAt: new Date().toISOString(),
     })
-
-    const record = await db.books.get(id)
-    if (record) {
-      void syncBookToSupabase(record).catch(console.error)
-    }
   },
 
   async delete(id: string): Promise<void> {
     await db.books.delete(id)
-    void syncBookDeleteFromSupabase(id).catch(console.error)
   },
 
   async updateProgress(id: string, progress: number): Promise<void> {
@@ -99,11 +89,6 @@ export const BookService = {
       progress,
       updatedAt: new Date().toISOString(),
     })
-
-    const record = await db.books.get(id)
-    if (record) {
-      void syncBookToSupabase(record).catch(console.error)
-    }
   },
 
   async addDailyLog(id: string, date: string, pagesRead: number): Promise<void> {
@@ -111,10 +96,88 @@ export const BookService = {
       dailyLog: [...(await db.books.get(id))!.dailyLog || [], { date, pagesRead }],
       updatedAt: new Date().toISOString(),
     })
+  },
 
-    const record = await db.books.get(id)
-    if (record) {
-      void syncBookToSupabase(record).catch(console.error)
+  async syncToSupabase(): Promise<{ success: number; failed: number; errors: string[] }> {
+    const books = await this.getAll()
+    let success = 0
+    let failed = 0
+    const errors: string[] = []
+
+    for (const book of books) {
+      try {
+        const supabase = createClient()
+        const { error } = await supabase
+          .from('books')
+          .upsert({
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            status: book.status,
+            genre: book.genre,
+            rating: book.rating,
+            pages: book.pages,
+            progress: book.progress,
+            started_at: book.startedAt,
+            finished_at: book.finishedAt,
+            cover_image: book.coverImage,
+            notes: book.notes,
+            tags: book.tags,
+            daily_log: book.dailyLog,
+            created_at: book.createdAt,
+            updated_at: book.updatedAt,
+          })
+        if (error) throw error
+        success++
+      } catch (err) {
+        failed++
+        errors.push(`${book.title}: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      }
+    }
+
+    return { success, failed, errors }
+  },
+
+  async pullFromSupabase(): Promise<{ success: number; failed: number; errors: string[] }> {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.from('books').select('*')
+      if (error) throw error
+
+      let success = 0
+      let failed = 0
+      const errors: string[] = []
+
+      for (const book of data || []) {
+        try {
+          await db.books.put({
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            status: book.status,
+            genre: book.genre,
+            rating: book.rating,
+            pages: book.pages,
+            progress: book.progress,
+            startedAt: book.started_at,
+            finishedAt: book.finished_at,
+            coverImage: book.cover_image,
+            notes: book.notes,
+            tags: book.tags,
+            dailyLog: book.daily_log,
+            createdAt: book.created_at,
+            updatedAt: book.updated_at,
+          })
+          success++
+        } catch (err) {
+          failed++
+          errors.push(`${book.title}: ${err instanceof Error ? err.message : 'Unknown error'}`)
+        }
+      }
+
+      return { success, failed, errors }
+    } catch (err) {
+      return { success: 0, failed: 1, errors: [err instanceof Error ? err.message : 'Unknown error'] }
     }
   }
 }
