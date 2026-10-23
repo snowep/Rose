@@ -1,7 +1,7 @@
 'use client'
 
-import { Box, Typography, Button, Alert, AlertTitle, Dialog, DialogTitle, DialogContent, DialogActions, Delete } from '@mui/material'
-import { CloudSync, CloudDownload, CloudUpload } from '@mui/icons-material'
+import { Box, Typography, Button, Alert, AlertTitle, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material'
+import { CloudSync, CloudDownload, CloudUpload, Delete as DeleteIcon } from '@mui/icons-material'
 import { useState } from 'react'
 import { BookService, db } from '@/lib/book-service'
 
@@ -117,7 +117,7 @@ export default function SettingsPage() {
                 <Button
                   variant="outlined"
                   color="error"
-                  startIcon={<Delete />}
+                  startIcon={<DeleteIcon />}
                   onClick={() => setClearDialogOpen(true)}
                   disabled={clearing}
                 >
@@ -128,7 +128,7 @@ export default function SettingsPage() {
 
             <Dialog open={clearDialogOpen} onClose={() => setClearDialogOpen(false)} maxWidth="sm">
               <DialogTitle>
-                <Delete color="error" sx={{ mr: 1 }} /> Clear All Local Data?
+                <DeleteIcon color="error" sx={{ mr: 1 }} /> Clear All Local Data?
               </DialogTitle>
               <DialogContent>
                 <Typography variant="body1">

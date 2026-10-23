@@ -5,7 +5,6 @@ import { BookCard } from '@/components/atoms/BookCard'
 import { BookModal } from '@/components/molecules/BookModal'
 import { AddBookFab } from '@/components/organisms/AddBookFab'
 import { BookService } from '@/lib/book-service'
-import { seedInitialBooks } from '@/lib/db'
 import { useEffect, useState } from 'react'
 
 export function BooksList() {
@@ -15,7 +14,7 @@ export function BooksList() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    seedInitialBooks().then(() => loadBooks())
+    loadBooks()
   }, [])
 
   const loadBooks = async () => {
