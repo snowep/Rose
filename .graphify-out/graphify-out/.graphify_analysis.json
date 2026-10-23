@@ -1,0 +1,240 @@
+{
+  "communities": {
+    "0": [
+      "tsconfig",
+      "tsconfig_compileroptions",
+      "tsconfig_compileroptions_allowjs",
+      "tsconfig_compileroptions_esmoduleinterop",
+      "tsconfig_compileroptions_incremental",
+      "tsconfig_compileroptions_isolatedmodules",
+      "tsconfig_compileroptions_jsx",
+      "tsconfig_compileroptions_lib",
+      "tsconfig_compileroptions_module",
+      "tsconfig_compileroptions_moduleresolution",
+      "tsconfig_compileroptions_noemit",
+      "tsconfig_compileroptions_paths",
+      "tsconfig_compileroptions_plugins",
+      "tsconfig_compileroptions_resolvejsonmodule",
+      "tsconfig_compileroptions_skiplibcheck",
+      "tsconfig_compileroptions_strict",
+      "tsconfig_compileroptions_target",
+      "tsconfig_exclude",
+      "tsconfig_include"
+    ],
+    "1": [
+      "package",
+      "package_name",
+      "package_private",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_dev",
+      "package_scripts_lint",
+      "package_scripts_start",
+      "package_version",
+      "ref_emotion_react",
+      "ref_emotion_styled",
+      "ref_mui_icons_material",
+      "ref_react_dom",
+      "ref_types_node",
+      "ref_types_react",
+      "ref_types_react_dom",
+      "ref_typescript"
+    ],
+    "2": [
+      "ref_mui_material",
+      "src_app_library_page",
+      "src_app_library_page_librarypage",
+      "src_app_settings_page",
+      "src_app_settings_page_settingspage",
+      "src_components_atoms_bookcard",
+      "src_components_atoms_bookcard_bookcard",
+      "src_components_atoms_bookcard_bookprops",
+      "src_components_molecules_bookslist",
+      "src_components_molecules_bookslist_bookprops",
+      "src_components_molecules_bookslist_bookslist",
+      "src_components_molecules_bookslist_initialbooks",
+      "src_components_templates_hometemplate",
+      "src_components_templates_hometemplate_hometemplate",
+      "src_components_templates_librarytemplate",
+      "src_components_templates_librarytemplate_librarytemplate"
+    ],
+    "3": [
+      "ref_react",
+      "src_components_atoms_addbookmodal",
+      "src_components_atoms_addbookmodal_addbookmodal",
+      "src_components_atoms_addbookmodal_bookform",
+      "src_components_atoms_appbar",
+      "src_components_atoms_appbar_appbar",
+      "src_components_atoms_logo",
+      "src_components_atoms_logo_logo",
+      "src_components_molecules_navdrawer",
+      "src_components_molecules_navdrawer_menuitems",
+      "src_components_molecules_navdrawer_navdrawer",
+      "src_components_organisms_addbookfab",
+      "src_components_organisms_addbookfab_addbookfab",
+      "src_components_organisms_layout",
+      "src_components_organisms_layout_layout"
+    ],
+    "4": [
+      "package_dependencies",
+      "package_dependencies_emotion_react",
+      "package_dependencies_emotion_styled",
+      "package_dependencies_mui_icons_material",
+      "package_dependencies_mui_material",
+      "package_dependencies_next",
+      "package_dependencies_react",
+      "package_dependencies_react_dom",
+      "package_dependencies_types_node",
+      "package_dependencies_types_react",
+      "package_dependencies_types_react_dom",
+      "package_dependencies_typescript"
+    ],
+    "5": [
+      "src_app_page",
+      "src_app_page_home",
+      "src_components_atoms_heatmap",
+      "src_components_atoms_heatmap_generatemonthlycells",
+      "src_components_atoms_heatmap_generateweeklycells",
+      "src_components_atoms_heatmap_generateyearcells",
+      "src_components_atoms_heatmap_getcolor",
+      "src_components_atoms_heatmap_heatmap",
+      "src_components_atoms_heatmap_heatmapcell",
+      "src_components_templates_dashboardtemplate",
+      "src_components_templates_dashboardtemplate_dashboardtemplate"
+    ],
+    "6": [
+      "next_config",
+      "next_config_nextconfig",
+      "ref_next",
+      "src_app_globals",
+      "src_app_layout",
+      "src_app_layout_metadata",
+      "src_app_layout_rootlayout",
+      "src_providers_themeprovider",
+      "src_providers_themeprovider_theme",
+      "src_providers_themeprovider_themeprovider"
+    ]
+  },
+  "cohesion": {
+    "0": 0.10526315789473684,
+    "1": 0.11764705882352941,
+    "2": 0.21666666666666667,
+    "3": 0.23809523809523808,
+    "4": 0.16666666666666666,
+    "5": 0.32727272727272727,
+    "6": 0.24444444444444444
+  },
+  "gods": [
+    {
+      "id": "tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 16
+    },
+    {
+      "id": "ref_mui_material",
+      "label": "@mui/material",
+      "degree": 15
+    },
+    {
+      "id": "src_components_atoms_heatmap_heatmap",
+      "label": "Heatmap()",
+      "degree": 7
+    },
+    {
+      "id": "src_components_organisms_layout_layout",
+      "label": "Layout()",
+      "degree": 7
+    },
+    {
+      "id": "src_components_molecules_bookslist_bookslist",
+      "label": "BooksList()",
+      "degree": 6
+    },
+    {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 5
+    },
+    {
+      "id": "ref_react",
+      "label": "react",
+      "degree": 5
+    },
+    {
+      "id": "ref_next",
+      "label": "next",
+      "degree": 4
+    },
+    {
+      "id": "src_components_atoms_appbar_appbar",
+      "label": "AppBar()",
+      "degree": 4
+    },
+    {
+      "id": "src_components_templates_dashboardtemplate_dashboardtemplate",
+      "label": "DashboardTemplate()",
+      "degree": 4
+    }
+  ],
+  "surprises": [
+    {
+      "source": "RootLayout()",
+      "target": "Layout()",
+      "source_files": [
+        "src/app/layout.tsx",
+        "src/components/organisms/Layout.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "HomeTemplate()",
+      "target": "BooksList()",
+      "source_files": [
+        "src/components/templates/HomeTemplate.tsx",
+        "src/components/molecules/BooksList.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `HomeTemplate()` unexpectedly reaches hub `BooksList()`"
+    },
+    {
+      "source": "RootLayout()",
+      "target": "ThemeProvider()",
+      "source_files": [
+        "src/app/layout.tsx",
+        "src/providers/ThemeProvider.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "LibraryPage()",
+      "target": "LibraryTemplate()",
+      "source_files": [
+        "src/app/library/page.tsx",
+        "src/components/templates/LibraryTemplate.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "Home()",
+      "target": "DashboardTemplate()",
+      "source_files": [
+        "src/app/page.tsx",
+        "src/components/templates/DashboardTemplate.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

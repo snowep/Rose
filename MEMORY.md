@@ -1,0 +1,16 @@
+- [Rose MVP Completed](mvp-completed.md) — 7-day ship, v0.1.0-mvp tag, Palette A 11:11 Division theme, all PRD v1 requirements fulfilled
+- Frontend: Next.js 16 + React 19 + TypeScript + Material UI v9 (9.5.0)
+- Atomic design: AppBar (atom) → NavDrawer (molecule) → Layout (organism) + DashboardTemplate (template)
+- Templates: DashboardTemplate — NavDrawer + Heatmap + Library molecule + main content
+- CRUD: Library section with BooksList atom/molecule, FAB bottom-right for book entry, offline-first with cloud-integratable later
+- New pages: /library and /settings (standalone, MUI + Next.js App Router reference)
+- Graphify: code graph extracted — 20 files, 100 nodes, 145 edges, 7 communities (`.graphify-out/graph.json`)
+- NavDrawer: permanent, 240px, clipped under static AppBar, with Dashboard/Library/Settings links (next/link)
+- FAB: fixed bottom-right (bottom: 24, right: 24, zIndex: 1200) outside drawer, aria-label="Add a book"
+- Heatmap: GitHub-like contribution calendar (30 days) rendered in DashboardTemplate
+- BookCard atom: title, author, status, View link (for later detailed CRUD)
+- BooksList molecule: renders 3 cached books + "Add New Book" CTA
+- Tailwind removed; vanilla CSS + MUI v9 styling used
+- .gitignore created with standard Next.js exclusions
+- Build compiles successfully (exit code 0); dev server running at http://localhost:3000
+- Routes: /, /library, /settings all confirmed rendering
