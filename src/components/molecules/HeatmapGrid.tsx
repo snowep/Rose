@@ -31,8 +31,8 @@ export function HeatmapGrid({ cells, mode }: { cells: HeatmapCellData[]; mode: '
             </Typography>
             {/* Weekday headers for each month */}
             <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(7, ${cellSize}px)`, gap: 0.5, mb: 0.5 }}>
-              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day) => (
-                <Typography key={day} variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary', textAlign: 'center' }}>
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, idx) => (
+                <Typography key={`${day}-${idx}`} variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary', textAlign: 'center' }}>
                   {day}
                 </Typography>
               ))}
@@ -70,8 +70,8 @@ export function HeatmapGrid({ cells, mode }: { cells: HeatmapCellData[]; mode: '
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
       {/* Weekday headers */}
       <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(7, ${cellSize}px)`, gap: 0.5, mb: 0.5 }}>
-        {weekdays.map((day) => (
-          <Typography key={day} variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textAlign: 'center' }}>
+        {weekdays.map((day, idx) => (
+          <Typography key={`${day}-${idx}`} variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textAlign: 'center' }}>
             {day}
           </Typography>
         ))}

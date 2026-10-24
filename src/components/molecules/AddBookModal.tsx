@@ -1,86 +1,96 @@
 'use client'
 
-import * as React from 'react'
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  MenuItem,
-} from '@mui/material'
+import { Box, Dialog, DialogContent, DialogTitle, DialogActions, Button, Typography } from '@mui/material'
+import { Book } from '@/lib/db'
+import { useEffect, useState } from 'react'
+import { BookFormTabs } from '@/components/atoms/BookFormTabs'
+import { BookFormBasic } from '@/components/molecules/BookFormBasic'
+import { BookFormCoreIdentity } from '@/components/molecules/BookFormCoreIdentity'
+import { BookFormAuthors } from '@/components/molecules/BookFormAuthors'
+import { BookFormSeries } from '@/components/molecules/BookFormSeries'
+import { BookFormPublisher } from '@/components/molecules/BookFormPublisher'
+import { BookFormReading } from '@/components/molecules/BookFormReading'
+import { BookFormContent } from '@/components/molecules/BookFormContent'
 
-type BookForm = {
-  title: string
-  author: string
-  status: 'reading' | 'read' | 'want-to-read'
-}
-
-export function AddBookModal({
-  open,
-  onClose,
-  onSave,
-}: {
+interface BookModalProps {
   open: boolean
   onClose: () => void
-  onSave: (book: BookForm) => void
-}) {
-  const [form, setForm] = React.useState<BookForm>({
+  onSave: (book: Partial<Book>) => void
+  editingBook?: Book | null
+}
+
+export function AddBookModal({ open, onClose, onSave, editingBook }: BookModalProps) {
+  const [book, setBook] = useState<Partial<Book>>({
     title: '',
     author: '',
     status: 'want-to-read',
   })
+  const [tabValue, setTabValue] = useState(0)
 
-  const handleClose = () => {
-    setForm({ title: '', author: '', status: 'want-to-read' })
+  useEffect(() => {
+    if (editingBook) {
+      setBook(editingBook)
+    } else {
+      setBook({
+        title: '',
+        author: '',
+        status: 'want-to-read',
+      })
+    }
+    setTabValue(0)
+  }, [editingBook, open])
+
+  const handleSave = () => {
+    if (!book.title?.trim() || !book.author?.trim()) {
+      return
+    }
+    onSave(book)
     onClose()
   }
 
-  const handleSave = () => {
-    if (!form.title.trim() || !form.author.trim()) return
-    onSave(form)
-    handleClose()
+  const handleChange = (field: string, value: any) => {
+    setBook({ ...book, [field]: value })
+  }
+
+  const renderTabContent = () => {
+    switch (tabValue) {
+      case 0:
+        return <BookFormBasic book={book} onChange={handleChange} />
+      case 1:
+        return <BookFormCoreIdentity book={book} onChange={handleChange} />
+      case 2:
+        return <BookFormAuthors book={book} onChange={handleChange} />
+      case 3:
+        return <BookFormSeries book={book} onChange={handleChange} />
+      case 4:
+        return <BookFormPublisher book={book} onChange={handleChange} />
+      case 5:
+        return <BookFormReading book={book} onChange={handleChange} />
+      case 6:
+        return <BookFormContent book={book} onChange={handleChange} />
+      default:
+        return null
+    }
   }
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Add New Book</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          label="Title"
-          fullWidth
-          value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
-        />
-        <TextField
-          margin="dense"
-          label="Author"
-          fullWidth
-          value={form.author}
-          onChange={(e) => setForm({ ...form, author: e.target.value })}
-        />
-        <TextField
-          select
-          margin="dense"
-          label="Status"
-          fullWidth
-          value={form.status}
-          onChange={(e) => setForm({ ...form, status: e.target.value as BookForm['status'] })}
-        >
-          <MenuItem value="reading">Reading</MenuItem>
-          <MenuItem value="read">Read</MenuItem>
-          <MenuItem value="want-to-read">Want to Read</MenuItem>
-        </TextField>
+    <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth>
+      <DialogTitle>{editingBook ? 'Edit Book' : 'Add New Book'}</DialogTitle>
+      <DialogContent sx={{ py: 2 }}>
+        <BookFormTabs value={tabValue} onChange={setTabValue} />
+        <Box sx={{ maxHeight: '60vh', overflow: 'auto', pr: 1 }}>
+          {renderTabContent()}
+        </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained">
+      <DialogActions sx={{ px: 2, justifyContent: 'flex-end' }}>
+        <Button onClick={onClose} variant='outlined'>
+          Cancel
+        </Button>
+        <Button onClick={handleSave} variant='contained'>
           Save
         </Button>
       </DialogActions>
     </Dialog>
   )
 }
+
