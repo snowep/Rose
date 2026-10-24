@@ -3,95 +3,68 @@
 import * as React from 'react'
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
+import { useTheme } from './ThemeContext'
 
-const theme = createTheme({
+const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1E1E1E',
-      light: '#3A3A3A',
-      dark: '#000000',
-      contrastText: '#F5F1E8',
+      main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
+      contrastText: '#fff',
     },
     secondary: {
-      main: '#D43131',
-      light: '#E55A5A',
-      dark: '#A81F1F',
+      main: '#dc004e',
+      light: '#e33371',
+      dark: '#9a0036',
     },
     background: {
-      default: '#F5F1E8',
-      paper: '#F5F1E8',
+      default: '#fafafa',
+      paper: '#fff',
     },
     text: {
-      primary: '#1E1E1E',
-      secondary: '#A8A8A8',
-    },
-    warning: {
-      main: '#F2C55E',
-      light: '#F7D98A',
-      dark: '#D4A83A',
+      primary: 'rgba(0, 0, 0, 0.87)',
+      secondary: 'rgba(0, 0, 0, 0.6)',
     },
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
   },
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          backgroundColor: '#F5F1E8',
-          color: '#1E1E1E',
-        },
-      },
+})
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#90caf9',
+      light: '#e3f2fd',
+      dark: '#42a5f5',
+      contrastText: 'rgba(0, 0, 0, 0.87)',
     },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#F5F1E8',
-        },
-      },
+    secondary: {
+      main: '#f48fb1',
+      light: '#fce4ec',
+      dark: '#ad1457',
     },
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#1E1E1E',
-          color: '#F5F1E8',
-        },
-      },
+    background: {
+      default: '#121212',
+      paper: '#1e1e1e',
     },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-        },
-        contained: {
-          backgroundColor: '#D43131',
-          color: '#F5F1E8',
-          '&:hover': {
-            backgroundColor: '#A81F1F',
-          },
-        },
-      },
+    text: {
+      primary: '#fff',
+      secondary: 'rgba(255, 255, 255, 0.7)',
     },
-    MuiTab: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          fontWeight: 500,
-        },
-      },
-    },
-    MuiTabs: {
-      styleOverrides: {
-        indicator: {
-          backgroundColor: '#D43131',
-        },
-      },
-    },
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
   },
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const { mode } = useTheme()
+  const theme = mode === 'light' ? lightTheme : darkTheme
+
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />

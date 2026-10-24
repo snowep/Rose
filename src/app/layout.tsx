@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { ThemeProvider } from '@/providers/ThemeProvider'
+import { ThemeProvider as MuiThemeProvider } from '@/providers/ThemeProvider'
+import { ThemeContextProvider } from '@/providers/ThemeContext'
 import { EmotionCacheProvider } from '@/providers/EmotionCacheProvider'
 import { Layout } from '@/components/organisms/Layout'
 
@@ -17,11 +18,13 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <EmotionCacheProvider>
-          <ThemeProvider>
-            <Layout>
-              {children}
-            </Layout>
-          </ThemeProvider>
+          <ThemeContextProvider>
+            <MuiThemeProvider>
+              <Layout>
+                {children}
+              </Layout>
+            </MuiThemeProvider>
+          </ThemeContextProvider>
         </EmotionCacheProvider>
       </body>
     </html>

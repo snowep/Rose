@@ -1,11 +1,11 @@
 'use client'
 
-import { Box, Typography } from '@mui/material'
 import { BookService } from '@/lib/book-service'
+import { Book } from '@/lib/db'
 import { useEffect, useState } from 'react'
 
 export function useBooks() {
-  const [books, setBooks] = useState<any[]>([])
+  const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
 
   const loadBooks = async () => {
@@ -22,12 +22,12 @@ export function useBooks() {
     loadBooks()
   }, [])
 
-  const createBook = async (bookData: any) => {
+  const createBook = async (bookData: Omit<Book, 'id' | 'createdAt' | 'updatedAt'>) => {
     await BookService.create(bookData)
     await loadBooks()
   }
 
-  const updateBook = async (id: string, bookData: any) => {
+  const updateBook = async (id: string, bookData: Partial<Book>) => {
     await BookService.update(id, bookData)
     await loadBooks()
   }

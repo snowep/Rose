@@ -15,7 +15,7 @@ import { BookFormContent } from '@/components/molecules/BookFormContent'
 interface BookModalProps {
   open: boolean
   onClose: () => void
-  onSave: (book: Partial<Book>) => void
+  onSave: (book: Omit<Book, 'id' | 'createdAt' | 'updatedAt'>) => void
   editingBook?: Book | null
 }
 
@@ -44,7 +44,7 @@ export function AddBookModal({ open, onClose, onSave, editingBook }: BookModalPr
     if (!book.title?.trim() || !book.author?.trim()) {
       return
     }
-    onSave(book)
+    onSave(book as Omit<Book, 'id' | 'createdAt' | 'updatedAt'>)
     onClose()
   }
 
@@ -74,7 +74,7 @@ export function AddBookModal({ open, onClose, onSave, editingBook }: BookModalPr
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{editingBook ? 'Edit Book' : 'Add New Book'}</DialogTitle>
       <DialogContent sx={{ py: 2 }}>
         <BookFormTabs value={tabValue} onChange={setTabValue} />
@@ -83,10 +83,10 @@ export function AddBookModal({ open, onClose, onSave, editingBook }: BookModalPr
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 2, justifyContent: 'flex-end' }}>
-        <Button onClick={onClose} variant='outlined'>
+        <Button onClick={onClose} variant="outlined">
           Cancel
         </Button>
-        <Button onClick={handleSave} variant='contained'>
+        <Button onClick={handleSave} variant="contained">
           Save
         </Button>
       </DialogActions>

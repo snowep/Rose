@@ -10,7 +10,7 @@ import { useState } from 'react'
 
 export function BooksList() {
   const [showModal, setShowModal] = useState(false)
-  const [editingBook, setEditingBook] = useState<any | null>(null)
+  const [editingBook, setEditingBook] = useState<Book | null>(null)
   const { books, loading, createBook, updateBook } = useBooks()
 
   const handleSave = async (bookData: any) => {

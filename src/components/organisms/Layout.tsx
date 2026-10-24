@@ -3,13 +3,14 @@
 import { AppShell } from '@/components/organisms/AppShell'
 import { AddBookFab } from '@/components/atoms/AddBookFab'
 import { AddBookModal } from '@/components/molecules/AddBookModal'
+import { BookService } from '@/lib/book-service'
 import * as React from 'react'
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false)
 
-  const handleSave = (book: { title: string; author: string; status: string }) => {
-    console.log('New book:', book)
+  const handleSave = async (book: any) => {
+    await BookService.create(book)
   }
 
   return (
@@ -22,3 +23,4 @@ export function Layout({ children }: { children: React.ReactNode }) {
     </>
   )
 }
+
