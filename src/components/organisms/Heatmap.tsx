@@ -9,7 +9,7 @@ import { useReadingData } from '@/components/hooks/useReadingData'
 import { useHeatmapCells } from '@/components/hooks/useHeatmapCells'
 
 export function Heatmap() {
-  const [mode, setMode] = React.useState<'weekly' | 'monthly' | 'yearly'>('monthly')
+  const [mode, setMode] = React.useState<'monthly' | 'yearly'>('monthly')
   const { readingMap, loading } = useReadingData()
   const cells = useHeatmapCells(mode, readingMap)
 

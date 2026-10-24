@@ -1,6 +1,6 @@
 'use client'
 
-import { Grid2 as Grid, Typography } from '@mui/material'
+import { Grid, Typography } from '@mui/material'
 import { BookCard } from '@/components/molecules/BookCard'
 
 export function BooksListView({ books, loading }: { books: any[]; loading: boolean }) {
@@ -11,7 +11,7 @@ export function BooksListView({ books, loading }: { books: any[]; loading: boole
   return (
     <Grid container spacing={3}>
       {books.map((book) => (
-        <Grid item key={book.id} xs={12} sm={6} md={4} lg={3}>
+        <Grid key={book.id} size={{ xs: 12, sm: 6, md: 1, lg: 2 }}>
           <BookCard
             id={book.id}
             title={book.title}

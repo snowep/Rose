@@ -1,0 +1,188 @@
+{
+  "next.config.ts": {
+    "mtime": 1792673827.5648797,
+    "seen": 1792733277.3967047,
+    "ast_hash": "daf9c8b4480453cd5dece762ed7401e6",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1792734092.3899071,
+    "seen": 1792740140.629323,
+    "ast_hash": "a3cfba91ae3e562eb567c49528c67616",
+    "semantic_hash": ""
+  },
+  "src/app/layout.tsx": {
+    "mtime": 1792730962.6048594,
+    "seen": 1792733277.3975253,
+    "ast_hash": "f15aca2f7b55e0ca4855d7211e8fcf02",
+    "semantic_hash": ""
+  },
+  "src/app/library/page.tsx": {
+    "mtime": 1792731116.4121718,
+    "seen": 1792733277.3975334,
+    "ast_hash": "f98c80a928ed9d53ec31f83e7163a1a9",
+    "semantic_hash": ""
+  },
+  "src/app/page.tsx": {
+    "mtime": 1792730968.7230723,
+    "seen": 1792733277.3975437,
+    "ast_hash": "030e92402a067ba8af7e74ddd40bb08d",
+    "semantic_hash": ""
+  },
+  "src/app/settings/page.tsx": {
+    "mtime": 1792731143.5549114,
+    "seen": 1792733277.3975508,
+    "ast_hash": "ff2445995daf767f24e05b1b9fb6770c",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/AddBookModal.tsx": {
+    "mtime": 1792727385.1890788,
+    "seen": 1792733277.3975606,
+    "ast_hash": "11b68b92566ffc65e0a98cc8a9dbf086",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/AppBar.tsx": {
+    "mtime": 1792721044.4175076,
+    "seen": 1792733277.3975675,
+    "ast_hash": "38d367c4f17c9a405677b2c4dd51f1e0",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/BookCard.tsx": {
+    "mtime": 1792738830.5697231,
+    "seen": 1792740140.6293573,
+    "ast_hash": "146467b18aae6ab72887ce73fd87e5a2",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/HeatmapCell.tsx": {
+    "mtime": 1792731379.4358087,
+    "seen": 1792733277.3975809,
+    "ast_hash": "666519dfc6bd0dc2c76aa7a0d60c00da",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/HeatmapHeader.tsx": {
+    "mtime": 1792731390.74641,
+    "seen": 1792733277.3975883,
+    "ast_hash": "134a4cb9e8811780d8e3d9b5163bdaee",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/Logo.tsx": {
+    "mtime": 1792708835.1450932,
+    "seen": 1792733277.397597,
+    "ast_hash": "b517fa224a781b38669f4eeff485faf7",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/BookModal.tsx": {
+    "mtime": 1792737129.8966942,
+    "seen": 1792740140.6293852,
+    "ast_hash": "528055d03fb43c23e7f3eb10241b17bc",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/BooksList.tsx": {
+    "mtime": 1792737570.7847016,
+    "seen": 1792740140.629389,
+    "ast_hash": "132a1fef9a7cd4b9c3e2f6589091eb3c",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/Heatmap.tsx": {
+    "mtime": 1792731419.883764,
+    "seen": 1792733277.3976166,
+    "ast_hash": "cb8c4be19aa2ea5bbe96e60a2b728eeb",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/HeatmapGrid.tsx": {
+    "mtime": 1792731401.671109,
+    "seen": 1792733277.3976235,
+    "ast_hash": "db690f72b04a7b1495741c05d4e2896d",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/NavDrawer.tsx": {
+    "mtime": 1792737416.4008737,
+    "seen": 1792740140.629419,
+    "ast_hash": "9846dae6b7d82d371adb44c29dbe7655",
+    "semantic_hash": ""
+  },
+  "src/components/organisms/AddBookFab.tsx": {
+    "mtime": 1792727394.75436,
+    "seen": 1792733277.3976362,
+    "ast_hash": "6a8ea9ef956dd6dd61b34ff6dc812238",
+    "semantic_hash": ""
+  },
+  "src/components/organisms/Layout.tsx": {
+    "mtime": 1792727410.6445143,
+    "seen": 1792733277.3976429,
+    "ast_hash": "c2ad13224c9eb484e1074786cfd006e1",
+    "semantic_hash": ""
+  },
+  "src/components/templates/DashboardTemplate.tsx": {
+    "mtime": 1792732583.1277976,
+    "seen": 1792733277.39765,
+    "ast_hash": "8aa9eca641f2375f16bbcee81eeff648",
+    "semantic_hash": ""
+  },
+  "src/components/templates/HomeTemplate.tsx": {
+    "mtime": 1792731194.5543063,
+    "seen": 1792733277.397656,
+    "ast_hash": "e9b97c270dda8f533e97a62b30041c32",
+    "semantic_hash": ""
+  },
+  "src/components/templates/LibraryTemplate.tsx": {
+    "mtime": 1792720942.823891,
+    "seen": 1792733277.3976626,
+    "ast_hash": "7491f66a3dda6a6357e7cb7ff1b3cead",
+    "semantic_hash": ""
+  },
+  "src/providers/ThemeProvider.tsx": {
+    "mtime": 1792673857.2292159,
+    "seen": 1792733277.3979917,
+    "ast_hash": "3aabb1d0fc11511039d1b4e55f88b612",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1792673975.4968174,
+    "seen": 1792733277.3980029,
+    "ast_hash": "7b1cb9d5fd6b31710eb2204a2050482d",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1792673976.9737756,
+    "seen": 1792733277.3980086,
+    "ast_hash": "c98dbebb744eadc1acc4b9f58bfe0f42",
+    "semantic_hash": ""
+  },
+  "MEMORY.md": {
+    "mtime": 1792739797.6922574,
+    "seen": 1792740140.6294816,
+    "ast_hash": "110e322d1a3329425ea3e5ede064de63",
+    "semantic_hash": ""
+  },
+  "src/app/library/detail/[id]/page.tsx": {
+    "mtime": 1792738393.755261,
+    "seen": 1792740140.6293347,
+    "ast_hash": "d2399c20e7f6804a9aa22d6bb9e8328e",
+    "semantic_hash": ""
+  },
+  "src/components/atoms/LogProgressModal.tsx": {
+    "mtime": 1792738277.1077683,
+    "seen": 1792740140.6293716,
+    "ast_hash": "2f911981a9c97f568f79f17c235bdcd7",
+    "semantic_hash": ""
+  },
+  "src/components/molecules/BookDetailFixed.tsx": {
+    "mtime": 1792739764.6199293,
+    "seen": 1792740140.62938,
+    "ast_hash": "8d6998de4bdfb88d2f880ddfa7dd90bc",
+    "semantic_hash": ""
+  },
+  "src/lib/book-service.ts": {
+    "mtime": 1792736609.6191795,
+    "seen": 1792740140.6294672,
+    "ast_hash": "62a4f1da88943f8f9415c8b414345137",
+    "semantic_hash": ""
+  },
+  "src/lib/db.ts": {
+    "mtime": 1792737163.845204,
+    "seen": 1792740140.6294708,
+    "ast_hash": "96b092e0ba1be714ac7817a26f5fd1ce",
+    "semantic_hash": ""
+  }
+}

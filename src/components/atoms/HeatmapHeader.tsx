@@ -1,8 +1,8 @@
 'use client'
 
-import { Box, Typography, Select, MenuItem } from '@mui/material'
+import { Box, Typography, Tabs, Tab } from '@mui/material'
 
-type HeatmapMode = 'weekly' | 'monthly' | 'yearly'
+type HeatmapMode = 'monthly' | 'yearly'
 
 export function HeatmapHeader({
   mode,
@@ -12,19 +12,29 @@ export function HeatmapHeader({
   onModeChange: (mode: HeatmapMode) => void
 }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-      <Typography variant="h5" sx={{ mr: 2 }}>
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="h6" sx={{ mb: 1 }}>
         Heatmap
       </Typography>
-      <Select
+      <Tabs
         value={mode}
-        onChange={(e) => onModeChange(e.target.value as HeatmapMode)}
-        sx={{ width: 120 }}
+        onChange={(_, newValue) => onModeChange(newValue as HeatmapMode)}
+        variant="fullWidth"
+        sx={{
+          minHeight: 32,
+          '& .MuiTab-root': {
+            minHeight: 32,
+            fontSize: '0.75rem',
+            textTransform: 'none',
+          },
+          '& .MuiTabs-indicator': {
+            height: 2,
+          },
+        }}
       >
-        <MenuItem value="weekly">This Week</MenuItem>
-        <MenuItem value="monthly">This Month</MenuItem>
-        <MenuItem value="yearly">This Year</MenuItem>
-      </Select>
+        <Tab label="Month" value="monthly" />
+        <Tab label="Year" value="yearly" />
+      </Tabs>
     </Box>
   )
 }

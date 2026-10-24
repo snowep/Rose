@@ -39,10 +39,11 @@ export function BookCard({ id, title, author, status, genre, rating, pages, prog
       <Card
         sx={{
           height: '100%',
+          maxHeight: 350,
           display: 'flex',
           flexDirection: 'column',
           border: '1px solid #424242',
-          borderRadius: 2,
+          borderRadius: 1,
           backgroundColor: 'rgba(255,255,255,0.02)',
           transition: 'all 0.2s',
           '&:hover': {
@@ -56,7 +57,7 @@ export function BookCard({ id, title, author, status, genre, rating, pages, prog
           component="img"
           image={cover}
           alt={`${title} cover`}
-          sx={{ height: 300, objectFit: 'cover', borderRadius: '2px 2px 0 0' }}
+          sx={{ height: 200, objectFit: 'cover', borderRadius: '2px 2px 0 0' }}
         />
         <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
