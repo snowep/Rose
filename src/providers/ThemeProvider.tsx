@@ -6,28 +6,88 @@ import { CssBaseline } from '@mui/material'
 
 const theme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: 'light',
     primary: {
-      main: '#b91c1c',
-      light: '#ef4444',
-      dark: '#991b1b',
+      main: '#1E1E1E',
+      light: '#3A3A3A',
+      dark: '#000000',
+      contrastText: '#F5F1E8',
     },
     secondary: {
-      main: '#f97316',
-      light: '#fb923c',
-      dark: '#c2410c',
+      main: '#D43131',
+      light: '#E55A5A',
+      dark: '#A81F1F',
     },
     background: {
-      default: '#0f0f0f',
-      paper: '#1a1a1a',
+      default: '#F5F1E8',
+      paper: '#F5F1E8',
     },
     text: {
-      primary: '#ffffff',
-      secondary: '#a3a3a3',
+      primary: '#1E1E1E',
+      secondary: '#A8A8A8',
+    },
+    warning: {
+      main: '#F2C55E',
+      light: '#F7D98A',
+      dark: '#D4A83A',
     },
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: '#F5F1E8',
+          color: '#1E1E1E',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#F5F1E8',
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1E1E1E',
+          color: '#F5F1E8',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+        contained: {
+          backgroundColor: '#D43131',
+          color: '#F5F1E8',
+          '&:hover': {
+            backgroundColor: '#A81F1F',
+          },
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 500,
+        },
+      },
+    },
+    MuiTabs: {
+      styleOverrides: {
+        indicator: {
+          backgroundColor: '#D43131',
+        },
+      },
+    },
   },
 })
 
