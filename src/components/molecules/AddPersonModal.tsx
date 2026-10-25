@@ -67,7 +67,7 @@ export function AddPersonModal({ open, onClose, onSave }: AddPersonModalProps) {
     setPerson({ ...person, [field]: value })
   }
 
-  const canSave = person.first_name.trim() || person.last_name.trim() || person.full_name
+  const canSave = person.first_name.trim() || person.last_name.trim()
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>

@@ -156,13 +156,15 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
           }}
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-          InputProps={{
-            startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />,
-            endAdornment: inputValue && (
-              <IconButton size="small" onClick={() => setInputValue('')}>
-                <Clear fontSize="small" />
-              </IconButton>
-            )
+          slotProps={{
+            input: {
+              startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />,
+              endAdornment: inputValue && (
+                <IconButton size="small" onClick={() => setInputValue('')}>
+                  <Clear fontSize="small" />
+                </IconButton>
+              ),
+            },
           }}
         />
       </Box>
@@ -180,7 +182,7 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
         ))}
       </Box>
 
-      <Fade in={showSuggestions && (filteredPeople.length > 0 || getDidYouMean)}>
+      <Fade in={showSuggestions && (filteredPeople.length > 0 || !!getDidYouMean)}>
         <Box
           sx={{
             position: 'absolute',

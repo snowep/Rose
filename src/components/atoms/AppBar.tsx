@@ -1,11 +1,9 @@
 'use client'
 
-import { AppBar as MuiAppBar, Toolbar, Box, MenuItem, Divider } from '@mui/material'
+import { AppBar as MuiAppBar, Toolbar, Box, MenuItem } from '@mui/material'
 import { IconButton } from '@mui/material'
-import { Logout as LogoutIcon } from '@mui/icons-material'
-import { Logout as useLogout } from '@/hooks/useAuth'
 import { useAuth } from '@/hooks/useAuth'
-import { NavLink } from 'next/export'
+import { Logo } from '@/components/atoms/Logo'
 
 export function AppBar() {
   const { user, signOut } = useAuth()
@@ -16,12 +14,7 @@ export function AppBar() {
         <Logo />
         <Box sx={{ flexGrow: 1 }} />
         {user && (
-          <>
-            <MenuItem onClick={signOut}>
-              Logout
-            </MenuItem>
-            <Divider />
-          </>
+          <MenuItem onClick={signOut}>Logout</MenuItem>
         )}
       </Toolbar>
     </MuiAppBar>

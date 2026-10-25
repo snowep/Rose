@@ -29,15 +29,13 @@ export function AuthFormFields({
   confirmPasswordError,
   showConfirmPassword = false,
 }: AuthFormFieldsProps) {
-  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
   return (
     <Box>
       <AuthTextField
         label="Email"
         type="email"
         value={email}
-        onChange={(e) => onEmailChange(e.target.value)}
+        onChange={onEmailChange}
         error={!!emailError}
         helperText={emailError}
         placeholder="you@example.com"

@@ -11,7 +11,7 @@ const menuItems = [
 ]
 
 export function NavList() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
 
   return (
     <List>
@@ -19,7 +19,7 @@ export function NavList() {
         <NavItem key={item.key} label={item.label} href={item.href} />
       ))}
       {user && (
-        <NavItem key="logout" onClick={user => user.signOut()}>Logout</NavItem>
+        <NavItem key="logout" label="Logout" onClick={signOut} />
       )}
     </List>
   )

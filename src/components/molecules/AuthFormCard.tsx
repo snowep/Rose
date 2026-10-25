@@ -6,7 +6,7 @@ import { Logo } from '@/components/atoms/Logo';
 interface AuthFormCardProps {
   title: string;
   description?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   footer?: React.ReactNode;
 }
 
@@ -18,7 +18,7 @@ export function AuthFormCard({ title, description, children, footer }: AuthFormC
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'background.default',
+        bgcolor: 'background.default',
         p: 2,
       }}
     >
