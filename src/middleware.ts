@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
 
   // If authenticated and trying to access auth pages, redirect to dashboard
   const authPaths = ['/login', '/register', '/forgot']
-  const isAuthPage = authPaths.some(path => request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith('/(auth)/'))
+  const isAuthPage = authPaths.some(path => request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith('/auth/'))
 
   if (user && isAuthPage) {
     return NextResponse.redirect(new URL('/dashboard', request.url))

@@ -10,9 +10,8 @@ interface AuthLinkProps extends TypographyProps {
 
 export function AuthLink({ href, children, ...props }: AuthLinkProps) {
   return (
-    <Link href={href} passHref legacyBehavior>
+    <Link href={href}>
       <Typography
-        component="a"
         color="primary"
         sx={{ cursor: 'pointer', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
         {...props}

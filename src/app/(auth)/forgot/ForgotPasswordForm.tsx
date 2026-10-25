@@ -70,7 +70,7 @@ export function ForgotPasswordForm() {
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
           We've sent a password reset link to {email}. Please check your email.
         </Typography>
-        <AuthLink href="/auth/login">Back to sign in</AuthLink>
+        <AuthLink href="/login">Back to sign in</AuthLink>
       </Box>
     );
   }

@@ -73,13 +73,13 @@ export function LoginForm() {
         <>
           <Typography variant="body2" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
             Don't have an account?
-            <AuthLink href="/auth/register" sx={{ ml: 1 }}>
+            <AuthLink href="/register" sx={{ ml: 1 }}>
               {' '}
               Sign up
             </AuthLink>
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            <AuthLink href="/auth/forgot">Forgot password?</AuthLink>
+            <AuthLink href="/forgot">Forgot password?</AuthLink>
           </Typography>
         </>
       }

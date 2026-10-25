@@ -95,7 +95,7 @@ export function RegisterForm() {
         <>
           <Typography variant="body2" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
             Already have an account?
-            <AuthLink href="/auth/login" sx={{ ml: 1 }}>
+            <AuthLink href="/login" sx={{ ml: 1 }}>
               {' '}
               Sign in
             </AuthLink>
