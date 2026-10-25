@@ -30,30 +30,20 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // If not logged in and trying to access protected routes, redirect to login
-  const protectedPaths = ['/dashboard', '/library', '/settings', '/auth']
-  const isProtected = protectedPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
-  )
-
-  // If not authenticated and on a protected route, redirect to login
-  if (isProtected && !user) {
-    const loginUrl = new URL('/auth/login', request.url)
-    loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
-    return NextResponse.redirect(loginUrl)
-  }
-
   // If authenticated and trying to access auth pages, redirect to dashboard
-  if (user && request.nextUrl.pathname === '/auth/login') {
+  const authPaths = ['/auth/login', '/auth/register', '/auth/forgot']
+  const isAuthPage = authPaths.some(path => request.nextUrl.pathname === path)
+
+  if (user && isAuthPage) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  if (user && request.nextUrl.pathname === '/auth/register') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
+  // If not logged in and trying to access protected routes (not auth pages), redirect to login
+  const protectedPaths = ['/', '/library', '/settings', '/dashboard']
+  const isProtected = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path) && !isAuthPage)
 
-  if (user && request.nextUrl.pathname === '/auth/forgot') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (!user && isProtected) {
+    return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
   return supabaseResponse
