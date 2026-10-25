@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { ThemeProvider as MuiThemeProvider } from '@/providers/ThemeProvider'
 import { ThemeContextProvider } from '@/providers/ThemeContext'
 import { EmotionCacheProvider } from '@/providers/EmotionCacheProvider'
+import { AuthProvider } from '@/providers/AuthProvider'
 import { Layout } from '@/components/organisms/Layout'
 
 export const metadata: Metadata = {
@@ -20,9 +21,11 @@ export default function RootLayout({
         <EmotionCacheProvider>
           <ThemeContextProvider>
             <MuiThemeProvider>
-              <Layout>
-                {children}
-              </Layout>
+              <AuthProvider>
+                <Layout>
+                  {children}
+                </Layout>
+              </AuthProvider>
             </MuiThemeProvider>
           </ThemeContextProvider>
         </EmotionCacheProvider>
