@@ -1,38 +1,12 @@
 'use client'
 
+'use client'
+
 import * as React from 'react'
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
-import { useTheme } from './ThemeContext'
 
-const lightTheme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
-      contrastText: '#fff',
-    },
-    secondary: {
-      main: '#dc004e',
-      light: '#e33371',
-      dark: '#9a0036',
-    },
-    background: {
-      default: '#fafafa',
-      paper: '#fff',
-    },
-    text: {
-      primary: 'rgba(0, 0, 0, 0.87)',
-      secondary: 'rgba(0, 0, 0, 0.6)',
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  },
-})
-
+// Dark-only theme — no light mode
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
@@ -62,11 +36,8 @@ const darkTheme = createTheme({
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const { mode } = useTheme()
-  const theme = mode === 'light' ? lightTheme : darkTheme
-
   return (
-    <MuiThemeProvider theme={theme}>
+    <MuiThemeProvider theme={darkTheme}>
       <CssBaseline />
       {children}
     </MuiThemeProvider>

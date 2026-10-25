@@ -6,6 +6,7 @@ import { NavItem } from '@/components/atoms/NavItem'
 const menuItems = [
   { key: 'dashboard', label: 'Dashboard', href: '/' },
   { key: 'library', label: 'Library', href: '/library' },
+  { key: 'people', label: 'People', href: '/people' },
   { key: 'settings', label: 'Settings', href: '/settings' },
 ]
 

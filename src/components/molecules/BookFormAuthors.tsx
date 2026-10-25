@@ -32,4 +32,3 @@ export function BookFormAuthors({ book, onChange }: BookFormAuthorsProps) {
     </BookFormSection>
   )
 }
-

@@ -1,7 +1,15 @@
-'use client'
+/*
+ * Database entry point providing the flat Book interface (backward compatible)
+ * and the normalized database instance.
+ *
+ * The original Book interface and db are preserved for existing code.
+ * For the full 21-category normalized schema across Supabase and IndexedDB,
+ * import NormalizedBook from ./db-types and normalizedDb from ./db-normalized.
+ */
 
-import Dexie, { Table } from 'dexie'
+import { normalizedDb } from './db-normalized'
 
+// Original flat Book interface preserved for backward compatibility
 export interface Book {
   id?: string
   title: string
@@ -40,6 +48,7 @@ export interface Book {
   editor?: string
   illustrator?: string
   coverArtist?: string
+  narrator?: string
 
   // Series
   seriesName?: string
@@ -183,23 +192,5 @@ export interface Book {
   recordVersion?: number
 }
 
-class RoseDB extends Dexie {
-  books!: Table<Book, string>
-
-  constructor() {
-    super('rose')
-    this.version(2).stores({
-      books: 'id, title, author, status, genre, rating, createdAt, isbn13, isbn10, seriesName, publisherName, publicationYear'
-    })
-    this.books.hook('creating', (primKey, obj) => {
-      obj.createdAt = new Date().toISOString()
-      obj.updatedAt = new Date().toISOString()
-      if (!obj.id) obj.id = crypto.randomUUID()
-    })
-    this.books.hook('updating', (modifications, primKey, obj, transaction) => {
-      ;(modifications as any).updatedAt = new Date().toISOString()
-    })
-  }
-}
-
-export const db = new RoseDB()
+// Export normalized database instance
+export { normalizedDb }

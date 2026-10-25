@@ -5,10 +5,10 @@ import { TextField, TextFieldProps } from '@mui/material'
 interface FormTextFieldProps extends Omit<TextFieldProps, 'value' | 'onChange'> {
   value: string | number | undefined
   onChange: (value: string) => void
-  field: string
+  field?: string
 }
 
-export function FormTextField({ value, onChange, field, label, ...props }: FormTextFieldProps) {
+export function FormTextField({ value, onChange, label, ...props }: FormTextFieldProps) {
   return (
     <TextField
       label={label}

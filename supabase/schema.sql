@@ -1,0 +1,101 @@
+-- Book Management System - Normalized PostgreSQL Schema for Supabase
+-- 21 categories, UUID PKs, RLS enabled, snake_case
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+DO $$ BEGIN CREATE TYPE reading_status AS ENUM ('want-to-read','reading','read','dropped'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE book_format AS ENUM ('hardcover','paperback','ebook','audiobook','other'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE condition_status AS ENUM ('new','like-new','very-good','good','fair','poor','damaged'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE inventory_status AS ENUM ('in-stock','out-of-stock','limited','discontinued'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE acquisition_method AS ENUM ('purchase','gift','donation','inheritance','exchange','trade'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE currency AS ENUM ('USD','EUR','GBP','CAD','AUD','JPY','CNY','Other'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE content_warning_level AS ENUM ('mild','moderate','strong','extreme'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE person_role AS ENUM ('author','co-author','translator','editor','illustrator','cover-artist','contributor'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE TABLE IF NOT EXISTS classification_schemes (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL UNIQUE, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS classifications (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), scheme_id UUID REFERENCES classification_schemes(id) ON DELETE SET NULL, value VARCHAR(255) NOT NULL, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(scheme_id, value));
+CREATE TABLE IF NOT EXISTS genres (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL UNIQUE, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS subjects (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL UNIQUE, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS tags (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL UNIQUE, category VARCHAR(100), created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS content_warnings (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), title VARCHAR(255) NOT NULL, description TEXT, level content_warning_level DEFAULT 'mild', category VARCHAR(100), created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS publishers (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL, imprint VARCHAR(255), website_url VARCHAR(500), city VARCHAR(255), country VARCHAR(100), founded_year INTEGER, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(name, imprint));
+CREATE TABLE IF NOT EXISTS retailers (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL UNIQUE, url VARCHAR(500), country VARCHAR(100), created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS distributor_types (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(100) NOT NULL UNIQUE, created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS file_formats (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(100) NOT NULL UNIQUE, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS file_size_units (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(50) NOT NULL UNIQUE, created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS license_types (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(100) NOT NULL UNIQUE, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS relationship_types (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(100) NOT NULL UNIQUE, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS awards (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS owners (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL, type VARCHAR(100), contact_info JSONB, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS acquisition_sources (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL, type VARCHAR(100), website_url VARCHAR(500), created_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS borrowers (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL, email VARCHAR(255), phone VARCHAR(50), created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS rooms (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL, description TEXT, location_floor INTEGER, location_area VARCHAR(100), created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS series (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(255) NOT NULL, total_volumes INTEGER, description TEXT, cover_image_url TEXT, website_url VARCHAR(500), created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(name));
+
+CREATE TABLE IF NOT EXISTS books (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), title VARCHAR(500) NOT NULL, subtitle VARCHAR(500), original_title VARCHAR(500), isbn10 VARCHAR(10), isbn13 VARCHAR(13) UNIQUE, barcode VARCHAR(100), asin VARCHAR(20), cover_image_url TEXT, language VARCHAR(100), edition VARCHAR(100), volume_number INTEGER, format book_format, publication_year INTEGER, publication_date DATE, pages INTEGER CHECK (pages > 0), dewey_decimal VARCHAR(50), library_of_congress_classification VARCHAR(100), description TEXT, data_source VARCHAR(100), verified_status BOOLEAN DEFAULT FALSE, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(), deleted_at TIMESTAMPTZ);
+
+CREATE TABLE IF NOT EXISTS people (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), first_name VARCHAR(100), last_name VARCHAR(100), middle_name VARCHAR(100), full_name VARCHAR(255) GENERATED ALWAYS AS (TRIM(COALESCE(first_name,'') || ' ' || COALESCE(middle_name,'') || ' ' || COALESCE(last_name,''))) STORED, birth_year INTEGER, death_year INTEGER, nationality VARCHAR(100), created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS book_people (book_id UUID REFERENCES books(id) ON DELETE CASCADE, person_id UUID REFERENCES people(id) ON DELETE CASCADE, role person_role NOT NULL, contribution_type VARCHAR(100), sort_order INTEGER DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (book_id, person_id, role));
+CREATE TABLE IF NOT EXISTS book_series (book_id UUID REFERENCES books(id) ON DELETE CASCADE, series_id UUID REFERENCES series(id) ON DELETE CASCADE, volume_number INTEGER, sub_series VARCHAR(255), read_order INTEGER, created_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (book_id, series_id));
+CREATE TABLE IF NOT EXISTS book_genres (book_id UUID REFERENCES books(id) ON DELETE CASCADE, genre_id UUID REFERENCES genres(id) ON DELETE CASCADE, is_primary BOOLEAN DEFAULT FALSE, notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (book_id, genre_id));
+CREATE TABLE IF NOT EXISTS book_subjects (book_id UUID REFERENCES books(id) ON DELETE CASCADE, subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE, is_primary BOOLEAN DEFAULT FALSE, notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (book_id, subject_id));
+CREATE TABLE IF NOT EXISTS book_tags (book_id UUID REFERENCES books(id) ON DELETE CASCADE, tag_id UUID REFERENCES tags(id) ON DELETE CASCADE, is_primary BOOLEAN DEFAULT FALSE, notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (book_id, tag_id));
+CREATE TABLE IF NOT EXISTS book_content_warnings (book_id UUID REFERENCES books(id) ON DELETE CASCADE, content_warning_id UUID REFERENCES content_warnings(id) ON DELETE CASCADE, severity_level content_warning_level DEFAULT 'mild', notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (book_id, content_warning_id));
+CREATE TABLE IF NOT EXISTS book_publishers (book_id UUID REFERENCES books(id) ON DELETE CASCADE, publisher_id UUID REFERENCES publishers(id) ON DELETE CASCADE, imprint VARCHAR(255), publication_date DATE, is_primary BOOLEAN DEFAULT TRUE, notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (book_id, publisher_id));
+CREATE TABLE IF NOT EXISTS book_retailers (book_id UUID REFERENCES books(id) ON DELETE CASCADE, retailer_id UUID REFERENCES retailers(id) ON DELETE CASCADE, distributor_type_id UUID REFERENCES distributor_types(id) ON DELETE SET NULL, retailer_price DECIMAL(10,2), retailer_currency currency DEFAULT 'USD', stock_status inventory_status DEFAULT 'in-stock', url VARCHAR(500), retailer_notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (book_id, retailer_id));
+CREATE TABLE IF NOT EXISTS shelves (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), room_id UUID REFERENCES rooms(id) ON DELETE CASCADE, name VARCHAR(255) NOT NULL, location_description TEXT, shelf_level INTEGER, capacity INTEGER, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS book_locations (book_id UUID REFERENCES books(id) ON DELETE CASCADE, shelf_id UUID REFERENCES shelves(id) ON DELETE SET NULL, position_index INTEGER, row_number INTEGER, bin_number INTEGER, section VARCHAR(100), is_reserved BOOLEAN DEFAULT FALSE, is_locked BOOLEAN DEFAULT FALSE, moved_at TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(), PRIMARY KEY (book_id, shelf_id));
+CREATE TABLE IF NOT EXISTS book_copies (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), book_id UUID REFERENCES books(id) ON DELETE CASCADE, condition condition_status DEFAULT 'good', condition_notes TEXT, shelf_id UUID REFERENCES shelves(id) ON DELETE SET NULL, location_notes TEXT, is_available BOOLEAN DEFAULT TRUE, is_reserved BOOLEAN DEFAULT FALSE, is_lost BOOLEAN DEFAULT FALSE, is_damaged BOOLEAN DEFAULT FALSE, is_withdrawn BOOLEAN DEFAULT FALSE, barcode_copy VARCHAR(100) UNIQUE, qr_code TEXT, purchase_price DECIMAL(10,2), purchase_date DATE, currency currency DEFAULT 'USD', signed BOOLEAN DEFAULT FALSE, first_edition BOOLEAN DEFAULT FALSE, rare_book BOOLEAN DEFAULT FALSE, provenance TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS book_ownership_records (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), book_id UUID REFERENCES books(id) ON DELETE CASCADE, copy_id UUID REFERENCES book_copies(id) ON DELETE CASCADE, owner_id UUID REFERENCES owners(id) ON DELETE SET NULL, acquisition_method acquisition_method, acquisition_source_id UUID REFERENCES acquisition_sources(id) ON DELETE SET NULL, purchase_price DECIMAL(10,2), purchase_currency currency DEFAULT 'USD', purchase_date DATE, condition condition_status, condition_notes TEXT, signed BOOLEAN DEFAULT FALSE, first_edition BOOLEAN DEFAULT FALSE, rare_book BOOLEAN DEFAULT FALSE, provenance TEXT, ownership_notes TEXT, acquired_at TIMESTAMPTZ DEFAULT NOW(), transferred_at TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS reading_logs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), book_id UUID REFERENCES books(id) ON DELETE CASCADE, copy_id UUID REFERENCES book_copies(id) ON DELETE SET NULL, status reading_status NOT NULL, progress_page INTEGER, progress_percent INTEGER CHECK (progress_percent BETWEEN 0 AND 100), start_date DATE, finish_date DATE, rating SMALLINT CHECK (rating BETWEEN 1 AND 5), review TEXT, reading_notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS loans (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), book_id UUID REFERENCES books(id) ON DELETE CASCADE, copy_id UUID REFERENCES book_copies(id) ON DELETE CASCADE, borrower_id UUID REFERENCES borrowers(id) ON DELETE SET NULL, loan_date DATE NOT NULL DEFAULT CURRENT_DATE, due_date DATE NOT NULL, return_date DATE, is_active BOOLEAN DEFAULT TRUE, is_overdue BOOLEAN DEFAULT FALSE, loan_notes TEXT, fine_amount DECIMAL(10,2) DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS digital_files (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), book_id UUID REFERENCES books(id) ON DELETE CASCADE, copy_id UUID REFERENCES book_copies(id) ON DELETE SET NULL, file_format_id UUID REFERENCES file_formats(id) ON DELETE SET NULL, file_size BIGINT, file_size_unit_id UUID REFERENCES file_size_units(id) ON DELETE SET NULL, drm_status BOOLEAN DEFAULT FALSE, storage_location VARCHAR(500), download_url TEXT, license_id UUID REFERENCES license_types(id) ON DELETE SET NULL, license_text TEXT, checksum VARCHAR(64), mime_type VARCHAR(255), digital_status VARCHAR(50), created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE (book_id, file_format_id));
+CREATE TABLE IF NOT EXISTS book_images (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), book_id UUID REFERENCES books(id) ON DELETE CASCADE, image_type VARCHAR(100) NOT NULL, is_primary BOOLEAN DEFAULT FALSE, alt_text VARCHAR(255), storage_path VARCHAR(500), width_px INTEGER, height_px INTEGER, file_size_bytes BIGINT, usage_rights VARCHAR(255), image_notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS book_awards (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), book_id UUID REFERENCES books(id) ON DELETE CASCADE, award_id UUID REFERENCES awards(id) ON DELETE SET NULL, award_year INTEGER, award_result VARCHAR(100), award_notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS book_related_works (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), book_id UUID REFERENCES books(id) ON DELETE CASCADE, related_book_id UUID REFERENCES books(id) ON DELETE SET NULL, relationship_type_id UUID REFERENCES relationship_types(id) ON DELETE SET NULL, related_isbn VARCHAR(13), related_notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS book_classifications (book_id UUID REFERENCES books(id) ON DELETE CASCADE, classification_id UUID REFERENCES classifications(id) ON DELETE CASCADE, PRIMARY KEY (book_id, classification_id));
+
+CREATE INDEX IF NOT EXISTS idx_books_isbn13 ON books(isbn13);
+CREATE INDEX IF NOT EXISTS idx_books_isbn10 ON books(isbn10);
+CREATE INDEX IF NOT EXISTS idx_books_title ON books(title);
+CREATE INDEX IF NOT EXISTS idx_books_language ON books(language);
+CREATE INDEX IF NOT EXISTS idx_book_people_book ON book_people(book_id);
+CREATE INDEX IF NOT EXISTS idx_book_series_book ON book_series(book_id);
+CREATE INDEX IF NOT EXISTS idx_book_copies_book ON book_copies(book_id);
+CREATE INDEX IF NOT EXISTS idx_loans_due ON loans(due_date) WHERE is_active = TRUE;
+
+ALTER TABLE books ENABLE ROW LEVEL SECURITY;
+ALTER TABLE people ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_people ENABLE ROW LEVEL SECURITY;
+ALTER TABLE series ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_series ENABLE ROW LEVEL SECURITY;
+ALTER TABLE genres ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_genres ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subjects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_subjects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_tags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE content_warnings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_content_warnings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE publishers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_publishers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE retailers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_retailers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shelves ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_locations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_copies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE owners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_ownership_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reading_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE borrowers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE loans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE digital_files ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE awards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_awards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_related_works ENABLE ROW LEVEL SECURITY;
+ALTER TABLE classification_schemes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE classifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_classifications ENABLE ROW LEVEL SECURITY;

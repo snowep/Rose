@@ -18,11 +18,6 @@ export function FormTagInput({ label, value, onChange, options = [] }: FormTagIn
         options={options}
         value={value}
         onChange={(_, newValue) => onChange(newValue)}
-        renderTags={(value: string[], getTagProps) =>
-          value.map((option: string, index: number) => (
-            <Chip variant="outlined" label={option} {...getTagProps({ index })} key={index} />
-          ))
-        }
         renderInput={(params) => (
           <TextField {...params} label={label} size="small" />
         )}

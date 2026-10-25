@@ -20,7 +20,7 @@ export function BookSection({ title, books }: BookSectionProps) {
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1 }}>
         {books.map((book) => (
-          <Box key={book.id} sx={{ minWidth: 160, flexShrink: 0 }}>
+          <Box key={book.id} sx={{ maxWidth: 210, flexShrink: 0 }}>
             <BookCardSmall
               id={book.id}
               title={book.title}

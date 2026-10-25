@@ -2,7 +2,6 @@
 
 import { AppBar as MuiAppBar, Toolbar, Box } from '@mui/material'
 import { Logo } from '@/components/atoms/Logo'
-import { ThemeToggle } from '@/components/atoms/ThemeToggle'
 
 export function AppBar() {
   return (
@@ -10,7 +9,6 @@ export function AppBar() {
       <Toolbar>
         <Logo />
         <Box sx={{ flexGrow: 1 }} />
-        <ThemeToggle />
       </Toolbar>
     </MuiAppBar>
   )

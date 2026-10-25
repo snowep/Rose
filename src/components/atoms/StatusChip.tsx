@@ -10,11 +10,11 @@ const statusColors: Record<BookStatus, string> = {
   'want-to-read': '#0288d1',
 }
 
-export function StatusChip({ status }: { status: BookStatus }) {
+export function StatusChip({ status, size = 'small' }: { status: BookStatus; size?: 'small' | 'medium' }) {
   return (
     <Chip
       label={status.replace('-', ' ')}
-      size="small"
+      size={size}
       sx={{
         backgroundColor: `${statusColors[status]}20`,
         color: statusColors[status],

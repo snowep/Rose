@@ -2,38 +2,43 @@
 
 import { createContext, useContext, useState, useEffect } from 'react'
 
-type ThemeMode = 'light' | 'dark'
-
+// Dark-only theme context — no light mode
 interface ThemeContextType {
-  mode: ThemeMode
+  mode: 'dark'
   toggleMode: () => void
-  setMode: (mode: ThemeMode) => void
+  setMode: (mode: 'dark') => void
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
+// Always return dark — no light mode logic
+const getInitialTheme = (): 'dark' => 'dark'
+
 export function ThemeContextProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>('light')
+  // Always start with dark mode
+  const [mode, setMode] = useState<'dark'>('dark')
 
   useEffect(() => {
-    const saved = localStorage.getItem('theme-mode')
-    if (saved === 'dark' || saved === 'light') {
-      setMode(saved)
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setMode('dark')
+    // Always persist dark mode to localStorage
+    try {
+      localStorage.setItem('theme-mode', 'dark')
+    } catch (e) {
+      // localStorage not available (e.g., incognito)
     }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('theme-mode', mode)
+    // Always set data-theme attribute to dark
+    if (typeof window !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', 'dark')
+    }
   }, [mode])
 
   const toggleMode = () => {
-    setMode(prev => prev === 'light' ? 'dark' : 'light')
+    // Always set to dark
+    setMode('dark')
   }
 
+  // No effectiveMode needed — always dark
   return (
-    <ThemeContext.Provider value={{ mode, toggleMode, setMode }}>
+    <ThemeContext.Provider value={{ mode: 'dark', toggleMode, setMode }}>
       {children}
     </ThemeContext.Provider>
   )

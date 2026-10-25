@@ -1,16 +1,16 @@
 'use client'
 
 import { IconButton, Tooltip } from '@mui/material'
-import { LightMode, DarkMode } from '@mui/icons-material'
+import { DarkMode } from '@mui/icons-material'
 import { useTheme } from '@/providers/ThemeContext'
 
 export function ThemeToggle() {
-  const { mode, toggleMode } = useTheme()
+  const { toggleMode } = useTheme()
 
   return (
-    <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+    <Tooltip title="Dark mode">
       <IconButton onClick={toggleMode} color="inherit">
-        {mode === 'light' ? <DarkMode /> : <LightMode />}
+        <DarkMode />
       </IconButton>
     </Tooltip>
   )

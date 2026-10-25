@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Card, CardMedia, CardContent, Link } from '@mui/material'
+import { Box, Card, CardMedia, CardContent, Link, useTheme } from '@mui/material'
 import { StatusChip } from '@/components/atoms/StatusChip'
 import { BookTitle } from '@/components/atoms/BookTitle'
 import { BookAuthor } from '@/components/atoms/BookAuthor'
@@ -31,6 +31,8 @@ const statusColors = {
 const PLACEHOLDER_COVER = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIENvdmVyPC90ZXh0Pjwvc3ZnPg=='
 
 export function BookCard({ id, title, author, status, genre, rating, pages, progress, coverImage, tags }: BookProps) {
+  const theme = useTheme()
+  const isDark = theme.palette.mode === 'dark'
   const cover = coverImage || PLACEHOLDER_COVER
   const statusColor = statusColors[status]
 
@@ -42,13 +44,14 @@ export function BookCard({ id, title, author, status, genre, rating, pages, prog
           maxHeight: 350,
           display: 'flex',
           flexDirection: 'column',
-          border: '1px solid #424242',
+          border: '1px solid',
+          borderColor: isDark ? '#424242' : '#e0e0e0',
           borderRadius: 1,
-          backgroundColor: 'rgba(255,255,255,0.02)',
+          backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : '#fafafa',
           transition: 'all 0.2s',
           '&:hover': {
-            backgroundColor: 'rgba(255,255,255,0.05)',
-            boxShadow: `0 4px 12px rgba(0,0,0,0.3)`,
+            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#fff',
+            boxShadow: `0 4px 12px rgba(0,0,0,${isDark ? 0.3 : 0.1})`,
             transform: 'translateY(-2px)',
           }
         }}

@@ -10,7 +10,7 @@ interface BookFormTabsProps {
 const tabs = [
   'Basic',
   'Identity',
-  'Authors',
+  'People',
   'Series',
   'Publisher',
   'Reading',

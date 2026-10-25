@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { BookFormTabs } from '@/components/atoms/BookFormTabs'
 import { BookFormBasic } from '@/components/molecules/BookFormBasic'
 import { BookFormCoreIdentity } from '@/components/molecules/BookFormCoreIdentity'
-import { BookFormAuthors } from '@/components/molecules/BookFormAuthors'
+import { BookFormPeople } from '@/components/molecules/BookFormPeople'
 import { BookFormSeries } from '@/components/molecules/BookFormSeries'
 import { BookFormPublisher } from '@/components/molecules/BookFormPublisher'
 import { BookFormReading } from '@/components/molecules/BookFormReading'
@@ -59,7 +59,7 @@ export function AddBookModal({ open, onClose, onSave, editingBook }: BookModalPr
       case 1:
         return <BookFormCoreIdentity book={book} onChange={handleChange} />
       case 2:
-        return <BookFormAuthors book={book} onChange={handleChange} />
+        return <BookFormPeople book={book} onChange={handleChange} />
       case 3:
         return <BookFormSeries book={book} onChange={handleChange} />
       case 4:
@@ -82,9 +82,15 @@ export function AddBookModal({ open, onClose, onSave, editingBook }: BookModalPr
           {renderTabContent()}
         </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 2, justifyContent: 'flex-end' }}>
+      <DialogActions sx={{ px: 2, justifyContent: 'flex-end', gap: 1 }}>
         <Button onClick={onClose} variant="outlined">
           Cancel
+        </Button>
+        <Button onClick={() => { handleChange('title', ''); handleChange('author', ''); handleChange('status', 'want-to-read'); }} variant="outlined" color="error">
+          Reset
+        </Button>
+        <Button onClick={() => { handleSave(); setBook({ title: '', author: '', status: 'want-to-read' }); }} variant="outlined">
+          Save & Add Another
         </Button>
         <Button onClick={handleSave} variant="contained">
           Save
