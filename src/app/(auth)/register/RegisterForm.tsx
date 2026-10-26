@@ -94,11 +94,8 @@ export function RegisterForm() {
       footer={
         <>
           <Typography variant="body2" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-            Already have an account?
-            <AuthLink href="/login" sx={{ ml: 1 }}>
-              {' '}
-              Sign in
-            </AuthLink>
+            Already have an account?{' '}
+            <AuthLink href="/login">Sign in</AuthLink>
           </Typography>
         </>
       }

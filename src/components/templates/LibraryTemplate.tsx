@@ -3,7 +3,7 @@
 import { PageContainer } from '@/components/molecules/PageContainer'
 import { BooksList } from '@/components/organisms/BooksList'
 import { AddBookFab } from '@/components/atoms/AddBookFab'
-import { AddBookModal } from '@/components/molecules/AddBookModal'
+import { AddBookModalSimple } from '@/components/molecules/AddBookModalSimple'
 import { useState } from 'react'
 
 export function LibraryTemplate() {
@@ -13,14 +13,9 @@ export function LibraryTemplate() {
     <PageContainer title="Library">
       <BooksList />
       <AddBookFab onClick={() => setModalOpen(true)} />
-      <AddBookModal
+      <AddBookModalSimple
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSave={(book) => {
-          console.log('Save book:', book)
-          setModalOpen(false)
-        }}
-        editingBook={null}
       />
     </PageContainer>
   )

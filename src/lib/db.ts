@@ -14,7 +14,7 @@ export interface Book {
   id?: string
   title: string
   author: string
-  status: 'reading' | 'read' | 'want-to-read'
+  status: 'reading' | 'read' | 'want-to-read' | 'on-hold' | 'dnf'
   genre?: string
   rating?: number
   pages?: number

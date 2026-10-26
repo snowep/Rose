@@ -8,7 +8,8 @@ const db = new Dexie('rose') as any
 export { db }
 
 db.version(1).stores({
-  books: 'id, title, author, status, genre, rating, pages, progress, createdAt, updatedAt, dailyLog'
+  books: 'id, title, author, status, genre, rating, pages, progress, createdAt, updatedAt, dailyLog',
+  user_books: 'id, user_id, book_id, read_count, added_at'
 })
 
 async function syncBookToSupabase(book: Book) {
@@ -91,6 +92,17 @@ export const BookService = {
     })
   },
 
+  async updateStatus(id: string, status: 'want-to-read' | 'reading' | 'read' | 'on-hold' | 'dnf'): Promise<void> {
+    const book = await (db as any).books.get(id)
+    if (!book) return
+    const now = new Date().toISOString()
+    const updates: any = { status, updatedAt: now }
+    if (status === 'reading' && !book.startedAt) updates.startedAt = now
+    if (status === 'read' && !book.finishedAt) updates.finishedAt = now
+    if (status === 'want-to-read') { updates.startedAt = null; updates.finishedAt = null }
+    await db.books.update(id, updates)
+  },
+
   async addDailyLog(id: string, date: string, pagesRead: number): Promise<void> {
     const book = await (db as any).books.get(id)
     if (!book) return
@@ -146,7 +158,7 @@ export const BookService = {
     })
   },
 
-  async syncToSupabase(): Promise<{ success: number; failed: number; errors: string[] }> {
+  async syncToSupabase(userId: string): Promise<{ success: number; failed: number; errors: string[] }> {
     const books = await this.getAll()
     let success = 0
     let failed = 0
@@ -155,27 +167,49 @@ export const BookService = {
     for (const book of books) {
       try {
         const supabase = createClient()
-        const { error } = await supabase
+        // 1. Shared catalog record (one row per book, visible to everyone)
+        const { error: catalogError } = await supabase
           .from('books')
           .upsert({
             id: book.id,
             title: book.title,
             author: book.author,
-            status: book.status,
-            genre: book.genre,
-            rating: book.rating,
+            subtitle: book.subtitle,
+            isbn10: book.isbn10,
+            isbn13: book.isbn13,
             pages: book.pages,
-            progress: book.progress,
-            started_at: book.startedAt,
-            finished_at: book.finishedAt,
+            publication_year: book.publicationYear,
+            description: book.description,
+          })
+        if (catalogError) throw catalogError
+
+        // 2. User-scoped shelf entry (this user's copy of the book)
+        const { error: shelfError } = await supabase
+          .from('user_books')
+          .upsert({
+            user_id: userId,
+            book_id: book.id,
+            progress: book.progress ?? 0,
+            rating: book.rating,
             cover_image: book.coverImage,
             notes: book.notes,
             tags: book.tags,
-            daily_log: book.dailyLog,
-            created_at: book.createdAt,
-            updated_at: book.updatedAt,
           })
-        if (error) throw error
+        if (shelfError) throw shelfError
+
+        // 3. Reading logs (one row per date, powers the heatmap)
+        for (const log of book.dailyLog || []) {
+          const { error: logError } = await supabase
+            .from('reading_logs')
+            .insert({
+              user_id: userId,
+              book_id: book.id,
+              log_date: log.date,
+              pages_read: log.pagesRead,
+            })
+          if (logError) throw logError
+        }
+
         success++
       } catch (err) {
         failed++
@@ -186,33 +220,43 @@ export const BookService = {
     return { success, failed, errors }
   },
 
-  async pullFromSupabase(): Promise<{ success: number; failed: number; errors: string[] }> {
+  async pullFromSupabase(userId: string): Promise<{ success: number; failed: number; errors: string[] }> {
     try {
       const supabase = createClient()
-      const { data, error } = await supabase.from('books').select('*')
+      const { data: rows, error } = await supabase
+        .from('user_books')
+        .select('*, books(*), reading_logs(log_date, pages_read)')
+        .eq('user_id', userId)
       if (error) throw error
 
       let success = 0
       let failed = 0
       const errors: string[] = []
 
-      for (const book of data || []) {
+      for (const row of rows || []) {
+        const book = (row as any).books
+        if (!book) continue
         try {
+          const dailyLog = (row.reading_logs || []).map((l: any) => ({
+            date: l.log_date,
+            pagesRead: l.pages_read,
+          }))
           await db.books.put({
             id: book.id,
             title: book.title,
             author: book.author,
-            status: book.status,
-            genre: book.genre,
-            rating: book.rating,
+            subtitle: book.subtitle,
+            isbn10: book.isbn10,
+            isbn13: book.isbn13,
             pages: book.pages,
-            progress: book.progress,
-            startedAt: book.started_at,
-            finishedAt: book.finished_at,
-            coverImage: book.cover_image,
-            notes: book.notes,
-            tags: book.tags,
-            dailyLog: book.daily_log,
+            publicationYear: book.publication_year,
+            description: book.description,
+            progress: row.progress,
+            rating: row.rating,
+            coverImage: row.cover_image,
+            notes: row.notes,
+            tags: row.tags,
+            dailyLog,
             createdAt: book.created_at,
             updatedAt: book.updated_at,
           })

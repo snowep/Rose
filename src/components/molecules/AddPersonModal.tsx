@@ -13,7 +13,6 @@ import {
   Box
 } from '@mui/material'
 import { PersonAdd } from '@mui/icons-material'
-import { BookFormSection } from '@/components/atoms/BookFormSection'
 
 interface AddPersonModalProps {
   open: boolean
@@ -78,7 +77,8 @@ export function AddPersonModal({ open, onClose, onSave }: AddPersonModalProps) {
         </Box>
       </DialogTitle>
       <DialogContent sx={{ py: 2 }}>
-        <BookFormSection title="Basic Information">
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>Basic Information</Typography>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
@@ -137,9 +137,10 @@ export function AddPersonModal({ open, onClose, onSave }: AddPersonModalProps) {
               />
             </Grid>
           </Grid>
-        </BookFormSection>
+        </Box>
 
-        <BookFormSection title="Additional Details">
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>Additional Details</Typography>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
@@ -171,7 +172,7 @@ export function AddPersonModal({ open, onClose, onSave }: AddPersonModalProps) {
               />
             </Grid>
           </Grid>
-        </BookFormSection>
+        </Box>
       </DialogContent>
       <DialogActions sx={{ px: 2, pb: 2 }}>
         <Button onClick={onClose} variant="outlined">

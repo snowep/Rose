@@ -4,8 +4,10 @@ import { Box, Typography, Button, Alert, AlertTitle, Dialog, DialogTitle, Dialog
 import { CloudSync, CloudDownload, CloudUpload, Delete as DeleteIcon } from '@mui/icons-material'
 import { useState } from 'react'
 import { BookService, db } from '@/lib/book-service'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function SettingsPage() {
+  const { user } = useAuth()
   const [syncStatus, setSyncStatus] = useState<{ success: number; failed: number; errors: string[] } | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [pulling, setPulling] = useState(false)
@@ -13,10 +15,11 @@ export default function SettingsPage() {
   const [clearing, setClearing] = useState(false)
 
   const handleSyncToSupabase = async () => {
+    if (!user) return
     setSyncing(true)
     setSyncStatus(null)
     try {
-      const result = await BookService.syncToSupabase()
+      const result = await BookService.syncToSupabase(user.id)
       setSyncStatus(result)
     } finally {
       setSyncing(false)
@@ -24,10 +27,11 @@ export default function SettingsPage() {
   }
 
   const handlePullFromSupabase = async () => {
+    if (!user) return
     setPulling(true)
     setSyncStatus(null)
     try {
-      const result = await BookService.pullFromSupabase()
+      const result = await BookService.pullFromSupabase(user.id)
       setSyncStatus(result)
     } finally {
       setPulling(false)

@@ -2,12 +2,14 @@
 
 import { Chip } from '@mui/material'
 
-type BookStatus = 'reading' | 'read' | 'want-to-read'
+type BookStatus = 'reading' | 'read' | 'want-to-read' | 'on-hold' | 'dnf'
 
 const statusColors: Record<BookStatus, string> = {
   reading: '#1976d2',
   read: '#2e7d32',
   'want-to-read': '#0288d1',
+  'on-hold': '#f57c00',
+  dnf: '#c62828',
 }
 
 export function StatusChip({ status, size = 'small' }: { status: BookStatus; size?: 'small' | 'medium' }) {
