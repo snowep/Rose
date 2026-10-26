@@ -472,3 +472,17 @@ The complex multi-tab BookForm components (BookFormCoreIdentity, BookFormAuthors
 - user_books.reading_status_id for per-user status
 - reading_logs.reading_status_id for per-log status
 - Updated personal_shelf_schema.sql
+
+## Personal Shelf Enhancements (2026-10-27)
+- AddBookModalSimple: author field uses PersonPicker (search-as-you-type ≥2 chars, existing-person chips, add-new-person)
+- PersonPicker: reads from BookService.getPeople() (legacy Dexie store) instead of normalizedDb — fixes "add person not showing" bug
+- PeopleTemplate: await loadPeople() after add instead of router.refresh()
+- BooksDiscoveryList: empty state for /books page
+- BooksList: empty state for Library page with AddBookFab CTA
+- BookSection: empty state per reading status section
+- BookDetailHeader: await onDelete() before router.push so list refreshes
+- BookService: syncPeopleToSupabase() syncs local people to Supabase
+- Settings: sync button calls both books and people sync
+- NavList: added Publishers nav item
+- NavItem: fix useMemo import and usePathname usage
+- Type-check: clean (except pre-existing publisher page JSX errors)

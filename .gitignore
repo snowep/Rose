@@ -39,4 +39,5 @@ next-env.d.ts
 *.swo
 
 # graphify
-/graphify-out
+graphify-out/
+docs/
