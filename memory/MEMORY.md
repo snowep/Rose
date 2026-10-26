@@ -1,0 +1,6 @@
+- [Rose MVP Completed](mvp-completed.md) — 7-day ship, v0.1.0-mvp tag, Palette A 11:11 Division theme, all PRD v1 requirements fulfilled
+- [Auth flow with route groups] — Fixed: moved protected pages to (app) route group with Layout, auth pages in (auth) with LoginTemplate without AppBar/NavDrawer. All 11 routes build successfully.
+- [Atomic design cleanup] — Split BookCard into BookCardCover/BookCardMeta/BookCardStatus/BookCardActions; split BookFormBasic into BookFormTitleSubtitle/BookFormMetadata; removed AuthSocialButtons.tsx; fixed TypeScript in AuthPasswordField, AuthTextField, NavItem, PersonPicker.
+- [AuthLink hydration fix] — Fixed nested <a> tags by removing Typography component="a", using Link alone with sx styling.
+- [Middleware fix] — Updated auth path checks from /(auth)/ to /auth/ since route groups don't appear in URL.
+- [Build verification] — All changes compile successfully with npm run build.

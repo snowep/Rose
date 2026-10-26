@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { ThemeProvider as MuiThemeProvider } from '@/providers/ThemeProvider'
 import { ThemeContextProvider } from '@/providers/ThemeContext'
 import { EmotionCacheProvider } from '@/providers/EmotionCacheProvider'
-import { Layout } from '@/components/organisms/Layout'
+import { AuthProvider } from '@/providers/AuthProvider'
 
 export const metadata: Metadata = {
   title: 'Rose',
@@ -20,9 +20,9 @@ export default function RootLayout({
         <EmotionCacheProvider>
           <ThemeContextProvider>
             <MuiThemeProvider>
-              <Layout>
+              <AuthProvider>
                 {children}
-              </Layout>
+              </AuthProvider>
             </MuiThemeProvider>
           </ThemeContextProvider>
         </EmotionCacheProvider>

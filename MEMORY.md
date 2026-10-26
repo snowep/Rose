@@ -5,19 +5,21 @@
 - CRUD: Library section with BooksList atom/molecule, FAB bottom-right for book entry, offline-first with cloud-integratable later
 - New pages: /library and /settings (standalone, MUI + Next.js App Router reference)
 - Graphify: code graph extracted -- 150 files, 420 nodes, 583 edges, 52 communities (`graphify-out/graph.json`, updated 2026-10-24)
-- Discovered components: HeatmapCell, HeatmapGrid, HeatmapHeader, BookModal, BookModalProps, HeatmapMode, BookCard, BookTitle, BookAuthor, GenreChip, RatingDisplay, ProgressBar, TagList, BookActions, StatusChip, NavItem, PageHeader, BooksCount, BookMeta, HeatmapContainer, HeatmapGridContainer, HeatmapLoading, NavList, PageContainer, ReadingProgressSection, BookDetailHeader, BookDetailsSection, BooksListView, AddBookModal, LogProgressModal, AppShell, BookDetailFixed, BooksList, Heatmap
-- NavDrawer: permanent, 240px, clipped under static AppBar, with Dashboard/Library/Settings links (next/link), active state via usePathname
+- Discovered components: HeatmapCell, HeatmapGrid, HeatmapHeader, BookCard, BookTitle, BookAuthor, GenreChip, RatingDisplay, ProgressBar, TagList, StatusChip, NavItem, PageHeader, BooksCount, BookMeta, HeatmapContainer, HeatmapGridContainer, HeatmapLoading, NavList, PageContainer, ReadingProgressSection, BookDetailHeader, BookDetailsSection, BooksListView, AddBookModalSimple, LogProgressModal, AppShell, BookDetailFixed, BooksList, Heatmap, BookCardCover, BookCardMeta, BookCardStatus, BookCardActions, BookSection, AddPersonModal, LogoutConfirmDialog, PeopleFab
+- NavDrawer: permanent, 240px, clipped under static AppBar, with Dashboard/Library/All Books/People/Settings links (next/link), active state via usePathname
 - FAB: fixed bottom-right (bottom: 24, right: 24, zIndex: 1200) outside drawer, aria-label="Add a book", wired to BookModal via AddBookFab
 - Heatmap: GitHub-like contribution calendar (30 days) rendered in DashboardTemplate, integrated with real reading data from dailyLog
-- BookCard molecule: cover image (300px) + title/author + genre/rating + progress bar + tags, click -> detail page, ellipsis truncation
+- BookCard molecule: cover image (300px) + title/author + genre/rating + progress bar + tags, click -> detail page, ellipsis truncation (composed of BookCardCover, BookCardMeta, BookCardStatus, BookCardActions atoms)
 - BooksList molecule: Grid layout (xs:1, sm:2, md:3, lg:4), renders from IndexedDB via BookService
-- BookModal: full form with title, author, status, genre, rating, pages, progress, tags, notes, coverImage
+- BookModal: full form with title, author, status, genre, rating, pages, progress, tags, notes (used in Library via AddBookModalSimple)
 - BookDetail page: /library/detail/[id], shows full metadata, reading progress log, edit/delete/log buttons
 - LogProgressModal: date + pages read logging form, persists to dailyLog array
 - Dexie.js: IndexedDB store `rose` with books table, auto-creates UUID, createdAt/updatedAt hooks
-- BookService: CRUD + updateProgress + addDailyLog + manual syncToSupabase/pullFromSupabase
+- BookService: CRUD + updateProgress + addDailyLog + manual syncToSupabase/pullFromSupabase (local Dexie IndexedDB)
 - Book type extended with genre, rating, pages, startedAt, finishedAt, coverImage, notes, tags, progress, dailyLog
-- **Manual sync only**: All CRUD local-first, sync to Supabase only via Settings button
+- **Manual sync only**: All CRUD local-first (Dexie), sync to Supabase only via Settings button
+- Supabase personal shelf schema (personal_shelf_schema.sql): books (ISBN dedupe), people, roles, publishers, series, genres, book_people, book_series, book_genres, user_books (join), reading_logs
+- Supabase service layer: src/lib/supabase/books.ts (getAllBooks, createBook, addBookToShelf with ISBN dedupe)
 - Book title ellipsis: 2-line clamp with -webkit-line-clamp
 - BooksListView: Grid layout (xs:1, sm:2, md:3, lg:4) consistent card widths
 - BookDetail: auto-progress from dailyLog, auto-status (want-to-read->reading->read), auto timestamps
@@ -27,7 +29,7 @@
 - Tailwind removed; vanilla CSS + MUI v9 styling used
 - .gitignore created with standard Next.js exclusions
 - Build compiles successfully (exit code 0); dev server running at http://localhost:3000
-- Routes: /, /library, /library/detail/[id], /settings all confirmed rendering
+- Routes: /, /dashboard, /library, /library/detail/[id], /books, /people, /settings, /login, /register, /forgot all confirmed rendering
 - Data state: IndexedDB via Dexie.js, no state management layer, offline-first
 
 ## Supabase 500 Error Fix Progression (2026-10-23)
@@ -382,48 +384,84 @@ All cards now have **consistent width** within each breakpoint. Grid container w
 
 
 
-## BookForm Atomic Design Components (2026-10-24)
+## BookForm Atomic Design Components (2026-10-24) -- REMOVED
 
-### New Atomic Components
+The complex multi-tab BookForm components (BookFormCoreIdentity, BookFormAuthors, BookFormSeries, BookFormPublisher, BookFormReading, BookFormContent, BookFormBasic, BookFormTabs, BookFormSection) and the original tabbed AddBookModal were removed in favor of a simpler approach.
 
-#### Atoms (Basic Building Blocks)
+### Current Atomic Form Components (Atoms)
 - **FormTextField** - Text input with label, validation, placeholder
 - **FormTextArea** - Multi-line text input with rows prop
 - **FormSelectField** - Dropdown select with options
 - **FormNumberField** - Number input with min/max/step
-- **FormTextField** - Text input field
-- **BookFormSection** - Collapsible form section with title
-- **BookFormTabs** - Tabbed navigation for form sections
-- **BookCardSmall** - Compact book card for lists
+- **FormDatePicker** - Date picker component
+- **FormFileUpload** / **FormDragDropUpload** - File upload
+- **FormISBNInput** - ISBN input with validation
+- **FormSegmentedControl** - Segmented control
+- **FormTagInput** - Tag input with autocomplete
+- **FormYearInput** - Year input
 
-#### Molecules (Combinations of Atoms)
-- **BookFormCoreIdentity** - Title, subtitle, ISBN, language, format
-- **BookFormAuthors** - Author list with roles, add/remove
-- **BookFormSeries** - Series name, number, sequence
-- **BookFormPublisher** - Publisher, published date, edition
-- **BookFormPublisher** - Publisher, publish date, edition, pages
-- **BookFormReading** - Status, progress, dates, reading log
-- **BookFormContent** - Description, tags, genres, subjects
-- **BookFormCoreIdentity** - Core identity fields
-- **BookSection** - Generic section wrapper
-
-#### Organisms (Complex UI Sections)
-- **BookFormBasic** - Basic info tab (CoreIdentity + Authors + Series)
-- **BookFormContent** - Content tab (Description + Tags + Genres)
-- **BookFormPublisher** - Publisher tab (Publisher + Dates + Pages)
-- **BookFormReading** - Reading tab (Status + Progress + Log)
-
-### AddBookModal Refactored
-- Now uses tabbed BookForm components
-- 4 tabs: Basic, Content, Publisher, Reading
-- Each tab is a separate molecule
-- Reusable form components
+### Current Book Components
+- **AddBookModalSimple** - Simple modal for adding books (Title, Author, ISBN10, ISBN13)
+- **BookCard** - Card with cover, title, author, status (molecule)
+- **BookCardCover**, **BookCardMeta**, **BookCardStatus**, **BookCardActions** - BookCard sub-components
+- **BookSection** - Section wrapper for book lists
 
 ### Documentation
 - **BOOK_FIELDS.md** - Complete field reference documentation
 
 ### TypeScript
 - Clean, no errors
-- All new components typed
+- All components typed
 
-*Last updated: 2026-10-24*
+## AppBar Runtime Fix (2026-10-26)
+- Fixed MUI MenuListContext error in AppBar
+- Replaced MenuItem with Button for logout action (MenuItem requires Menu/MenuList parent)
+- Changed import: MenuItem -> Button in src/components/atoms/AppBar.tsx
+- Build verified: exit code 0, TypeScript clean
+
+## Personal Shelf Design (2026-10-26)
+- Design doc: docs/superpowers/specs/2026-10-26-personal-shelf-design.md
+- Global books catalog with ISBN dedupe, user_books join, reading_logs separate
+- Created /books discovery page at src/app/(app)/books/page.tsx
+- Added All Books link to NavList
+- Created BooksDiscoveryList component with right Drawer for details
+- Build verified, route /books live
+- Supabase service layer: src/lib/supabase/books.ts (getAllBooks, createBook, addBookToShelf)
+- Simple Add Book modal with Title/Author/ISBN10/ISBN13 wired to Supabase
+- Removed complex multi-tab AddBookModal and all BookForm* components
+- Clean build with all personal shelf wiring
+
+## AuthLink Hydration Fix (2026-10-26)
+- Fixed nested `<p>` and `<a>` hydration errors in auth forms
+- AuthLink now renders Typography as `span` inside Next.js Link
+- Removed inline spacing props that caused invalid HTML nesting
+- Cleaned up LoginForm, RegisterForm footer text spacing
+- Build passes without hydration warnings
+
+## Logout Confirmation Modal (2026-10-26)
+- Removed logout button from NavDrawer (was at bottom of nav list)
+- Added LogoutConfirmDialog component with confirmation dialog
+- AppBar Sign Out button now opens dialog with Cancel/Sign Out options
+- Prevents accidental logouts from mis-clicks
+- Uses MUI Dialog with Alert for clear confirmation UX
+- Build verified, TypeScript clean
+
+*Last updated: 2026-10-26*
+
+## Reading Status Feature (2026-10-26)
+- Added 5 statuses: want-to-read, reading, read, on-hold, dnf
+- BookService.updateStatus() with auto timestamps (startedAt, finishedAt)
+- Status dropdown in ReadingProgressSection on detail page
+- Status dropdown in AddBookModalSimple for new books
+- StatusChip updated with on-hold (orange) and dnf (red)
+- Book interface updated with full status union
+- Build verified, TypeScript clean
+
+## Supabase Schema Update (2026-10-26)
+- reading_statuses lookup table with 5 seeded statuses
+- books.author column added
+- books.reading_status_id FK to reading_statuses
+- authors table + book_authors junction for many-to-many
+- user_books.reading_status_id for per-user status
+- reading_logs.reading_status_id for per-log status
+- Updated personal_shelf_schema.sql

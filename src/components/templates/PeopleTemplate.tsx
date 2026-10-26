@@ -118,13 +118,15 @@ export function PeopleTemplate() {
             placeholder="Search people by name or nationality..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />,
-              endAdornment: searchTerm && (
-                <Button size="small" onClick={() => setSearchTerm('')}>
-                  <Clear fontSize="small" />
-                </Button>
-              )
+            slotProps={{
+              input: {
+                startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" />,
+                endAdornment: searchTerm && (
+                  <Button size="small" onClick={() => setSearchTerm('')}>
+                    <Clear fontSize="small" />
+                  </Button>
+                ),
+              },
             }}
           />
         </Box>

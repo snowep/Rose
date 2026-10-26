@@ -1,13 +1,10 @@
 'use client'
 
-import { Box, Card, CardMedia, CardContent, Link, useTheme } from '@mui/material'
-import { StatusChip } from '@/components/atoms/StatusChip'
-import { BookTitle } from '@/components/atoms/BookTitle'
-import { BookAuthor } from '@/components/atoms/BookAuthor'
-import { GenreChip } from '@/components/atoms/GenreChip'
-import { RatingDisplay } from '@/components/atoms/RatingDisplay'
-import { ProgressBar } from '@/components/atoms/ProgressBar'
-import { TagList } from '@/components/atoms/TagList'
+import { Box, Card, Link, useTheme } from '@mui/material'
+import { BookCardCover } from './BookCardCover'
+import { BookCardMeta } from './BookCardMeta'
+import { BookCardStatus } from './BookCardStatus'
+import { BookCardActions } from './BookCardActions'
 
 export interface BookProps {
   id: string
@@ -22,19 +19,9 @@ export interface BookProps {
   tags?: string[]
 }
 
-const statusColors = {
-  reading: '#1976d2',
-  read: '#2e7d32',
-  'want-to-read': '#0288d1',
-}
-
-const PLACEHOLDER_COVER = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIENvdmVyPC90ZXh0Pjwvc3ZnPg=='
-
 export function BookCard({ id, title, author, status, genre, rating, pages, progress, coverImage, tags }: BookProps) {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
-  const cover = coverImage || PLACEHOLDER_COVER
-  const statusColor = statusColors[status]
 
   return (
     <Link href={`/library/detail/${id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -56,31 +43,12 @@ export function BookCard({ id, title, author, status, genre, rating, pages, prog
           }
         }}
       >
-        <CardMedia
-          component="img"
-          image={cover}
-          alt={`${title} cover`}
-          sx={{ height: 200, objectFit: 'cover', borderRadius: '2px 2px 0 0' }}
-        />
-        <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
-            <BookTitle title={title} />
-            <StatusChip status={status} />
-          </Box>
-
-          <BookAuthor author={author} />
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, flexWrap: 'wrap' }}>
-            <GenreChip genre={genre} />
-            <RatingDisplay rating={rating} />
-          </Box>
-
-          <Box sx={{ mt: 'auto' }}>
-            <ProgressBar pages={pages} progress={progress} status={status} />
-          </Box>
-
-          <TagList tags={tags} />
-        </CardContent>
+        <BookCardCover coverImage={coverImage} title={title} />
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
+          <BookCardMeta title={title} author={author} status={status} genre={genre} rating={rating} />
+          <BookCardStatus pages={pages} progress={progress} status={status} />
+          <BookCardActions tags={tags} />
+        </Box>
       </Card>
     </Link>
   )
