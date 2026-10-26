@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { Box, TextField, Chip, Avatar, Typography, Fade, IconButton } from '@mui/material'
 import { PersonAdd, Search, Clear } from '@mui/icons-material'
-import { normalizedDb } from '@/lib/db-normalized'
+import { BookService } from '@/lib/book-service'
 
 interface Person {
   id: string
@@ -35,7 +35,7 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
 
   const loadPeople = async () => {
     try {
-      const allPeople = await normalizedDb.people.toArray()
+      const allPeople = await BookService.getPeople()
       setPeople(allPeople)
     } catch (err) {
       console.error('Failed to load people:', err)

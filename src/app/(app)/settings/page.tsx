@@ -19,6 +19,8 @@ export default function SettingsPage() {
     setSyncing(true)
     setSyncStatus(null)
     try {
+      await BookService.syncToSupabase(user.id)
+      await BookService.syncPeopleToSupabase(user.id)
       const result = await BookService.syncToSupabase(user.id)
       setSyncStatus(result)
     } finally {
@@ -42,6 +44,7 @@ export default function SettingsPage() {
     setClearing(true)
     try {
       await (db as any).books.clear()
+      await (db as any).people.clear()
       setSyncStatus({ success: 0, failed: 0, errors: [] })
     } finally {
       setClearing(false)
@@ -88,10 +91,8 @@ export default function SettingsPage() {
         {syncStatus && (
           <Alert severity={syncStatus.failed > 0 ? 'error' : 'success'} sx={{ mb: 2 }}>
             <AlertTitle>{syncStatus.failed > 0 ? 'Sync Completed with Errors' : 'Sync Successful'}</AlertTitle>
-            <Typography variant="body2">
-              ✅ Success: {syncStatus.success} books
-              {syncStatus.failed > 0 && <Typography color="error" sx={{ ml: 1 }}>❌ Failed: {syncStatus.failed} books</Typography>}
-            </Typography>
+            ✅ Success: {syncStatus.success} books
+            {syncStatus.failed > 0 && <AlertTitle sx={{ marginLeft: 1, color: 'error' }}>❌ Failed: {syncStatus.failed} books</AlertTitle>}
             {syncStatus.errors.length > 0 && (
               <Box sx={{ mt: 2 }}>
                 <Typography variant="caption" color="text.secondary">Errors:</Typography>
@@ -136,10 +137,10 @@ export default function SettingsPage() {
               </DialogTitle>
               <DialogContent>
                 <Typography variant="body1">
-                  This will permanently delete all your books from local IndexedDB storage. This action cannot be undone.
+                  This will permanently delete all your books and people from local IndexedDB storage. This action cannot be undone.
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Books already synced to Supabase will NOT be affected.
+                  Data already synced to Supabase will NOT be affected.
                 </Typography>
               </DialogContent>
               <DialogActions>

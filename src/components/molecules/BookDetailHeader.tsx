@@ -14,10 +14,13 @@ interface BookDetailProps {
 
 export function BookDetailHeader({ book, onEdit, onDelete }: { book: Book; onEdit: () => void; onDelete: () => void }) {
   const router = useRouter()
-  const statusColors = { reading: 'primary', read: 'success', 'want-to-read': 'info' } as const
+  const statusColors = { reading: 'primary', read: 'success', 'want-to-read': 'info', 'on-hold': 'warning', dnf: 'error' } as const
 
   const handleDelete = async () => {
-    if (confirm('Delete this book?')) { onDelete(); router.push('/library') }
+    if (confirm('Delete this book?')) {
+      await onDelete()
+      router.push('/library')
+    }
   }
 
   return (

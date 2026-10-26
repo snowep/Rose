@@ -37,3 +37,6 @@ next-env.d.ts
 .idea/
 *.swp
 *.swo
+
+# graphify
+/graphify-out

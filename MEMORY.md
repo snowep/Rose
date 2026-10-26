@@ -448,6 +448,13 @@ The complex multi-tab BookForm components (BookFormCoreIdentity, BookFormAuthors
 
 *Last updated: 2026-10-26*
 
+## Perf: Incremental TS + Server-Side Books (2026-10-26)
+- tsconfig: tsBuildInfoFile for incremental TypeScript caching
+- /books page: server component with server-side fetch via createServerClient
+- Branch: feat/perf-incremental merged to main
+- Graphify graph updated in graphify-out (via `graphify update` after code changes)
+- Build verified
+
 ## Reading Status Feature (2026-10-26)
 - Added 5 statuses: want-to-read, reading, read, on-hold, dnf
 - BookService.updateStatus() with auto timestamps (startedAt, finishedAt)

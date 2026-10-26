@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Box, Card, CardContent, Typography, Button, Drawer, IconButton, Snackbar, Alert } from '@mui/material'
+import { Box, Card, CardContent, Typography, Button, Drawer, IconButton, Snackbar, Alert, Stack } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
+import { Bookmarks } from '@mui/icons-material'
 import { BookService } from '@/lib/book-service'
 
 export function BooksDiscoveryList({ books = [], userId }: { books?: any[], userId?: string }) {
@@ -31,19 +32,33 @@ export function BooksDiscoveryList({ books = [], userId }: { books?: any[], user
 
   return (
     <Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(250px,1fr))', gap: 2 }}>
-        {books.map((b) => (
-          <Card key={b.id} sx={{ cursor: 'pointer' }} onClick={() => setSelected(b)}>
-            <CardContent>
-              <Typography variant="h6">{b.title}</Typography>
-              <Typography variant="body2" color="text.secondary">{b.author}</Typography>
-              <Button size="small" sx={{ mt: 1 }} onClick={(e) => { e.stopPropagation(); handleAddToShelf(b.id) }}>
-                Add to Shelf
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
+      {books.length === 0 ? (
+        <Box sx={{ py: 8, textAlign: 'center' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <Bookmarks sx={{ fontSize: 64, color: 'text.disabled' }} />
+            <Typography variant="h6" color="text.secondary">
+              No books in the catalog yet
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Add a book to your library to see it here.
+            </Typography>
+          </Box>
+        </Box>
+      ) : (
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(250px,1fr))', gap: 2 }}>
+          {books.map((b) => (
+            <Card key={b.id} sx={{ cursor: 'pointer' }} onClick={() => setSelected(b)}>
+              <CardContent>
+                <Typography variant="h6">{b.title}</Typography>
+                <Typography variant="body2" color="text.secondary">{b.author}</Typography>
+                <Button size="small" sx={{ mt: 1 }} onClick={(e) => { e.stopPropagation(); handleAddToShelf(b.id) }}>
+                  Add to Shelf
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      )}
 
       <Drawer anchor="right" open={!!selected} onClose={() => setSelected(null)}>
         <Box sx={{ width: 400, p: 2 }}>

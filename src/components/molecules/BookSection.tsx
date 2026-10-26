@@ -10,7 +10,13 @@ export interface BookSectionProps {
 
 export function BookSection({ title, books }: BookSectionProps) {
   if (books.length === 0) {
-    return null
+    return (
+      <Box sx={{ py: 2, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          No books in {title.toLowerCase()}
+        </Typography>
+      </Box>
+    )
   }
 
   return (

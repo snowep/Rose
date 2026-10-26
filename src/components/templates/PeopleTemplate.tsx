@@ -6,7 +6,7 @@ import { AddPersonModal } from '@/components/molecules/AddPersonModal'
 import { useState, useMemo, useEffect } from 'react'
 import { Typography, TextField, Button, Chip, Avatar, Card, CardContent, Grid } from '@mui/material'
 import { PersonAdd, Search, Clear } from '@mui/icons-material'
-import { normalizedDb } from '@/lib/db-normalized'
+import { BookService } from '@/lib/book-service'
 import { useRouter } from 'next/navigation'
 
 interface Person {
@@ -34,7 +34,7 @@ export function PeopleTemplate() {
 
   const loadPeople = async () => {
     try {
-      const allPeople = await normalizedDb.people.toArray()
+      const allPeople = await BookService.getPeople()
       setPeople(allPeople.sort((a, b) => formatPersonName(a).localeCompare(formatPersonName(b))))
     } catch (err) {
       console.error('Failed to load people:', err)
@@ -81,12 +81,12 @@ export function PeopleTemplate() {
     try {
       const data = {
         ...personData,
-        created_at: new Date(),
-        updated_at: new Date()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
-      await normalizedDb.people.add(data)
+      await BookService.createPerson(data)
       setModalOpen(false)
-      router.refresh()
+      await loadPeople()
     } catch (err) {
       console.error('Failed to add person:', err)
     }
@@ -94,7 +94,7 @@ export function PeopleTemplate() {
 
   const handleDeletePerson = async (id: string) => {
     try {
-      await normalizedDb.people.delete(id)
+      await BookService.deletePerson(id)
       loadPeople()
     } catch (err) {
       console.error('Failed to delete person:', err)
