@@ -1,26 +1,22 @@
-'use client'
-
 import { PageContainer } from '@/components/molecules/PageContainer'
 import { BooksDiscoveryList } from '@/components/organisms/BooksDiscoveryList'
-import { useState, useEffect } from 'react'
 import { Typography } from '@mui/material'
-import { getAllBooks } from '@/lib/supabase/books'
-import { useAuth } from '@/hooks/useAuth'
+import { getAllBooksServer } from '@/lib/supabase/books-server'
+import { createServerClient } from '@/lib/supabase/server'
 
-export default function BooksPage() {
-  const [books, setBooks] = useState<any[]>([])
-  const { user } = useAuth()
-
-  useEffect(() => {
-    getAllBooks().then(setBooks).catch(console.error)
-  }, [])
+export default async function BooksPage() {
+  const [books, supabase] = await Promise.all([
+    getAllBooksServer(),
+    createServerClient(),
+  ])
+  const { data: userData } = await supabase.auth.getUser()
 
   return (
     <PageContainer title="All Books">
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Discover books from the community
       </Typography>
-      <BooksDiscoveryList books={books} userId={user?.id} />
+      <BooksDiscoveryList books={books} userId={userData?.user?.id} />
     </PageContainer>
   )
 }
