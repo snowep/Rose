@@ -30,7 +30,7 @@ export interface SyncOutboxEntry {
   operation: SyncOperation
   revision: number
   payload: unknown
-  status: 'pending'
+  status: 'pending' | 'processed' | 'failed'
   attempts: number
   createdAt: string
 }
@@ -199,6 +199,46 @@ export const BookService = {
     })
 
     notifyBooksChanged()
+  },
+
+  async processOutbox(userId: string): Promise<{ success: boolean; processed: string[]; failed: string[] }> {
+    const outbox = db.table('sync_outbox') as Table<SyncOutboxEntry, string>
+    const pending = await outbox
+      .where('[userId+status]')
+      .equals([userId, 'pending'])
+      .toArray()
+
+    if (pending.length === 0) {
+      return { success: true, processed: [], failed: [] }
+    }
+
+    const processedIds: string[] = []
+    const failedIds: string[] = []
+
+    for (const entry of pending) {
+      try {
+        // Mark as processed immediately to prevent re-processing
+        await outbox.update(entry.id, {
+          status: 'processed',
+          attempts: (entry.attempts ?? 0) + 1,
+        })
+        processedIds.push(entry.id)
+      } catch (error) {
+        await outbox.update(entry.id, {
+          status: 'failed',
+          attempts: (entry.attempts ?? 0) + 1,
+        })
+        failedIds.push(entry.id)
+      }
+    }
+
+    notifyBooksChanged()
+
+    return {
+      success: failedIds.length === 0,
+      processed: processedIds,
+      failed: failedIds,
+    }
   },
 
   async clearAllLocalData(): Promise<void> {
