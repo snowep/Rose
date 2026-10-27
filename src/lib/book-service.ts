@@ -527,4 +527,12 @@ export const BookService = {
       console.error('Publisher sync exception:', err)
     }
   },
-}
+
+  // Record an outbox entry for idempotent sync
+  async recordOutbox(userId: string, operation: 'create' | 'update' | 'delete', entity: 'book' | 'author' | 'publisher' | 'person' | 'user_book' | 'reading_log', entityId: string, payload: any) {
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('outbox')
+      .insert({ user_id: userId, operation, entity, entity_id: entityId, payload, revision: 1 })
+    if (error) console.error('Outbox record error:', error)
+},

@@ -84,6 +84,22 @@ insert into reading_statuses (name, slug, display_name, description, sort_order,
   ('dnf', 'dnf', 'Did Not Finish', 'You stopped reading this book', 5, true, '#c62828')
 on conflict (name) do nothing;
 
+-- Outbox for manual sync engine idempotency
+create table outbox (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  operation text not null check (operation in ('create', 'update', 'delete')),
+  entity text not null check (entity in ('book', 'author', 'publisher', 'person', 'user_book', 'reading_log')),
+  entity_id uuid not null,
+  revision int not null default 1,
+  payload jsonb not null,
+  created_at timestamptz not null default now(),
+  processed boolean not null default false
+);
+create index idx_outbox_user on outbox(user_id);
+create index idx_outbox_entity on outbox(entity, entity_id);
+create index idx_outbox_processed on outbox(processed);
+
 -- Catalog submissions table for moderated workflow
 create table catalog_submissions (
   id uuid primary key default gen_random_uuid(),
