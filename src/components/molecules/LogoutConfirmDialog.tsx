@@ -41,7 +41,7 @@ export function LogoutConfirmDialog({
         )}
         <Alert severity="info" variant="filled" sx={{ mb: 2 }}>
           <AlertTitle>Confirm Sign Out</AlertTitle>
-          Are you sure you want to sign out? You'll need to sign in again to access your library.
+          Are you sure you want to sign out? You&apos;ll need to sign in again to access your library.
         </Alert>
         <Typography variant="body2" color="text.secondary">
           You can always sign back in from the login page.

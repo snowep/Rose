@@ -59,7 +59,7 @@ export function ForgotPasswordForm() {
           Password Reset Sent
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
-          We've sent a password reset link to {email}. Please check your email.
+          We&apos;ve sent a password reset link to {email}. Please check your email.
         </Typography>
         <AuthLink href="/login">Back to sign in</AuthLink>
       </Box>

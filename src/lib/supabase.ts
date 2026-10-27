@@ -48,20 +48,3 @@ export async function getBook(id: string) {
   if (error) throw error
   return data
 }
-
-export async function createBook(book: Omit<BookRecord, 'id' | 'created_at' | 'updated_at'>) {
-  const { data, error } = await supabase.from('books').insert(book).select().single()
-  if (error) throw error
-  return data
-}
-
-export async function updateBook(id: string, updates: Partial<BookRecord>) {
-  const { data, error } = await supabase.from('books').update(updates).eq('id', id).select().single()
-  if (error) throw error
-  return data
-}
-
-export async function deleteBook(id: string) {
-  const { error } = await supabase.from('books').delete().eq('id', id)
-  if (error) throw error
-}

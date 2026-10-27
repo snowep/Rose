@@ -3,6 +3,7 @@
 import { createContext, useEffect, useState, type ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
+import { setActiveSyncUser } from '@/lib/book-service'
 
 interface AuthContextValue {
   user: User | null
@@ -30,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true
     const supabase = createClient()
+    setActiveSyncUser(null)
 
     const loadSession = async () => {
       const { data, error } = await supabase.auth.getSession()
@@ -40,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setSession(data.session)
         setUser(data.session?.user ?? null)
+        setActiveSyncUser(data.session?.user.id ?? null)
       }
       setLoading(false)
     }
@@ -52,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!active) return
       setSession(nextSession)
       setUser(nextSession?.user ?? null)
+      setActiveSyncUser(nextSession?.user.id ?? null)
       setLoading(false)
     })
 
@@ -62,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       active = false
+      setActiveSyncUser(null)
       subscription.unsubscribe()
       window.removeEventListener('online', updateOnlineStatus)
       window.removeEventListener('offline', updateOnlineStatus)

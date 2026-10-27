@@ -9,7 +9,6 @@ export function useBooks() {
   const [loading, setLoading] = useState(true)
 
   const loadBooks = async () => {
-    setLoading(true)
     try {
       const data = await BookService.getAll()
       setBooks(data)

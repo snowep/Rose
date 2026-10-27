@@ -3,7 +3,7 @@
 import { Alert, Box, Dialog, DialogContent, DialogTitle, DialogActions, TextField, Button, MenuItem } from '@mui/material'
 import { Book } from '@/lib/db'
 
-import React, { useEffect, useState } from 'react'
+import { useState, type FormEvent } from 'react'
 
 interface BookModalProps {
   open: boolean
@@ -13,7 +13,19 @@ interface BookModalProps {
 }
 
 export function BookModal({ open, onClose, onSave, editingBook }: BookModalProps) {
-  const [book, setBook] = React.useState<Partial<Book>>({
+  return (
+    <BookModalForm
+      key={`${open}-${editingBook?.id ?? 'new'}-${editingBook?.updatedAt ?? ''}`}
+      open={open}
+      onClose={onClose}
+      onSave={onSave}
+      editingBook={editingBook}
+    />
+  )
+}
+
+function BookModalForm({ open, onClose, onSave, editingBook }: BookModalProps) {
+  const [book, setBook] = useState<Partial<Book>>(() => editingBook ?? ({
     title: '',
     author: '',
     status: 'want-to-read',
@@ -23,30 +35,11 @@ export function BookModal({ open, onClose, onSave, editingBook }: BookModalProps
     progress: 0,
     tags: [],
     notes: '',
-  })
+  }))
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  useEffect(() => {
-    setSaveError(null)
-    if (editingBook) {
-      setBook(editingBook)
-    } else if (open) {
-      setBook({
-        title: '',
-        author: '',
-        status: 'want-to-read',
-        genre: '',
-        rating: 0,
-        pages: 0,
-        progress: 0,
-        tags: [],
-        notes: '',
-      })
-    }
-  }, [editingBook, open])
-
-  const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (saving) return
     if (!book.title?.trim() || !book.author?.trim()) return

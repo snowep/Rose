@@ -26,10 +26,6 @@ export function PeopleTemplate() {
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    loadPeople()
-  }, [])
-
   const loadPeople = async () => {
     try {
       const allPeople = await BookService.getPeople()
@@ -38,6 +34,22 @@ export function PeopleTemplate() {
       console.error('Failed to load people:', err)
     }
   }
+
+  useEffect(() => {
+    let active = true
+    void BookService.getPeople()
+      .then((allPeople) => {
+        if (active) {
+          setPeople(allPeople.sort((a, b) => formatPersonName(a).localeCompare(formatPersonName(b))))
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) console.error('Failed to load people:', error)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const filteredPeople = useMemo(() => {
     let filtered = people

@@ -17,8 +17,14 @@ export default function LibraryDetailPage() {
   const [showLogModal, setShowLogModal] = useState(false)
 
   useEffect(() => {
+    let active = true
     if (params.id) {
-      loadBook(params.id as string)
+      void BookService.getById(params.id as string).then((data) => {
+        if (active) setBook(data)
+      })
+    }
+    return () => {
+      active = false
     }
   }, [params.id])
 

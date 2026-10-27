@@ -28,17 +28,18 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
   const [selectedRole, setSelectedRole] = useState(defaultRole)
 
   useEffect(() => {
-    loadPeople()
-  }, [])
-
-  const loadPeople = async () => {
-    try {
-      const allPeople = await BookService.getPeople()
-      setPeople(allPeople)
-    } catch (err) {
-      console.error('Failed to load people:', err)
+    let active = true
+    void BookService.getPeople()
+      .then((allPeople) => {
+        if (active) setPeople(allPeople)
+      })
+      .catch((error: unknown) => {
+        if (active) console.error('Failed to load people:', error)
+      })
+    return () => {
+      active = false
     }
-  }
+  }, [])
 
   const filteredPeople = useMemo(() => {
     if (!inputValue) return people.slice(0, 10)
@@ -258,7 +259,7 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
           {inputValue && filteredPeople.length === 0 && !getDidYouMean && (
             <Box sx={{ px: 2, py: 2 }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                No existing people found for "{inputValue}"
+                No existing people found for &quot;{inputValue}&quot;
               </Typography>
               <Box
                 onClick={handleAddNewPerson}
@@ -274,7 +275,7 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
                 }}
               >
                 <PersonAdd fontSize="small" />
-                <Typography variant="body2">Add "{inputValue}" as new person (will create later)</Typography>
+                <Typography variant="body2">Add &quot;{inputValue}&quot; as new person (will create later)</Typography>
               </Box>
             </Box>
           )}
