@@ -6,6 +6,7 @@ import { createEmptyBookFormState } from '@/types/book-form'
 import type { BookFormState } from '@/types/book-form'
 import type { Book } from '@/lib/db'
 import { isValidISBN } from '@/components/atoms/FormISBNInput'
+import { BOOKS_CHANGED_EVENT, SYNC_OUTBOX_CHANGED_EVENT } from '@/lib/book-service'
 
 export type { BookFormState } from '@/types/book-form'
 
@@ -87,7 +88,24 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
         <Button type="submit" form="add-book-form" variant="contained" disabled={saving || !book.title.trim()}>
           {saving ? 'Saving...' : 'Save book'}
         </Button>
+        <Button variant="outlined" size="small" onClick={() => submitToCatalog(book)} disabled={saving}>
+          {saving ? 'Submitting...' : 'Submit to catalog'}
+        </Button>
       </DialogActions>
     </Dialog>
   )
+}
+
+async function submitToCatalog(book: BookFormState) {
+  await BookService.recordOutbox(
+    'book',
+    crypto.randomUUID(),
+    'create',
+    { title: book.title, author: book.authors.join(', '), status: book.status || 'want-to-read' }
+  )
+  // Dispatch event to refresh book lists
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(BOOKS_CHANGED_EVENT))
+    window.dispatchEvent(new Event(SYNC_OUTBOX_CHANGED_EVENT))
+  }
 }
