@@ -23,7 +23,7 @@ export function HeatmapGrid({ cells, mode }: { cells: HeatmapCellData[]; mode: '
     })
 
     return (
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(3, minmax(0, 1fr))' }, gap: 2 }}>
         {months.map((month) => (
           <Box key={month.name}>
             <Typography variant="caption" sx={{ mb: 0.5, display: 'block', color: 'text.secondary', fontSize: '0.7rem' }}>
@@ -67,9 +67,15 @@ export function HeatmapGrid({ cells, mode }: { cells: HeatmapCellData[]; mode: '
   const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, width: '100%', minWidth: 0 }}>
       {/* Weekday headers */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(7, ${cellSize}px)`, gap: 0.5, mb: 0.5 }}>
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(7, ${cellSize}px)`,
+        gap: 0.5,
+        mb: 0.5,
+        '@media (max-width: 599px)': { gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' },
+      }}>
         {weekdays.map((day, idx) => (
           <Typography key={`${day}-${idx}`} variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textAlign: 'center' }}>
             {day}
@@ -77,14 +83,26 @@ export function HeatmapGrid({ cells, mode }: { cells: HeatmapCellData[]; mode: '
         ))}
       </Box>
       {weeks.map((week, wi) => (
-        <Box key={wi} sx={{ display: 'grid', gridTemplateColumns: `repeat(7, ${cellSize}px)`, gap: 0.5 }}>
-          {week.map((cell, di) => 
+        <Box key={wi} sx={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(7, ${cellSize}px)`,
+          gap: 0.5,
+          '@media (max-width: 599px)': { gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' },
+        }}>
+          {week.map((cell, di) => (
             cell.date ? (
-              <HeatmapCell key={cell.date} date={cell.date} count={cell.count} size={cellSize} isToday={cell.date === today} />
+              <HeatmapCell key={cell.date} date={cell.date} count={cell.count} size={cellSize} isToday={cell.date === today} responsive />
             ) : (
-              <Box key={`empty-${wi}-${di}`} sx={{ width: cellSize, height: cellSize }} />
+              <Box
+                key={`empty-${wi}-${di}`}
+                sx={{
+                  width: cellSize,
+                  height: cellSize,
+                  '@media (max-width: 599px)': { width: '100%', height: 'auto', aspectRatio: '1' },
+                }}
+              />
             )
-          )}
+          ))}
         </Box>
       ))}
     </Box>

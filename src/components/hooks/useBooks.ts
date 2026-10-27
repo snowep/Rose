@@ -1,6 +1,6 @@
 'use client'
 
-import { BookService } from '@/lib/book-service'
+import { BOOKS_CHANGED_EVENT, BookService } from '@/lib/book-service'
 import { Book } from '@/lib/db'
 import { useEffect, useState } from 'react'
 
@@ -19,7 +19,13 @@ export function useBooks() {
   }
 
   useEffect(() => {
-    loadBooks()
+    const handleBooksChanged = () => {
+      void loadBooks()
+    }
+
+    void loadBooks()
+    window.addEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged)
+    return () => window.removeEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged)
   }, [])
 
   const createBook = async (bookData: Omit<Book, 'id' | 'createdAt' | 'updatedAt'>) => {

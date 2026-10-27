@@ -2,43 +2,56 @@
 
 import { createContext, useContext, useState, useEffect } from 'react'
 
-// Dark-only theme context — no light mode
+// Theme context supporting light/dark/system modes
 interface ThemeContextType {
-  mode: 'dark'
+  mode: 'light' | 'dark' | 'system'
   toggleMode: () => void
-  setMode: (mode: 'dark') => void
+  setMode: (mode: 'light' | 'dark' | 'system') => void
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-// Always return dark — no light mode logic
-const getInitialTheme = (): 'dark' => 'dark'
+const getInitialMode = (): 'light' | 'dark' | 'system' => {
+  // Check for saved preference first
+  try {
+    const savedMode = localStorage.getItem('theme-mode') as 'light' | 'dark' | 'system'
+    if (savedMode) return savedMode
+  } catch (e) {
+    // localStorage not available
+  }
+  // Check for prefers-color-scheme media query
+  if (typeof window !== 'undefined') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    return prefersDark ? 'dark' : 'light'
+  }
+  return 'light'
+}
 
 export function ThemeContextProvider({ children }: { children: React.ReactNode }) {
-  // Always start with dark mode
-  const [mode, setMode] = useState<'dark'>('dark')
+  const [mode, setMode] = useState<'light' | 'dark' | 'system'>(
+    getInitialMode()
+  )
 
   useEffect(() => {
-    // Always persist dark mode to localStorage
+    // Persist mode to localStorage
     try {
-      localStorage.setItem('theme-mode', 'dark')
+      localStorage.setItem('theme-mode', mode)
     } catch (e) {
       // localStorage not available (e.g., incognito)
     }
-    // Always set data-theme attribute to dark
+    // Set data-theme attribute on document element
     if (typeof window !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', 'dark')
+      document.documentElement.setAttribute('data-theme', mode)
     }
   }, [mode])
 
   const toggleMode = () => {
-    // Always set to dark
-    setMode('dark')
+    const newMode = mode === 'dark' ? 'light' : 'dark'
+    setMode(newMode)
   }
 
-  // No effectiveMode needed — always dark
   return (
-    <ThemeContext.Provider value={{ mode: 'dark', toggleMode, setMode }}>
+    <ThemeContext.Provider value={{ mode, toggleMode, setMode }}>
       {children}
     </ThemeContext.Provider>
   )

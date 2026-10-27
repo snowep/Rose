@@ -7,6 +7,23 @@ import { createClient } from '@/lib/supabase/client'
 const db = new Dexie('rose') as any
 export { db }
 
+export const BOOKS_CHANGED_EVENT = 'rose-books-changed'
+
+function toSupabaseCatalogBook(book: Partial<Book>) {
+  const catalogBook: Record<string, unknown> = {
+    id: book.id,
+    title: book.title,
+  }
+
+  if (book.subtitle !== undefined) catalogBook.subtitle = book.subtitle
+  if (book.isbn10 !== undefined) catalogBook.isbn10 = book.isbn10
+  if (book.isbn13 !== undefined) catalogBook.isbn13 = book.isbn13
+  if (book.publicationYear !== undefined) catalogBook.publication_year = book.publicationYear
+  if (book.description !== undefined) catalogBook.description = book.description
+
+  return catalogBook
+}
+
 db.version(1).stores({
   books: 'id, title, author, status, genre, rating, pages, progress, createdAt, updatedAt',
   user_books: 'id, user_id, book_id, read_count, added_at',
@@ -71,7 +88,7 @@ export const BookService = {
       created_at: now,
       updated_at: now,
     }
-    ;(db as any).people.add(record)
+    await (db as any).people.add(record)
     return id
   },
 
@@ -93,7 +110,10 @@ export const BookService = {
       updatedAt: now,
     }
 
-    ;(db as any).books.add(record)
+    await (db as any).books.add(record)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(BOOKS_CHANGED_EVENT))
+    }
     return id
   },
 
@@ -181,155 +201,211 @@ export const BookService = {
     })
   },
 
-  async syncToSupabase(userId: string): Promise<{ success: number; failed: number; errors: string[] }> {
-    const supabase = createClient()
-    const books = await this.getAll()
-    let success = 0
-    let failed = 0
-    const errors: string[] = []
-
-    for (const book of books) {
-      try {
-        // 1. Upsert shared catalog book (no author column)
-        const bookData: any = { id: book.id, title: book.title }
-        if (book.subtitle !== undefined) bookData.subtitle = book.subtitle
-        if (book.isbn10 !== undefined) bookData.isbn10 = book.isbn10
-        if (book.isbn13 !== undefined) bookData.isbn13 = book.isbn13
-        if (book.publicationYear !== undefined) bookData.publication_year = book.publicationYear
-        if (book.description !== undefined) bookData.description = book.description
-        const { error: catalogError } = await supabase
-          .from('books')
-          .upsert(bookData)
-        if (catalogError) throw catalogError
-
-        // 2. Author mapping: find or create author, then link via book_authors
-        if (book.author && book.author.trim()) {
-          // Find existing author by name (case-insensitive)
-          const { data: existingAuthors, error: authorFindError } = await supabase
-            .from('authors')
-            .select('id')
-            .ilike('name', book.author.trim())
-            .limit(1)
-          if (authorFindError) {
-            console.error('Author find error:', authorFindError.message)
-            throw authorFindError
-          }
-
-          let authorId: string
-          if (existingAuthors && existingAuthors.length > 0) {
-            authorId = existingAuthors[0].id
-          } else {
-            // Create new author
-            const { data: newAuthor, error: authorCreateError } = await supabase
-              .from('authors')
-              .insert({ name: book.author.trim(), sort_name: book.author.trim() })
-              .select('id')
-              .single()
-            if (authorCreateError) {
-              console.error('Author create error:', authorCreateError.message)
-              throw authorCreateError
-            }
-            authorId = newAuthor.id
-          }
-          // Upsert book_authors junction
-          const { error: baError } = await supabase
-            .from('book_authors')
-            .upsert({ book_id: book.id, author_id: authorId, is_primary: true, position: 1 })
-          if (baError) throw baError
-        }
-
-        // 3. User-scoped shelf entry — status is now a string enum, not a UUID reference
-        const { error: shelfError } = await supabase
-          .from('user_books')
-          .upsert({
-            user_id: userId,
-            book_id: book.id,
-            progress: book.progress ?? 0,
-            rating: book.rating,
-            cover_image: book.coverImage,
-            notes: book.notes,
-            tags: book.tags,
-            status: book.status,
-          }, { onConflict: 'user_id,book_id' })
-        if (shelfError) throw shelfError
-
-        // 4. Reading logs - upsert on (user_id, book_id, log_date) to avoid duplicates
-        for (const log of book.dailyLog || []) {
-          const { error: logError } = await supabase
-            .from('reading_logs')
-            .upsert({
-              user_id: userId,
-              book_id: book.id,
-              log_date: log.date,
-              pages_read: log.pagesRead,
-            }, { onConflict: 'user_id,book_id,log_date' })
-          if (logError) {
-            console.error(`Reading log error for "${book.title}":`, logError.message)
-            throw logError
-          }
-        }
-
-        success++
-      } catch (err) {
-        failed++
-        errors.push(`${book.title}: ${err instanceof Error ? err.message : 'Unknown error'}`)
-      }
-    }
-
-    return { success, failed, errors }
-  },
+  // === Supabase sync functions ===
 
   // Sync people from local Dexie to Supabase
-  // Note: SQL people table only has columns: id, name, sort_name
-  // Only sync fields that exist in the SQL schema
   async syncPeopleToSupabase(userId: string): Promise<void> {
-    const localPeople = await BookService.getPeople()
-    const supabase = createClient()
-    for (const person of localPeople) {
-      try {
-        await supabase
-          .from('people')
-          .upsert({
-            id: person.id,
-            name: person.full_name || `${person.first_name} ${person.last_name || ''}`.trim() || 'Unknown',
-            sort_name: person.sort_name || person.last_name || '',
-          })
-      } catch (err) {
-        console.error(`Person sync error for ${person.id}:`, err)
+    try {
+      const localPeople = await this.getPeople()
+      const supabase = createClient()
+
+      for (const person of localPeople) {
+        try {
+          await supabase
+            .from('people')
+            .upsert({
+              id: person.id,
+              name: person.full_name || `${person.first_name} ${person.last_name || ''}`.trim() || 'Unknown',
+              sort_name: person.sort_name || person.last_name || '',
+            })
+        } catch (err) {
+          console.error(`Person sync error for ${person.id}:`, err)
+        }
       }
+    } catch (err) {
+      console.error('People sync failed:', err)
     }
   },
 
   // Sync publishers from local Dexie to Supabase
-  // Note: SQL publishers table only has columns: id, name
-  // Only sync fields that exist in the SQL schema
   async syncPublishersToSupabase(userId: string): Promise<void> {
-    const supabase = createClient()
-    const { data: localPublishers } = await supabase
-      .from('books')
-      .select('publisher_id, publishers(name)')
-      .not('publisher_id', 'is', null)
-    // Get unique publishers from books
-    const publisherSet = new Set(localPublishers?.map((b: any) => b.publishors?.name).filter(Boolean) || [])
-    for (const name of publisherSet) {
-      try {
-        await supabase
-          .from('publishers')
-          .upsert({ name })
-      } catch (err) {
-        console.error(`Publisher sync error for ${name}:`, err)
+    try {
+      const supabase = createClient()
+      // Get unique publishers directly from local books
+      const localBooks = await this.getAll()
+      const publisherSet = new Set(
+        localBooks
+          ?.map((book: any) => book.author)
+          .filter(Boolean) || []
+      )
+
+      for (const name of publisherSet) {
+        try {
+          await supabase
+            .from('publishers')
+            .upsert({ name })
+        } catch (err) {
+          console.error(`Publisher sync error for ${name}:`, err)
+        }
       }
+    } catch (err) {
+      console.error('Publishers sync failed:', err)
     }
   },
 
+  // Upsert user_books shelf entry with status enum and onConflict
+  async upsertUserBook(userId: string, bookId: string, book: any) {
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('user_books')
+        .upsert({
+          user_id: userId,
+          book_id: bookId,
+          progress: book.progress ?? 0,
+          rating: book.rating,
+          cover_image: book.coverImage,
+          notes: book.notes,
+          tags: book.tags,
+          status: book.status, // enum: want-to-read | reading | read | on-hold | dnf
+        }, { onConflict: 'user_id,book_id' })
+      if (error) console.error('User book upsert error:', error)
+    } catch (err) {
+      console.error('User book upsert exception:', err)
+    }
+  },
+
+  // Upsert reading logs with log_date for heatmap
+  async upsertReadingLogs(userId: string, bookId: string, dailyLog: any[]) {
+    try {
+      const supabase = createClient()
+
+      for (const log of dailyLog || []) {
+        const { error } = await supabase
+          .from('reading_logs')
+          .upsert({
+            user_id: userId,
+            book_id: bookId,
+            log_date: log.date,
+            pages_read: log.pagesRead,
+          }, { onConflict: 'user_id,book_id,log_date' })
+        if (error) console.error(`Reading log error for book ${bookId}:`, error.message)
+      }
+    } catch (err) {
+      console.error('Reading logs sync exception:', err)
+    }
+  },
+
+  // Full sync: push all local books, people, publishers, authors, reading logs to Supabase
+  async syncToSupabase(userId: string): Promise<{ success: number; failed: number; errors: string[] }> {
+    try {
+      const supabase = createClient()
+      const localBooks = await this.getAll()
+
+      // 1. Sync people first
+      await this.syncPeopleToSupabase(userId)
+
+      // 2. Sync publishers
+      await this.syncPublishersToSupabase(userId)
+
+      // 3. Fetch status mapping
+      const { data: statusRows, error: statusError } = await supabase
+        .from('reading_statuses')
+        .select('id, slug')
+      if (statusError) throw statusError
+      const statusSlugToId: Record<string, string> = {}
+      for (const r of statusRows || []) statusSlugToId[r.slug] = r.id
+
+      let success = 0
+      let failed = 0
+      const errors: string[] = []
+
+      for (const book of localBooks) {
+        try {
+          // 1. Upsert catalog book
+          const { error: catalogError } = await supabase
+            .from('books')
+            .upsert(toSupabaseCatalogBook(book))
+          if (catalogError) throw catalogError
+
+          // 2. Author mapping
+          const author = book.author ?? ''
+          const trimmed = author.trim()
+          if (trimmed.length > 0 && book.id) {
+            this.syncAuthorToSupabase(trimmed as string, book.id)
+          }
+
+          // 3. User shelf entry
+          const statusId = book.status && statusSlugToId[book.status] ? statusSlugToId[book.status] : null
+          const { error: shelfError } = await supabase
+            .from('user_books')
+            .upsert({
+              user_id: userId,
+              book_id: book.id,
+              progress: book.progress ?? 0,
+              rating: book.rating,
+              cover_image: book.coverImage,
+              notes: book.notes,
+              tags: book.tags,
+              reading_status_id: statusId,
+            }, { onConflict: 'user_id,book_id' })
+          if (shelfError) throw shelfError
+
+          // 4. Reading logs
+          for (const log of book.dailyLog || []) {
+            const { error: logError } = await supabase
+              .from('reading_logs')
+              .upsert({
+                user_id: userId,
+                book_id: book.id,
+                log_date: log.date,
+                pages_read: log.pagesRead,
+              }, { onConflict: 'user_id,book_id,log_date' })
+            if (logError) throw logError
+          }
+
+          success++
+        } catch (err) {
+          failed++
+          errors.push(`${book.title}: ${err instanceof Error ? err.message : 'Unknown error'}`)
+        }
+      }
+
+      return { success, failed, errors }
+    } catch (err) {
+      return { success: 0, failed: 1, errors: [err instanceof Error ? err.message : 'Unknown error'] }
+    }
+  },
+
+  // Pull data from Supabase for a user
   async pullFromSupabase(userId: string): Promise<{ success: number; failed: number; errors: string[] }> {
     try {
       const supabase = createClient()
       const { data: rows, error } = await supabase
         .from('user_books')
-        .select('*, books(*), reading_logs(log_date, pages_read)')
+        .select('*, books(*)')
         .eq('user_id', userId)
+
       if (error) throw error
+
+      const bookIds = [...new Set((rows || []).map((row: any) => row.book_id).filter(Boolean))]
+      const logsByBook = new Map<string, { log_date: string; pages_read: number }[]>()
+
+      if (bookIds.length > 0) {
+        const { data: readingLogs, error: readingLogsError } = await supabase
+          .from('reading_logs')
+          .select('book_id, log_date, pages_read')
+          .eq('user_id', userId)
+          .in('book_id', bookIds)
+
+        if (readingLogsError) throw readingLogsError
+
+        for (const log of readingLogs || []) {
+          const bookLogs = logsByBook.get(log.book_id) || []
+          bookLogs.push(log)
+          logsByBook.set(log.book_id, bookLogs)
+        }
+      }
 
       let success = 0
       let failed = 0
@@ -338,11 +414,13 @@ export const BookService = {
       for (const row of rows || []) {
         const book = (row as any).books
         if (!book) continue
+
         try {
-          const dailyLog = (row.reading_logs || []).map((l: any) => ({
+          const dailyLog = (logsByBook.get(row.book_id) || []).map((l) => ({
             date: l.log_date,
             pagesRead: l.pages_read,
           }))
+
           await db.books.put({
             id: book.id,
             title: book.title,
@@ -374,5 +452,79 @@ export const BookService = {
     } catch (err) {
       return { success: 0, failed: 1, errors: [err instanceof Error ? err.message : 'Unknown error'] }
     }
-  }
+  },
+
+  // Sync a single book to Supabase catalog
+  async syncBookCatalog(book: any) {
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('books')
+        .upsert(toSupabaseCatalogBook(book))
+      if (error) console.error('Catalog sync error:', error)
+    } catch (err) {
+      console.error('Catalog sync exception:', err)
+    }
+  },
+
+  // Sync an author to Supabase and link via book_authors
+  async syncAuthorToSupabase(authorName: string, bookId: string) {
+    try {
+      const supabase = createClient()
+      const name = authorName?.trim()
+      if (!name) return
+
+      // Find existing author by name (case-insensitive)
+      const { data: existingAuthors, error: authorFindError } = await supabase
+        .from('authors')
+        .select('id')
+        .ilike('name', name)
+        .limit(1)
+
+      if (authorFindError) {
+        console.error('Author find error:', authorFindError.message)
+        return
+      }
+
+      let authorId: string
+      if (existingAuthors && existingAuthors.length > 0) {
+        authorId = existingAuthors[0].id
+      } else {
+        // Create new author
+        const { data: newAuthor, error: authorCreateError } = await supabase
+          .from('authors')
+          .insert({ name, sort_name: name })
+          .select('id')
+          .single()
+        if (authorCreateError) {
+          console.error('Author create error:', authorCreateError.message)
+          return
+        }
+        authorId = newAuthor.id
+      }
+
+      // Upsert book_authors junction
+      const { error: baError } = await supabase
+        .from('book_authors')
+        .upsert({ book_id: bookId, author_id: authorId, is_primary: true, position: 1 })
+      if (baError) console.error('Book-author sync error:', baError)
+    } catch (err) {
+      console.error('Author sync exception:', err)
+    }
+  },
+
+  // Sync a publisher to Supabase
+  async syncPublisherToSupabase(name: string) {
+    try {
+      const supabase = createClient()
+      if (!name || !name.trim()) return
+
+      const { error } = await supabase
+        .from('publishers')
+        .upsert({ name: name.trim() })
+      if (error) console.error('Publisher sync error:', error)
+    } catch (err) {
+      console.error('Publisher sync exception:', err)
+    }
+  },
 }

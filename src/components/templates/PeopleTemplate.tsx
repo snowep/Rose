@@ -8,13 +8,11 @@ import { Typography, TextField, Button, Chip, Avatar, Card, CardContent, Grid } 
 import { PersonAdd, Search, Clear } from '@mui/icons-material'
 import { BookService } from '@/lib/book-service'
 import { useRouter } from 'next/navigation'
+import { formatPersonName, getPersonInitials } from '@/lib/person-format'
+import type { PersonNameFields } from '@/lib/person-format'
 
-interface Person {
+interface Person extends PersonNameFields {
   id: string
-  first_name?: string
-  last_name?: string
-  middle_name?: string
-  full_name?: string
   nationality?: string
   birth_year?: number
   death_year?: number
@@ -39,17 +37,6 @@ export function PeopleTemplate() {
     } catch (err) {
       console.error('Failed to load people:', err)
     }
-  }
-
-  const formatPersonName = (person: Person) => {
-    if (person.full_name) return person.full_name
-    const parts = [person.first_name, person.middle_name, person.last_name].filter(Boolean)
-    return parts.join(' ') || 'Unknown'
-  }
-
-  const getInitials = (person: Person) => {
-    const name = formatPersonName(person)
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
   const filteredPeople = useMemo(() => {
@@ -78,18 +65,14 @@ export function PeopleTemplate() {
   }, [people])
 
   const handleAddPerson = async (personData: any) => {
-    try {
-      const data = {
-        ...personData,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-      await BookService.createPerson(data)
-      setModalOpen(false)
-      await loadPeople()
-    } catch (err) {
-      console.error('Failed to add person:', err)
+    const data = {
+      ...personData,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
+    await BookService.createPerson(data)
+    setModalOpen(false)
+    await loadPeople()
   }
 
   const handleDeletePerson = async (id: string) => {
@@ -159,7 +142,7 @@ export function PeopleTemplate() {
               <CardContent sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                   <Avatar>
-                    {getInitials(person)}
+                    {getPersonInitials(person)}
                   </Avatar>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>

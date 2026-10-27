@@ -13,14 +13,13 @@ export default function SettingsPage() {
   const [pulling, setPulling] = useState(false)
   const [clearDialogOpen, setClearDialogOpen] = useState(false)
   const [clearing, setClearing] = useState(false)
+  const [clearError, setClearError] = useState<string | null>(null)
 
   const handleSyncToSupabase = async () => {
     if (!user) return
     setSyncing(true)
     setSyncStatus(null)
     try {
-      await BookService.syncToSupabase(user.id)
-      await BookService.syncPeopleToSupabase(user.id)
       const result = await BookService.syncToSupabase(user.id)
       setSyncStatus(result)
     } finally {
@@ -42,18 +41,21 @@ export default function SettingsPage() {
 
   const handleClearLocalData = async () => {
     setClearing(true)
+    setClearError(null)
     try {
       await (db as any).books.clear()
       await (db as any).people.clear()
       setSyncStatus({ success: 0, failed: 0, errors: [] })
+      setClearDialogOpen(false)
+    } catch (error) {
+      setClearError(error instanceof Error ? error.message : 'Unable to clear local data.')
     } finally {
       setClearing(false)
-      setClearDialogOpen(false)
     }
   }
 
   return (
-    <Box sx={{ p: 4, maxWidth: 600 }}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: 600 }}>
       <Typography variant="h4" sx={{ mb: 4 }}>
         Settings
       </Typography>
@@ -131,11 +133,27 @@ export default function SettingsPage() {
               </Box>
             </Box>
 
-            <Dialog open={clearDialogOpen} onClose={() => setClearDialogOpen(false)} maxWidth="sm">
+            <Dialog
+              open={clearDialogOpen}
+              onClose={clearing ? undefined : () => {
+                setClearDialogOpen(false)
+                setClearError(null)
+              }}
+              maxWidth="xs"
+              fullWidth
+              sx={{
+                '& .MuiDialog-paper': {
+                  m: { xs: 1, sm: 2 },
+                  width: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)' },
+                  maxHeight: 'calc(100% - 32px)',
+                },
+              }}
+            >
               <DialogTitle>
                 <DeleteIcon color="error" sx={{ mr: 1 }} /> Clear All Local Data?
               </DialogTitle>
               <DialogContent>
+                {clearError && <Alert severity="error" sx={{ mb: 2 }}>{clearError}</Alert>}
                 <Typography variant="body1">
                   This will permanently delete all your books and people from local IndexedDB storage. This action cannot be undone.
                 </Typography>
@@ -144,7 +162,10 @@ export default function SettingsPage() {
                 </Typography>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setClearDialogOpen(false)} variant="outlined">
+                <Button onClick={() => {
+                  setClearDialogOpen(false)
+                  setClearError(null)
+                }} variant="outlined" disabled={clearing}>
                   Cancel
                 </Button>
                 <Button

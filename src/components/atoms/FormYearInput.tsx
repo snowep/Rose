@@ -1,6 +1,6 @@
 'use client'
 
-import { TextField, MenuItem } from '@mui/material'
+import { TextField } from '@mui/material'
 
 interface FormYearInputProps {
   label: string
@@ -10,23 +10,16 @@ interface FormYearInputProps {
 
 export function FormYearInput({ label, value, onChange }: FormYearInputProps) {
   const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: currentYear - 1400 + 1 }, (_, i) => currentYear - i)
 
   return (
     <TextField
-      select
       label={label}
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
+      type="number"
       fullWidth
       size="small"
-    >
-      <MenuItem value="">Select year</MenuItem>
-      {years.map((year) => (
-        <MenuItem key={year} value={year}>
-          {year}
-        </MenuItem>
-      ))}
-    </TextField>
+      slotProps={{ htmlInput: { min: 1400, max: currentYear, step: 1, inputMode: 'numeric' } }}
+    />
   )
 }

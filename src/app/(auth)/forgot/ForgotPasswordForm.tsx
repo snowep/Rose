@@ -9,6 +9,7 @@ import { AuthButton } from '@/components/atoms/AuthButton';
 import { AuthError } from '@/components/atoms/AuthError';
 import { AuthLink } from '@/components/atoms/AuthLink';
 import { AuthTextField } from '@/components/atoms/AuthTextField';
+import { getEmailValidationError } from '@/lib/auth-validation';
 
 export function ForgotPasswordForm() {
   const router = useRouter();
@@ -21,19 +22,9 @@ export function ForgotPasswordForm() {
   const [generalError, setGeneralError] = useState<string | undefined>();
 
   const validate = () => {
-    let valid = true;
-
-    if (!email) {
-      setEmailError('Email is required');
-      valid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setEmailError('Invalid email format');
-      valid = false;
-    } else {
-      setEmailError(undefined);
-    }
-
-    return valid;
+    const emailValidationError = getEmailValidationError(email);
+    setEmailError(emailValidationError);
+    return !emailValidationError;
   };
 
   const handleSubmit = async (e: FormEvent) => {

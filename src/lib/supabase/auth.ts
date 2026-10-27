@@ -59,7 +59,8 @@ export async function resetPassword(email: string): Promise<AuthResult> {
 
 export async function signOut(): Promise<void> {
   const supabase = createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: 'global' });
+  if (error) throw error;
 }
 
 export async function getCurrentUser() {

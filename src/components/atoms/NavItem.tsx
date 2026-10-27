@@ -3,7 +3,7 @@
 import { ListItem, ListItemButton, ListItemText } from '@mui/material'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 
 interface NavItemProps {
   label: string;
@@ -14,9 +14,17 @@ interface NavItemProps {
 
 export function NavItem({ label, href, onClick, selected = false }: NavItemProps) {
   const pathname = usePathname()
-  const normalizedPathname = useMemo(() => pathname.replace(/^\//, ''), [pathname])
-  const normalizedHref = useMemo(() => href ? href.replace(/^\//, '') : undefined, [href])
-  const isActive = normalizedHref ? normalizedPathname === normalizedHref : selected
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  const normalizedPathname = pathname.replace(/\/$/, '')
+  const normalizedHref = href?.replace(/\/$/, '')
+  const isActive = isMounted && normalizedHref
+    ? normalizedPathname === normalizedHref
+    : selected
 
   const handleClick = (e: React.MouseEvent) => {
     if (onClick) {

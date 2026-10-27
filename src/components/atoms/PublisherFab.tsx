@@ -12,7 +12,7 @@ export function PublisherFab({ onClick }: { onClick?: () => void }) {
       onClick={onClick}
       sx={{
         position: 'fixed',
-        bottom: 24,
+        bottom: { xs: 'calc(80px + env(safe-area-inset-bottom))', md: 24 },
         right: 24,
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}

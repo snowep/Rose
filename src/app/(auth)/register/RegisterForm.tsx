@@ -10,6 +10,7 @@ import { AuthFormFields } from '@/components/molecules/AuthFormFields';
 import { AuthButton } from '@/components/atoms/AuthButton';
 import { AuthError } from '@/components/atoms/AuthError';
 import { AuthLink } from '@/components/atoms/AuthLink';
+import { getEmailValidationError } from '@/lib/auth-validation';
 
 export function RegisterForm() {
   const router = useRouter();
@@ -27,16 +28,9 @@ export function RegisterForm() {
   const validate = () => {
     let valid = true;
 
-    // Validate email
-    if (!email) {
-      setEmailError('Email is required');
-      valid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setEmailError('Invalid email format');
-      valid = false;
-    } else {
-      setEmailError(undefined);
-    }
+    const emailValidationError = getEmailValidationError(email);
+    setEmailError(emailValidationError);
+    if (emailValidationError) valid = false;
 
     // Validate password (minimum 6 chars)
     if (!password) {

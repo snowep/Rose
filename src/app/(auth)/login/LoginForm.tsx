@@ -9,6 +9,7 @@ import { AuthButton } from '@/components/atoms/AuthButton';
 import { AuthError } from '@/components/atoms/AuthError';
 import { AuthLink } from '@/components/atoms/AuthLink';
 import { useAuth } from '@/hooks/useAuth';
+import { getEmailValidationError } from '@/lib/auth-validation';
 
 export function LoginForm() {
   const router = useRouter();
@@ -23,15 +24,9 @@ export function LoginForm() {
 
   const validate = () => {
     let valid = true;
-    if (!email) {
-      setEmailError('Email is required');
-      valid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setEmailError('Invalid email format');
-      valid = false;
-    } else {
-      setEmailError(undefined);
-    }
+    const emailValidationError = getEmailValidationError(email);
+    setEmailError(emailValidationError);
+    if (emailValidationError) valid = false;
 
     if (!password) {
       setPasswordError('Password is required');

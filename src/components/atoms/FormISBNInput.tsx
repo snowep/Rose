@@ -9,25 +9,31 @@ interface FormISBNInputProps extends Omit<TextFieldProps, 'value' | 'onChange'> 
   type: 'ISBN-10' | 'ISBN-13'
 }
 
-function validateISBN(isbn: string, type: 'ISBN-10' | 'ISBN-13'): boolean {
+export function isValidISBN(isbn: string, type: 'ISBN-10' | 'ISBN-13'): boolean {
   const clean = isbn.replace(/[-\s]/g, '')
   if (type === 'ISBN-10') {
-    return clean.length === 10 && /^[0-9]{9}[0-9X]$/.test(clean)
+    if (!/^[0-9]{9}[0-9X]$/.test(clean)) return false
+    const sum = Array.from(clean).reduce((total, digit, index) => {
+      const value = digit === 'X' ? 10 : Number(digit)
+      return total + value * (10 - index)
+    }, 0)
+    return sum % 11 === 0
   }
-  return clean.length === 13 && /^[0-9]{13}$/.test(clean)
+  if (!/^[0-9]{13}$/.test(clean)) return false
+  const sum = Array.from(clean).reduce(
+    (total, digit, index) => total + Number(digit) * (index % 2 === 0 ? 1 : 3),
+    0
+  )
+  return sum % 10 === 0
 }
 
 export function FormISBNInput({ value, onChange, type, label, ...props }: FormISBNInputProps) {
-  const [error, setError] = useState(false)
+  const [touched, setTouched] = useState(false)
+  const isbn = value ?? ''
+  const invalid = Boolean(isbn.trim()) && !isValidISBN(isbn, type)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    onChange(val)
-    if (val && !validateISBN(val, type)) {
-      setError(true)
-    } else {
-      setError(false)
-    }
+    onChange(e.target.value)
   }
 
   return (
@@ -37,8 +43,10 @@ export function FormISBNInput({ value, onChange, type, label, ...props }: FormIS
       onChange={handleChange}
       fullWidth
       size="small"
-      error={error}
-      helperText={error ? `Invalid ${type} format` : ''}
+      error={touched && invalid}
+      onBlur={() => setTouched(true)}
+      helperText={touched && invalid ? `Enter a valid ${type}.` : 'Optional'}
+      slotProps={{ htmlInput: { autoComplete: 'off' } }}
       {...props}
     />
   )

@@ -1,63 +1,92 @@
-'use client'
-
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
-import { useState } from 'react'
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { BookFormBasic } from '@/components/molecules/BookFormBasic'
+import { useEffect, useState } from 'react'
 import { BookService } from '@/lib/book-service'
-import { PersonPicker } from '@/components/atoms/PersonPicker'
+import { createEmptyBookFormState } from '@/types/book-form'
+import type { BookFormState } from '@/types/book-form'
+import type { Book } from '@/lib/db'
+import { isValidISBN } from '@/components/atoms/FormISBNInput'
 
-interface AuthorEntry {
-  personId: string
-  personName: string
-  role: string
-}
+export type { BookFormState } from '@/types/book-form'
 
 export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [title, setTitle] = useState('')
-  const [authors, setAuthors] = useState<AuthorEntry[]>([])
-  const [isbn10, setIsbn10] = useState('')
-  const [isbn13, setIsbn13] = useState('')
-  const [status, setStatus] = useState<'reading' | 'read' | 'want-to-read' | 'on-hold' | 'dnf'>('want-to-read')
+  const [book, setBook] = useState<BookFormState>(createEmptyBookFormState)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
-  const handleSave = async () => {
-    if (!title) return
-    const authorNames = authors.map(a => a.personName).filter(Boolean)
-    await BookService.create({ title, author: authorNames.join(', '), isbn10: isbn10 || undefined, isbn13: isbn13 || undefined, status, progress: 0 })
-    setTitle(''); setAuthors([]); setIsbn10(''); setIsbn13(''); setStatus('want-to-read')
-    onClose()
+  useEffect(() => {
+    if (!open) {
+      setBook(createEmptyBookFormState())
+      setSaveError(null)
+    }
+  }, [open])
+
+  const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!book.title.trim() || saving) return
+    if (book.isbn10 && !isValidISBN(book.isbn10, 'ISBN-10')) {
+      setSaveError('Please correct the ISBN-10 before saving.')
+      return
+    }
+    if (book.isbn13 && !isValidISBN(book.isbn13, 'ISBN-13')) {
+      setSaveError('Please correct the ISBN-13 before saving.')
+      return
+    }
+    setSaving(true)
+    setSaveError(null)
+
+    try {
+      const newBook: Omit<Book, 'id' | 'createdAt' | 'updatedAt'> = {
+        title: book.title.trim(),
+        author: book.authors.join(', '),
+        status: book.status || 'want-to-read',
+        genre: book.genre,
+        tags: book.tags,
+        subtitle: book.subtitle,
+        isbn10: book.isbn10,
+        isbn13: book.isbn13,
+        publicationYear: book.publicationYear ? Number(book.publicationYear) : undefined,
+        coverImage: book.coverImage,
+        language: book.language,
+      }
+      await BookService.create(newBook)
+      onClose()
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Unable to save this book.')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const statuses = [
-    { value: 'want-to-read', label: 'Want to Read' },
-    { value: 'reading', label: 'Reading' },
-    { value: 'read', label: 'Read' },
-    { value: 'on-hold', label: 'On Hold' },
-    { value: 'dnf', label: 'DNF' },
-  ]
-
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={saving ? undefined : onClose}
+      maxWidth="sm"
+      fullWidth
+      sx={{
+        '& .MuiDialog-paper': {
+          m: { xs: 0, sm: 2 },
+          width: { xs: '100%', sm: 'calc(100% - 32px)' },
+          maxHeight: { xs: '100dvh', sm: 'calc(100% - 64px)' },
+          height: { xs: '100dvh', sm: 'auto' },
+          borderRadius: { xs: 0, sm: 2 },
+          display: 'flex',
+        },
+      }}
+    >
       <DialogTitle>Add New Book</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-        <TextField label="Title" value={title} onChange={e => setTitle(e.target.value)} required />
-        <PersonPicker
-          label="Author"
-          value={authors}
-          onChange={setAuthors}
-          roleOptions={[{ value: 'author', label: 'author' }]}
-          defaultRole="author"
-        />
-        <TextField label="ISBN10" value={isbn10} onChange={e => setIsbn10(e.target.value)} />
-        <TextField label="ISBN13" value={isbn13} onChange={e => setIsbn13(e.target.value)} />
-        <FormControl fullWidth>
-          <InputLabel id="status-label">Status</InputLabel>
-          <Select labelId="status-label" value={status} label="Status" onChange={e => setStatus(e.target.value as any)}>
-            {statuses.map(s => <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>)}
-          </Select>
-        </FormControl>
+      <DialogContent dividers sx={{ overflowY: 'auto' }}>
+        <form id="add-book-form" onSubmit={handleSave}>
+          <BookFormBasic book={book} onChange={setBook} />
+          {saveError && <Alert severity="error" sx={{ mt: 2 }}>{saveError}</Alert>}
+        </form>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained">Save</Button>
+      <DialogActions sx={{ px: 2, py: 1.5, pb: { xs: 'calc(12px + env(safe-area-inset-bottom))', sm: 1.5 } }}>
+        <Button onClick={onClose} disabled={saving}>Cancel</Button>
+        <Button type="submit" form="add-book-form" variant="contained" disabled={saving || !book.title.trim()}>
+          {saving ? 'Saving...' : 'Save book'}
+        </Button>
       </DialogActions>
     </Dialog>
   )

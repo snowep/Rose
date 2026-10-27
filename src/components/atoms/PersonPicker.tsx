@@ -4,13 +4,11 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { Box, TextField, Chip, Avatar, Typography, Fade, IconButton } from '@mui/material'
 import { PersonAdd, Search, Clear } from '@mui/icons-material'
 import { BookService } from '@/lib/book-service'
+import { formatPersonName, getInitialsFromName, getPersonInitials } from '@/lib/person-format'
+import type { PersonNameFields } from '@/lib/person-format'
 
-interface Person {
+interface Person extends PersonNameFields {
   id: string
-  first_name?: string
-  last_name?: string
-  middle_name?: string
-  full_name?: string
   nationality?: string
   birth_year?: number
 }
@@ -40,17 +38,6 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
     } catch (err) {
       console.error('Failed to load people:', err)
     }
-  }
-
-  const formatPersonName = (person: Person) => {
-    if (person.full_name) return person.full_name
-    const parts = [person.first_name, person.middle_name, person.last_name].filter(Boolean)
-    return parts.join(' ') || 'Unknown'
-  }
-
-  const getInitials = (person: Person) => {
-    const name = formatPersonName(person)
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
   const filteredPeople = useMemo(() => {
@@ -132,7 +119,7 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
           <Chip
             key={`${item.personId}-${item.role}`}
             avatar={<Avatar sx={{ width: 24, height: 24, fontSize: '0.7rem' }}>
-              {item.personName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+              {getInitialsFromName(item.personName)}
             </Avatar>}
             label={`${item.personName} • ${item.role}`}
             onDelete={() => handleRemovePerson(item.personId, item.role)}
@@ -220,7 +207,7 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
                   }}
                 >
                   <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem' }}>
-                    {getInitials(person)}
+                    {getPersonInitials(person)}
                   </Avatar>
                   <Box>
                     <Typography variant="body2">{formatPersonName(person)}</Typography>
@@ -259,7 +246,7 @@ export function PersonPicker({ label, value, onChange, roleOptions, defaultRole 
                     }}
                   >
                     <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem' }}>
-                      {getInitials(item.person)}
+                      {getPersonInitials(item.person)}
                     </Avatar>
                     <Typography variant="body2">{item.name}</Typography>
                   </Box>

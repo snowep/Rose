@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Button, Typography, Paper } from '@mui/material'
+import { Box, Button, Typography, Paper, Alert } from '@mui/material'
 import { CloudUpload, Delete } from '@mui/icons-material'
 import { useState } from 'react'
 
@@ -12,12 +12,26 @@ interface FormDragDropUploadProps {
 
 export function FormDragDropUpload({ label, value, onChange }: FormDragDropUploadProps) {
   const [dragOver, setDragOver] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleFile = (file: File) => {
-    if (file && file.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file)
-      onChange(url)
+    setError(null)
+    if (!file.type.startsWith('image/')) {
+      setError('Choose an image file.')
+      return
     }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('The image must be 5 MB or smaller.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') onChange(reader.result)
+      else setError('Unable to preview this image.')
+    }
+    reader.onerror = () => setError('Unable to read this image. Please try another file.')
+    reader.readAsDataURL(file)
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -30,9 +44,11 @@ export function FormDragDropUpload({ label, value, onChange }: FormDragDropUploa
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) handleFile(file)
+    e.target.value = ''
   }
 
   const handleRemove = () => {
+    setError(null)
     onChange('')
   }
 
@@ -40,11 +56,13 @@ export function FormDragDropUpload({ label, value, onChange }: FormDragDropUploa
     <Box>
       <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>{label}</Typography>
       <Paper
+        component="div"
+        aria-label={`${label} upload area`}
         sx={{
           border: '2px dashed',
           borderColor: dragOver ? 'primary.main' : 'divider',
           borderRadius: 2,
-          p: 3,
+          p: { xs: 2, sm: 3 },
           textAlign: 'center',
           backgroundColor: dragOver ? 'action.hover' : 'transparent',
           transition: 'all 0.2s',
@@ -55,16 +73,21 @@ export function FormDragDropUpload({ label, value, onChange }: FormDragDropUploa
       >
         {value ? (
           <Box sx={{ position: 'relative', display: 'inline-block' }}>
-            <img src={value} alt="Cover preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 4 }} />
-            <Button
-              size="small"
-              startIcon={<Delete />}
-              onClick={handleRemove}
-              sx={{ mt: 1 }}
-              variant="outlined"
-            >
-              Remove
-            </Button>
+            <Box
+              component="img"
+              src={value}
+              alt={`${label} preview`}
+              sx={{ display: 'block', maxWidth: '100%', maxHeight: 200, mx: 'auto', borderRadius: 1 }}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+              <Button component="label" size="small" variant="outlined" startIcon={<CloudUpload />}>
+                Replace
+                <input type="file" hidden accept="image/*" onChange={handleFileInput} />
+              </Button>
+              <Button size="small" startIcon={<Delete />} onClick={handleRemove} variant="text" color="error">
+                Remove
+              </Button>
+            </Box>
           </Box>
         ) : (
           <>
@@ -79,6 +102,7 @@ export function FormDragDropUpload({ label, value, onChange }: FormDragDropUploa
           </>
         )}
       </Paper>
+      {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
     </Box>
   )
 }

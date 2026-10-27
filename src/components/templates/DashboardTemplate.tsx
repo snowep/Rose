@@ -12,7 +12,7 @@ export function DashboardTemplate() {
       <Grid container rowSpacing={3} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid size={{ xs: 12, md: 9 }}>
           <Grid container spacing={3}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
               <StatCard
                 label="Total Books"
                 value="0"
@@ -20,7 +20,7 @@ export function DashboardTemplate() {
                 icon={<Book fontSize="small" />}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
               <StatCard
                 label="Reading Now"
                 value="0"
@@ -28,7 +28,7 @@ export function DashboardTemplate() {
                 icon={<LibraryBooks fontSize="small" />}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
               <StatCard
                 label="Books Finished"
                 value="0"
@@ -36,7 +36,7 @@ export function DashboardTemplate() {
                 icon={<CheckCircle fontSize="small" />}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
               <StatCard
                 label="Goal Progress"
                 value="0%"

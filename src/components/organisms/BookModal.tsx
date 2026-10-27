@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Dialog, DialogContent, DialogTitle, DialogActions, TextField, Button, MenuItem, Typography, Divider } from '@mui/material'
+import { Alert, Box, Dialog, DialogContent, DialogTitle, DialogActions, TextField, Button, MenuItem } from '@mui/material'
 import { Book } from '@/lib/db'
 
 import React, { useEffect, useState } from 'react'
@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react'
 interface BookModalProps {
   open: boolean
   onClose: () => void
-  onSave: (book: Partial<Book>) => void
+  onSave: (book: Partial<Book>) => void | Promise<void>
   editingBook?: Book | null
 }
 
@@ -24,8 +24,11 @@ export function BookModal({ open, onClose, onSave, editingBook }: BookModalProps
     tags: [],
     notes: '',
   })
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
+    setSaveError(null)
     if (editingBook) {
       setBook(editingBook)
     } else if (open) {
@@ -43,41 +46,69 @@ export function BookModal({ open, onClose, onSave, editingBook }: BookModalProps
     }
   }, [editingBook, open])
 
-  const handleSave = () => {
+  const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (saving) return
     if (!book.title?.trim() || !book.author?.trim()) return
-    onSave(book)
-    onClose()
+    setSaving(true)
+    setSaveError(null)
+    try {
+      await onSave(book)
+      onClose()
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Unable to save this book.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={saving ? undefined : onClose}
+      maxWidth="sm"
+      fullWidth
+      sx={{
+        '& .MuiDialog-paper': {
+          m: { xs: 0, sm: 2 },
+          width: { xs: '100%', sm: 'calc(100% - 32px)' },
+          maxHeight: { xs: '100dvh', sm: 'calc(100% - 64px)' },
+          height: { xs: '100dvh', sm: 'auto' },
+          borderRadius: { xs: 0, sm: 2 },
+          display: 'flex',
+        },
+      }}
+    >
       <DialogTitle>{editingBook ? 'Edit Book' : 'Add New Book'}</DialogTitle>
-      <DialogContent sx={{ py: 2 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+      <DialogContent dividers sx={{ overflowY: 'auto', py: 2 }}>
+        <Box component="form" id="edit-book-form" onSubmit={handleSave} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
           <TextField
             label="Title"
             value={book.title || ''}
             onChange={e => setBook({ ...book, title: e.target.value })}
             fullWidth
+            required
           />
           <TextField
             label="Author"
             value={book.author || ''}
             onChange={e => setBook({ ...book, author: e.target.value })}
             fullWidth
+            required
           />
           <TextField
             select
             label="Status"
             value={book.status || 'want-to-read'}
-            onChange={e => setBook({ ...book, status: e.target.value as any })}
+            onChange={e => setBook({ ...book, status: e.target.value as Book['status'] })}
             fullWidth
+            required
           >
             <MenuItem value="reading">Reading</MenuItem>
             <MenuItem value="read">Read</MenuItem>
             <MenuItem value="want-to-read">Want to Read</MenuItem>
           </TextField>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
             <TextField
               label="Genre"
               value={book.genre || ''}
@@ -87,26 +118,29 @@ export function BookModal({ open, onClose, onSave, editingBook }: BookModalProps
             <TextField
               label="Rating (0-5)"
               type="number"
-              value={book.rating || 0}
-              onChange={e => setBook({ ...book, rating: Number(e.target.value) })}
+              value={book.rating ?? ''}
+              onChange={e => setBook({ ...book, rating: e.target.value === '' ? undefined : Number(e.target.value) })}
               fullWidth
+              slotProps={{ htmlInput: { min: 0, max: 5, step: 1, inputMode: 'numeric' } }}
             />
           </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
             <TextField
               label="Total Pages"
               type="number"
-              value={book.pages || 0}
-              onChange={e => setBook({ ...book, pages: Number(e.target.value) })}
+              value={book.pages ?? ''}
+              onChange={e => setBook({ ...book, pages: e.target.value === '' ? undefined : Number(e.target.value) })}
               fullWidth
+              slotProps={{ htmlInput: { min: 0, step: 1, inputMode: 'numeric' } }}
             />
             <TextField
               label="Progress %"
               type="number"
-              value={book.progress || 0}
-              onChange={e => setBook({ ...book, progress: Number(e.target.value) })}
+              value={book.progress ?? ''}
+              onChange={e => setBook({ ...book, progress: e.target.value === '' ? undefined : Number(e.target.value) })}
               fullWidth
               helperText="0-100"
+              slotProps={{ htmlInput: { min: 0, max: 100, step: 1, inputMode: 'numeric' } }}
             />
           </Box>
           <TextField
@@ -123,14 +157,15 @@ export function BookModal({ open, onClose, onSave, editingBook }: BookModalProps
             onChange={e => setBook({ ...book, notes: e.target.value })}
             fullWidth
           />
+          {saveError && <Alert severity="error">{saveError}</Alert>}
         </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 2, justifyContent: 'flex-end' }}>
-        <Button onClick={onClose} variant="outlined">
+      <DialogActions sx={{ px: 2, py: 1.5, justifyContent: 'flex-end', pb: { xs: 'calc(12px + env(safe-area-inset-bottom))', sm: 1.5 } }}>
+        <Button onClick={onClose} variant="outlined" disabled={saving}>
           Cancel
         </Button>
-        <Button onClick={handleSave} variant="contained">
-          Save
+        <Button type="submit" form="edit-book-form" variant="contained" disabled={saving || !book.title?.trim() || !book.author?.trim()}>
+          {saving ? 'Saving...' : 'Save'}
         </Button>
       </DialogActions>
     </Dialog>

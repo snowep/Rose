@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter'
 import { ThemeProvider as MuiThemeProvider } from '@/providers/ThemeProvider'
 import { ThemeContextProvider } from '@/providers/ThemeContext'
-import { EmotionCacheProvider } from '@/providers/EmotionCacheProvider'
 import { AuthProvider } from '@/providers/AuthProvider'
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <EmotionCacheProvider>
+        <AppRouterCacheProvider>
           <ThemeContextProvider>
             <MuiThemeProvider>
               <AuthProvider>
@@ -25,7 +25,7 @@ export default function RootLayout({
               </AuthProvider>
             </MuiThemeProvider>
           </ThemeContextProvider>
-        </EmotionCacheProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   )

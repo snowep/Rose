@@ -37,8 +37,8 @@ export default function PublisherPage() {
     if (!user) return
     setStatus(null)
     try {
-      const result = await BookService.syncToSupabase(user.id)
-      setStatus(result)
+      await BookService.syncPublishersToSupabase(user.id)
+      setStatus({ success: 0, failed: 0, errors: [] })
     } catch (err) {
       setStatus({ success: 0, failed: 1, errors: [err instanceof Error ? err.message : 'Unknown error'] })
     }

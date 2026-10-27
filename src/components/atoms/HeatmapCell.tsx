@@ -7,6 +7,7 @@ type HeatmapCellProps = {
   count: number
   size: number
   isToday?: boolean
+  responsive?: boolean
 }
 
 function getColor(count: number, isDark: boolean) {
@@ -17,7 +18,7 @@ function getColor(count: number, isDark: boolean) {
   return `rgba(34, ${green}, 34, ${alpha})`
 }
 
-export function HeatmapCell({ date, count, size, isToday }: HeatmapCellProps) {
+export function HeatmapCell({ date, count, size, isToday, responsive = false }: HeatmapCellProps) {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
   const cellSize = { height: size, width: size }
@@ -33,6 +34,13 @@ export function HeatmapCell({ date, count, size, isToday }: HeatmapCellProps) {
       <Box
         sx={{
           ...cellSize,
+          ...(responsive && {
+            '@media (max-width: 599px)': {
+              height: 'auto',
+              width: '100%',
+              aspectRatio: '1',
+            },
+          }),
           borderRadius: 0,
           bgcolor: getColor(count, isDark),
           border: isToday ? '2px solid #00bcd4' : 'none',

@@ -19,6 +19,10 @@ drop table if exists reading_statuses cascade;
 -- Enable UUID generation
 create extension if not exists "pgcrypto";
 
+-- Grant schema access for anon + authenticated roles
+grant usage on schema public to anon;
+grant usage on schema public to authenticated;
+
 -- People
 create table people (
   id uuid primary key default gen_random_uuid(),
@@ -59,6 +63,48 @@ create table genres (
   name text not null unique
 );
 create index idx_genres_name on genres(name);
+
+-- Reading statuses enum table
+create table reading_statuses (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  slug text not null unique,
+  display_name text not null,
+  description text,
+  sort_order int not null default 0,
+  is_active boolean not null default true,
+  color varchar(7),
+  created_at timestamptz not null default now()
+);
+insert into reading_statuses (name, slug, display_name, description, sort_order, is_active, color) values
+  ('want-to-read', 'want-to-read', 'Want to Read', 'You plan to read this book', 1, true, '#0288d1'),
+  ('reading', 'reading', 'Reading', 'You are currently reading this book', 2, true, '#1976d2'),
+  ('read', 'read', 'Read', 'You have finished reading this book', 3, true, '#2e7d32'),
+  ('on-hold', 'on-hold', 'On Hold', 'You have paused reading this book', 4, true, '#f57c00'),
+  ('dnf', 'dnf', 'Did Not Finish', 'You stopped reading this book', 5, true, '#c62828')
+on conflict (name) do nothing;
+
+-- Catalog submissions table for moderated workflow
+create table catalog_submissions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  book_id uuid references books(id) on delete set null,
+  title text not null,
+  subtitle text,
+  author text,
+  isbn13 text,
+  publisher text,
+  genre text,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'request-changes')),
+  rejection_reason text,
+  submitted_at timestamptz not null default now(),
+  approved_at timestamptz,
+  notes text,
+  unique(user_id, book_id)
+);
+create index idx_catalog_submissions_user on catalog_submissions(user_id);
+create index idx_catalog_submissions_book on catalog_submissions(book_id);
+create index idx_catalog_submissions_status on catalog_submissions(status);
 
 -- Authors (dedicated table)
 create table authors (
@@ -184,6 +230,16 @@ for each row execute function set_updated_at();
 
 -- RLS policies for anon + authenticated inserts and selects
 -- Single policy per table using to public to cover both anon and authenticated roles
+
+-- Enable RLS on reading_statuses first, then create policy
+alter table reading_statuses enable row level security;
+create policy "Allow public reading_statuses" on reading_statuses for all to public using (true) with check (true);
+
+-- Catalog submissions — moderated workflow
+alter table catalog_submissions enable row level security;
+create policy "Allow public catalog_submissions" on catalog_submissions for all to public using (true) with check (true);
+
+-- Now other tables
 alter table books enable row level security;
 create policy "Allow public books" on books for all to public using (true) with check (true);
 alter table people enable row level security;
