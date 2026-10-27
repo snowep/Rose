@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -38,13 +38,16 @@ export function AddPersonModal({ open, onClose, onSave }: AddPersonModalProps) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (open) {
-      setPerson(emptyPerson)
-      setSaving(false)
-      setSaveError(null)
-    }
-  }, [open])
+  const resetForm = () => {
+    setPerson(emptyPerson)
+    setSaveError(null)
+  }
+
+  const handleClose = () => {
+    if (saving) return
+    resetForm()
+    onClose()
+  }
 
   const handleSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -74,7 +77,7 @@ export function AddPersonModal({ open, onClose, onSave }: AddPersonModalProps) {
 
     try {
       await onSave(personData)
-      setPerson(emptyPerson)
+      resetForm()
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : 'Unable to save this person.')
     } finally {
@@ -91,7 +94,7 @@ export function AddPersonModal({ open, onClose, onSave }: AddPersonModalProps) {
   return (
     <Dialog
       open={open}
-      onClose={saving ? undefined : onClose}
+      onClose={handleClose}
       maxWidth="sm"
       fullWidth
       sx={{
@@ -217,7 +220,7 @@ export function AddPersonModal({ open, onClose, onSave }: AddPersonModalProps) {
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 2, py: 1.5, pb: { xs: 'calc(12px + env(safe-area-inset-bottom))', sm: 1.5 } }}>
-        <Button onClick={onClose} variant="outlined" disabled={saving}>
+        <Button onClick={handleClose} variant="outlined" disabled={saving}>
           Cancel
         </Button>
         <Button type="submit" form="add-person-form" variant="contained" disabled={!canSave || saving}>

@@ -2,6 +2,7 @@
 
 import { Box, Button, Typography } from '@mui/material'
 import { CloudUpload } from '@mui/icons-material'
+import Image from 'next/image'
 
 interface FormFileUploadProps {
   label: string
@@ -38,7 +39,14 @@ export function FormFileUpload({ label, value, onChange }: FormFileUploadProps) 
       </Button>
       {value && (
         <Box sx={{ mt: 2 }}>
-          <img src={value} alt="Cover preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 4 }} />
+          <Image
+            src={value}
+            alt="Cover preview"
+            width={300}
+            height={200}
+            unoptimized
+            style={{ maxWidth: '100%', maxHeight: 200, width: 'auto', height: 'auto', borderRadius: 4 }}
+          />
         </Box>
       )}
     </Box>

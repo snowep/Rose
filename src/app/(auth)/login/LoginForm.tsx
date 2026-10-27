@@ -67,7 +67,7 @@ export function LoginForm() {
       footer={
         <>
           <Typography variant="body2" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <AuthLink href="/register">Sign up</AuthLink>
           </Typography>
           <Typography variant="body2" color="text.secondary">
