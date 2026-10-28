@@ -8,7 +8,7 @@ import { AuthFormCard } from '@/components/molecules/AuthFormCard';
 import { AuthButton } from '@/components/atoms/AuthButton';
 import { AuthError } from '@/components/atoms/AuthError';
 import { AuthLink } from '@/components/atoms/AuthLink';
-import { AuthTextField } from '@/components/atoms/AuthTextField';
+import { FormField } from '@/components/atoms/FormField';
 import { getEmailValidationError } from '@/lib/auth-validation';
 
 export function ForgotPasswordForm() {
@@ -73,15 +73,14 @@ export function ForgotPasswordForm() {
     >
       {generalError && <AuthError message={generalError} />}
       <form onSubmit={handleSubmit}>
-        <AuthTextField
+        <FormField
           label="Email"
-          type="email"
+          type="text"
           value={email}
           onChange={(value) => { setEmail(value); setEmailError(undefined); }}
           error={!!emailError}
           helperText={emailError}
           placeholder="you@example.com"
-          margin="normal"
           fullWidth
         />
         <AuthButton type="submit" disabled={submitting} sx={{ mt: 2 }}>

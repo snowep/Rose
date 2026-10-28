@@ -4,7 +4,8 @@ import { Box, Grid, Typography } from '@mui/material'
 import { BooksCount } from '@/components/atoms/BooksCount'
 import { BookSection } from '@/components/molecules/BookSection'
 import { useBooks } from '@/components/hooks/useBooks'
-import { AddBookFab } from '@/components/atoms/AddBookFab'
+import { ActionFab } from '@/components/atoms/ActionFab'
+import { Add } from '@mui/icons-material'
 import { AddBookModalSimple } from '@/components/molecules/AddBookModalSimple'
 import { LibraryAdd } from '@mui/icons-material'
 import { useState } from 'react'
@@ -14,7 +15,7 @@ export function BooksList() {
   const [modalOpen, setModalOpen] = useState(false)
   const addBookControls = (
     <>
-      <AddBookFab onClick={() => setModalOpen(true)} />
+      <ActionFab icon={Add} ariaLabel="Add a book" onClick={() => setModalOpen(true)} />
       <AddBookModalSimple open={modalOpen} onClose={() => setModalOpen(false)} />
     </>
   )

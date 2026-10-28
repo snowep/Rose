@@ -7,6 +7,7 @@ import type { BookFormState } from '@/types/book-form'
 import type { Book } from '@/lib/db'
 import { isValidISBN } from '@/components/atoms/FormISBNInput'
 import { BOOKS_CHANGED_EVENT, SYNC_OUTBOX_CHANGED_EVENT } from '@/lib/book-service'
+import { generateId } from '@/lib/utils'
 
 export type { BookFormState } from '@/types/book-form'
 
@@ -14,11 +15,17 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
   const [book, setBook] = useState<BookFormState>(createEmptyBookFormState)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) {
-      setBook(createEmptyBookFormState())
-      setSaveError(null)
+      // Use setTimeout to avoid synchronous setState in effect
+      const timer = setTimeout(() => {
+        setBook(createEmptyBookFormState())
+        setSaveError(null)
+        setDuplicateWarning(null)
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [open])
 
@@ -37,6 +44,24 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
     setSaveError(null)
 
     try {
+      // Check for duplicates before saving
+      const dup = await BookService.checkDuplicates(
+        book.isbn10,
+        book.isbn13,
+        book.title.trim(),
+        book.authors.join(', ')
+      )
+      const warnings: string[] = []
+      if (dup.isbn) {
+        warnings.push('A book with this ISBN already exists in your library. Saving will create a duplicate.')
+      }
+      if (dup.titleAuthor) {
+        warnings.push('A book with this title and author already exists in your library.')
+      }
+      if (warnings.length > 0) {
+        setDuplicateWarning(warnings.join(' '))
+      }
+
       const newBook: Omit<Book, 'id' | 'createdAt' | 'updatedAt'> = {
         title: book.title.trim(),
         author: book.authors.join(', '),
@@ -56,6 +81,8 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
       setSaveError(error instanceof Error ? error.message : 'Unable to save this book.')
     } finally {
       setSaving(false)
+      // Only clear duplicateWarning if save succeeded or was cancelled; if failed, keep warning so user sees the duplicate context
+      if (!saveError) setDuplicateWarning(null)
     }
   }
 
@@ -99,7 +126,7 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
 async function submitToCatalog(book: BookFormState) {
   await BookService.recordOutbox(
     'book',
-    crypto.randomUUID(),
+    generateId(),
     'create',
     { title: book.title, author: book.authors.join(', '), status: book.status || 'want-to-read' }
   )

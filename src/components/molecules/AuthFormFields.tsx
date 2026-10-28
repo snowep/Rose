@@ -1,8 +1,7 @@
 'use client';
 
 import { Box } from '@mui/material';
-import { AuthTextField } from '@/components/atoms/AuthTextField';
-import { AuthPasswordField } from '@/components/atoms/AuthPasswordField';
+import { FormField } from '@/components/atoms/FormField';
 
 interface AuthFormFieldsProps {
   email: string;
@@ -31,25 +30,27 @@ export function AuthFormFields({
 }: AuthFormFieldsProps) {
   return (
     <Box>
-      <AuthTextField
+      <FormField
         label="Email"
-        type="email"
+        type="text"
         value={email}
         onChange={onEmailChange}
         error={!!emailError}
         helperText={emailError}
         placeholder="you@example.com"
       />
-      <AuthPasswordField
+      <FormField
         label="Password"
+        type="password"
         value={password}
         onChange={onPasswordChange}
         error={!!passwordError}
         helperText={passwordError}
       />
       {showConfirmPassword && onConfirmPasswordChange && (
-        <AuthPasswordField
+        <FormField
           label="Confirm Password"
+          type="password"
           value={confirmPassword}
           onChange={onConfirmPasswordChange}
           error={!!confirmPasswordError}

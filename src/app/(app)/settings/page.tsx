@@ -1,11 +1,12 @@
 'use client'
 
-import { Box, Typography, Button, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material'
-import { CloudSync, Download as DownloadIcon, Upload as UploadIcon, Delete as DeleteIcon } from '@mui/icons-material'
+import { Box, Typography, Button, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Accordion, AccordionSummary, AccordionDetails, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, CircularProgress, Divider, Paper } from '@mui/material'
+import { CloudSync, Download as DownloadIcon, Upload as UploadIcon, Delete as DeleteIcon, Sync as SyncIcon, SyncDisabled as SyncDisabledIcon, Visibility as VisibilityIcon, ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon } from '@mui/icons-material'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
-import { BookService, SYNC_OUTBOX_CHANGED_EVENT } from '@/lib/book-service'
+import { BookService, SYNC_OUTBOX_CHANGED_EVENT, BOOKS_CHANGED_EVENT, type SyncOutboxEntry } from '@/lib/book-service'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_LOCAL_BACKUP_BYTES, type LocalBackup } from '@/lib/local-backup'
+import { todayISO } from '@/lib/utils'
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -25,6 +26,14 @@ export default function SettingsPage() {
   const backupInputRef = useRef<HTMLInputElement>(null)
   const pendingOutboxCount = user && pendingOutbox?.userId === user.id ? pendingOutbox.count : null
   const outboxErrorMessage = user && outboxError?.userId === user.id ? outboxError.message : null
+
+  // Manual Sync Center state
+  const [outboxEntries, setOutboxEntries] = useState<SyncOutboxEntry[]>([])
+  const [outboxLoading, setOutboxLoading] = useState(false)
+  const [syncCenterOpen, setSyncCenterOpen] = useState(false)
+  const [processingEntry, setProcessingEntry] = useState<string | null>(null)
+  const [syncError, setSyncError] = useState<string | null>(null)
+  const [syncSuccess, setSyncSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -55,6 +64,44 @@ export default function SettingsPage() {
     }
   }, [user])
 
+  const loadOutboxEntries = async () => {
+    if (!user) return
+    setOutboxLoading(true)
+    try {
+      const entries = await BookService.getPendingOutbox(user.id)
+      setOutboxEntries(entries)
+    } catch (error) {
+      setSyncError(error instanceof Error ? error.message : 'Unable to load sync queue.')
+    } finally {
+      setOutboxLoading(false)
+    }
+  }
+
+  const handleSyncAll = async () => {
+    if (!user) return
+    setOutboxLoading(true)
+    setSyncError(null)
+    setSyncSuccess(null)
+    try {
+      const result = await BookService.processOutbox(user.id)
+      if (result.success) {
+        setSyncSuccess(`Synced ${result.processed.length} change${result.processed.length === 1 ? '' : 's'}.`)
+      } else {
+        setSyncError(`Failed to sync ${result.failed.length} change${result.failed.length === 1 ? '' : 's'}.`)
+      }
+      await loadOutboxEntries()
+    } catch (error) {
+      setSyncError(error instanceof Error ? error.message : 'Sync failed.')
+    } finally {
+      setOutboxLoading(false)
+    }
+  }
+
+  const handleOpenSyncCenter = () => {
+    setSyncCenterOpen(true)
+    loadOutboxEntries()
+  }
+
   const handleExportBackup = async () => {
     setBackupBusy(true)
     setBackupError(null)
@@ -65,7 +112,7 @@ export default function SettingsPage() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `rose-local-backup-${new Date().toISOString().slice(0, 10)}.json`
+      link.download = `rose-local-backup-${todayISO()}.json`
       link.click()
       link.remove()
       window.setTimeout(() => URL.revokeObjectURL(url), 0)
@@ -160,6 +207,29 @@ export default function SettingsPage() {
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
           Local data is stored in this browser&apos;s IndexedDB.
         </Typography>
+      </Box>
+
+      {/* Manual Sync Center */}
+      <Box sx={{ mb: 4, p: 3, border: '1px solid #424242', borderRadius: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SyncIcon sx={{ fontSize: 24 }} />
+          Manual Sync Center
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Review and manually process queued local changes. Cloud sync is paused; this center lets you push changes when ready.
+        </Typography>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<SyncIcon />}
+            onClick={handleOpenSyncCenter}
+            disabled={outboxLoading}
+          >
+            {outboxLoading ? <CircularProgress size={18} color="inherit" /> : 'Open Sync Center'}
+          </Button>
+        </Stack>
+        {syncError && <Alert severity="error" sx={{ mb: 2 }}>{syncError}</Alert>}
+        {syncSuccess && <Alert severity="success" sx={{ mb: 2 }}>{syncSuccess}</Alert>}
       </Box>
 
       <Box sx={{ p: 3, border: '1px solid #424242', borderRadius: 2 }}>
@@ -309,6 +379,119 @@ export default function SettingsPage() {
             {backupBusy ? 'Restoring...' : 'Add missing records'}
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Manual Sync Center Dialog */}
+      <Dialog
+        open={syncCenterOpen}
+        onClose={() => {
+          setSyncCenterOpen(false)
+          setSyncError(null)
+          setSyncSuccess(null)
+        }}
+        maxWidth="md"
+        fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            m: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'calc(100% - 32px)' },
+            maxHeight: 'calc(100% - 32px)',
+          },
+        }}
+      >
+        <DialogTitle>
+          <SyncIcon color="primary" sx={{ mr: 1 }} /> Manual Sync Center
+        </DialogTitle>
+        <DialogContent dividers>
+          {syncError && <Alert severity="error" sx={{ mb: 2 }}>{syncError}</Alert>}
+          {syncSuccess && <Alert severity="success" sx={{ mb: 2 }}>{syncSuccess}</Alert>}
+          {outboxLoading ? (
+            <CircularProgress />
+          ) : outboxEntries.length === 0 ? (
+            <Typography color="text.secondary">No pending changes to sync.</Typography>
+          ) : (
+            <Paper variant="outlined" sx={{ p: 2 }}>
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Entity</TableCell>
+                      <TableCell>Operation</TableCell>
+                      <TableCell>Revision</TableCell>
+                      <TableCell>Created</TableCell>
+                      <TableCell align="right">Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {outboxEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell>
+                          <Chip
+                            label={entry.entity}
+                            size="small"
+                            variant="outlined"
+                            color={entry.entity === 'book' ? 'primary' : 'secondary'}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={entry.operation}
+                            size="small"
+                            variant={entry.operation === 'delete' ? 'filled' : 'outlined'}
+                            color={entry.operation === 'delete' ? 'error' : 'default'}
+                          />
+                        </TableCell>
+                        <TableCell>{entry.revision}</TableCell>
+                        <TableCell>{new Date(entry.createdAt).toLocaleString('en-US', { timeZone: 'UTC' })}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={entry.status}
+                            size="small"
+                            variant={
+                              entry.status === 'conflict' ? 'filled' :
+                              entry.status === 'failed' ? 'filled' :
+                              entry.status === 'processed' ? 'outlined' :
+                              'outlined'
+                            }
+                            color={
+                              entry.status === 'conflict' ? 'warning' :
+                              entry.status === 'failed' ? 'error' :
+                              entry.status === 'processed' ? 'success' :
+                              'default'
+                            }
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <IconButton
+                            size="small"
+                            onClick={() => setProcessingEntry(entry.id)}
+                            disabled={processingEntry === entry.id || entry.status === 'processed'}
+                          >
+                            <SyncIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <Divider sx={{ my: 2 }} />
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} component="div" sx={{ justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  startIcon={<SyncIcon />}
+                  onClick={handleSyncAll}
+                  disabled={outboxLoading || outboxEntries.length === 0}
+                >
+                  {outboxLoading ? <CircularProgress size={18} color="inherit" /> : 'Sync All Pending'}
+                </Button>
+                <Button variant="outlined" onClick={() => setSyncCenterOpen(false)} disabled={outboxLoading}>
+                  Close
+                </Button>
+              </Stack>
+            </Paper>
+          )}
+        </DialogContent>
       </Dialog>
     </Box>
   )

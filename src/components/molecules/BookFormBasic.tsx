@@ -1,9 +1,8 @@
 import { Box, Stack } from '@mui/material'
-import { FormTextField } from '@/components/atoms/FormTextField'
+import { FormField } from '@/components/atoms/FormField'
 import { FormISBNInput } from '@/components/atoms/FormISBNInput'
 import { FormTagInput } from '@/components/atoms/FormTagInput'
 import { FormYearInput } from '@/components/atoms/FormYearInput'
-import { FormSelectField } from '@/components/atoms/FormSelectField'
 import { FormDragDropUpload } from '@/components/atoms/FormDragDropUpload'
 import type { BookFormState } from '@/types/book-form'
 import type { Book } from '@/lib/db'
@@ -24,8 +23,8 @@ export function BookFormBasic({ book, onChange }: { book: BookFormState; onChang
 
   return (
     <Stack spacing={2} sx={{ py: 1 }}>
-      <FormTextField label="Title" value={book.title} onChange={(title) => update({ title })} required />
-      <FormTextField label="Subtitle" value={book.subtitle || ''} onChange={(subtitle) => update({ subtitle })} />
+      <FormField label="Title" type="text" value={book.title} onChange={(title) => update({ title })} required />
+      <FormField label="Subtitle" type="text" value={book.subtitle || ''} onChange={(subtitle) => update({ subtitle })} />
       <FormDragDropUpload label="Cover image" value={book.coverImage} onChange={(coverImage) => update({ coverImage })} />
       <FormTagInput
         label="Primary author(s)"
@@ -54,8 +53,9 @@ export function BookFormBasic({ book, onChange }: { book: BookFormState; onChang
         onChange={(tags) => update({ tags })}
         options={[]}
       />
-      <FormSelectField
+      <FormField
         label="Reading status"
+        type="select"
         value={book.status || 'want-to-read'}
         onChange={handleStatusChange}
         options={statusOptions}

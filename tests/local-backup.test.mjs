@@ -62,6 +62,55 @@ test('rejects invalid book fields and duplicate record IDs', () => {
   assert.throws(() => parseLocalBackup(JSON.stringify(duplicateBooks)), /duplicate IDs/)
 })
 
+test('validates reading session fields and book references', () => {
+  const validSession = createBackup({
+    data: {
+      books: [{ id: 'book-1', title: 'A Book' }],
+      people: [],
+      userBooks: [],
+      readingSessions: [{
+        bookId: 'book-1',
+        date: '2026-10-27',
+        startTime: '10:00',
+        endTime: '10:30',
+        pagesRead: 12,
+      }],
+    },
+  })
+  assert.equal(parseLocalBackup(JSON.stringify(validSession)).data.readingSessions[0].pagesRead, 12)
+
+  const invalidSession = createBackup({
+    data: {
+      books: [{ id: 'book-1', title: 'A Book' }],
+      people: [],
+      userBooks: [],
+      readingSessions: [{
+        bookId: 'book-1',
+        date: '2026-10-27',
+        startTime: '10:00',
+        endTime: 30,
+        pagesRead: 12,
+      }],
+    },
+  })
+  assert.throws(() => parseLocalBackup(JSON.stringify(invalidSession)), /Invalid backup structure/)
+
+  const missingBook = createBackup({
+    data: {
+      books: [{ id: 'book-1', title: 'A Book' }],
+      people: [],
+      userBooks: [],
+      readingSessions: [{
+        bookId: 'missing-book',
+        date: '2026-10-27',
+        startTime: '10:00',
+        pagesRead: 12,
+      }],
+    },
+  })
+  assert.throws(() => parseLocalBackup(JSON.stringify(missingBook)), /reading session book reference/)
+})
+
 test('rejects shelf entries with mismatched ownership or missing book references', () => {
   const wrongOwner = createBackup()
   wrongOwner.data.userBooks[0].user_id = 'user-2'
@@ -75,8 +124,24 @@ test('rejects shelf entries with mismatched ownership or missing book references
 test('rejects unsafe object keys and oversized backup files', () => {
   const unsafeKeys = `{"format":"${LOCAL_BACKUP_FORMAT}","version":${LOCAL_BACKUP_VERSION},"createdAt":"${createdAt}","ownerUserId":null,"data":{"books":[],"people":[],"userBooks":[]},"__proto__":{}}`
   assert.throws(() => parseLocalBackup(unsafeKeys), /unsupported object keys/)
+
+  // Create a valid but oversized backup
+  const largeBackup = JSON.stringify(createBackup({
+    data: {
+      books: Array.from({ length: 500000 }, (_, i) => ({
+        id: `book-${i}`,
+        title: `Book ${i}`.padStart(100, 'x'),
+        author: 'Author '.repeat(50),
+        status: 'read',
+        createdAt,
+        updatedAt: createdAt,
+      })),
+      people: [],
+      userBooks: [],
+    },
+  }))
   assert.throws(
-    () => parseLocalBackup(' '.repeat(MAX_LOCAL_BACKUP_BYTES + 1)),
+    () => parseLocalBackup(largeBackup),
     /25 MB size limit/,
   )
 })

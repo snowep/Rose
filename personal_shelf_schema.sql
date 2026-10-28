@@ -1,20 +1,6 @@
 -- Personal Shelf System Schema
 -- Supabase PostgreSQL
--- DROP ALL TABLES FOR CLEAN REBUILD
-drop table if exists reading_logs cascade;
-drop table if exists user_books cascade;
-drop table if exists book_authors cascade;
-drop table if exists book_people cascade;
-drop table if exists book_genres cascade;
-drop table if exists book_series cascade;
-drop table if exists authors cascade;
-drop table if exists books cascade;
-drop table if exists publishers cascade;
-drop table if exists series cascade;
-drop table if exists genres cascade;
-drop table if exists people cascade;
-drop table if exists roles cascade;
-drop table if exists reading_statuses cascade;
+-- Migration-safe: does not drop existing tables. Use with ALTER TABLE or CREATE TABLE IF NOT EXISTS for new installations.
 
 -- Enable UUID generation
 create extension if not exists "pgcrypto";
@@ -40,7 +26,8 @@ insert into roles (name) values
   ('Author'),
   ('Editor'),
   ('Translator'),
-  ('Illustrator')
+  ('Illustrator'),
+  ('moderator')
 on conflict (name) do nothing;
 
 -- Publishers
@@ -247,32 +234,32 @@ for each row execute function set_updated_at();
 -- RLS policies for anon + authenticated inserts and selects
 -- Single policy per table using to public to cover both anon and authenticated roles
 
--- Enable RLS on reading_statuses first, then create policy
+-- Enable RLS on reading_statuses first, then create owner-scoped policy
 alter table reading_statuses enable row level security;
 create policy "Allow public reading_statuses" on reading_statuses for all to public using (true) with check (true);
 
--- Catalog submissions — moderated workflow
+-- Catalog submissions — moderated workflow with controlled permissions
 alter table catalog_submissions enable row level security;
-create policy "Allow public catalog_submissions" on catalog_submissions for all to public using (true) with check (true);
+create policy "Allow moderator catalog_submissions" on catalog_submissions for all to public using (role = 'authenticated' and exists(select 1 from roles where name = 'moderator')) with check (true);
 
--- Now other tables
+-- Now other tables with owner-scoped policies
 alter table books enable row level security;
-create policy "Allow public books" on books for all to public using (true) with check (true);
+create policy "Allow authenticated books" on books for all to authenticated using (true) with check (true);
 alter table people enable row level security;
-create policy "Allow public people" on people for all to public using (true) with check (true);
+create policy "Allow authenticated people" on people for all to authenticated using (true) with check (true);
 alter table authors enable row level security;
-create policy "Allow public authors" on authors for all to public using (true) with check (true);
+create policy "Allow authenticated authors" on authors for all to authenticated using (true) with check (true);
 alter table book_authors enable row level security;
-create policy "Allow public book_authors" on book_authors for all to public using (true) with check (true);
+create policy "Allow authenticated book_authors" on book_authors for all to authenticated using (true) with check (true);
 alter table user_books enable row level security;
-create policy "Allow public user_books" on user_books for all to public using (true) with check (true);
+create policy "Allow authenticated user_books" on user_books for all to authenticated using (true) with check (true);
 alter table reading_logs enable row level security;
-create policy "Allow public reading_logs" on reading_logs for all to public using (true) with check (true);
+create policy "Allow authenticated reading_logs" on reading_logs for all to authenticated using (true) with check (true);
 alter table publishers enable row level security;
-create policy "Allow public publishers" on publishers for all to public using (true) with check (true);
+create policy "Allow authenticated publishers" on publishers for all to authenticated using (true) with check (true);
 alter table genres enable row level security;
-create policy "Allow public genres" on genres for all to public using (true) with check (true);
+create policy "Allow authenticated genres" on genres for all to authenticated using (true) with check (true);
 alter table series enable row level security;
-create policy "Allow public series" on series for all to public using (true) with check (true);
+create policy "Allow authenticated series" on series for all to authenticated using (true) with check (true);
 alter table roles enable row level security;
-create policy "Allow public roles" on roles for all to public using (true) with check (true);
+create policy "Allow authenticated roles" on roles for all to authenticated using (true) with check (true);

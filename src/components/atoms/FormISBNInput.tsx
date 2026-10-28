@@ -9,8 +9,10 @@ interface FormISBNInputProps extends Omit<TextFieldProps, 'value' | 'onChange'> 
   type: 'ISBN-10' | 'ISBN-13'
 }
 
+import { normalizeISBN } from '@/lib/utils'
+
 export function isValidISBN(isbn: string, type: 'ISBN-10' | 'ISBN-13'): boolean {
-  const clean = isbn.replace(/[-\s]/g, '')
+  const clean = normalizeISBN(isbn)
   if (type === 'ISBN-10') {
     if (!/^[0-9]{9}[0-9X]$/.test(clean)) return false
     const sum = Array.from(clean).reduce((total, digit, index) => {

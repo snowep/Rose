@@ -1,14 +1,16 @@
 'use client'
 
 import { Box } from '@mui/material'
-import { PeopleFab } from '@/components/atoms/PeopleFab'
+import { ActionFab } from '@/components/atoms/ActionFab'
 import { AddPersonModal } from '@/components/molecules/AddPersonModal'
 import { useState, useMemo, useEffect } from 'react'
 import { Typography, TextField, Button, Chip, Avatar, Card, CardContent, Grid } from '@mui/material'
-import { PersonAdd, Search, Clear } from '@mui/icons-material'
+import { Search, Clear } from '@mui/icons-material'
+import { Add as PersonAdd } from '@mui/icons-material'
 import { BookService } from '@/lib/book-service'
 import { useRouter } from 'next/navigation'
 import { formatPersonName, getPersonInitials } from '@/lib/person-format'
+import { nowISO } from '@/lib/utils'
 import type { PersonNameFields } from '@/lib/person-format'
 
 interface Person extends PersonNameFields {
@@ -79,8 +81,8 @@ export function PeopleTemplate() {
   const handleAddPerson = async (personData: any) => {
     const data = {
       ...personData,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      created_at: nowISO(),
+      updated_at: nowISO()
     }
     await BookService.createPerson(data)
     setModalOpen(false)
@@ -197,7 +199,7 @@ export function PeopleTemplate() {
         Total people: {people.length} | Showing: {filteredPeople.length}
       </Typography>
 
-      <PeopleFab onClick={() => setModalOpen(true)} />
+      <ActionFab icon={PersonAdd} ariaLabel="Add a person" onClick={() => setModalOpen(true)} />
       <AddPersonModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

@@ -2,6 +2,7 @@
 
 import { Box, Typography } from '@mui/material'
 import { HeatmapCell } from '@/components/atoms/HeatmapCell'
+import { todayISO } from '@/lib/utils'
 
 type HeatmapCellData = {
   date: string
@@ -11,7 +12,7 @@ type HeatmapCellData = {
 
 export function HeatmapGrid({ cells, mode }: { cells: HeatmapCellData[]; mode: 'monthly' | 'yearly' }) {
   const cellSize = 12
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayISO()
 
   if (mode === 'yearly') {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
