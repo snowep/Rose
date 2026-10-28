@@ -1,6 +1,26 @@
 -- RLS Policy Fixes (Phase 0)
 -- Run AFTER personal_shelf_schema.sql base has been applied
 -- Idempotent: uses IF NOT EXISTS / DROP POLICY IF EXISTS patterns
+-- Ensures all referenced tables exist before applying policies
+
+-- ============================================================
+-- 0. ENSURE BASE TABLES EXIST (idempotent; base schema should already have these)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS outbox (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  operation text not null check (operation in ('create', 'update', 'delete')),
+  entity text not null check (entity in ('book', 'author', 'publisher', 'person', 'user_book', 'reading_log')),
+  entity_id uuid not null,
+  revision int not null default 1,
+  payload jsonb not null,
+  created_at timestamptz not null default now(),
+  processed boolean not null default false
+);
+CREATE INDEX IF NOT EXISTS idx_outbox_user ON outbox(user_id);
+CREATE INDEX IF NOT EXISTS idx_outbox_entity ON outbox(entity, entity_id);
+CREATE INDEX IF NOT EXISTS idx_outbox_processed ON outbox(processed);
 
 -- ============================================================
 -- 1. ENSURE profiles TABLE EXISTS (before any policies reference it)
@@ -50,7 +70,7 @@ ALTER TABLE IF EXISTS user_books ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS reading_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS outbox ENABLE ROW LEVEL SECURITY;
 
--- Drop existing permissive policies
+-- Drop existing permissive policies (idempotent)
 DROP POLICY IF EXISTS "Allow authenticated user_books" ON user_books;
 DROP POLICY IF EXISTS "Allow authenticated reading_logs" ON reading_logs;
 DROP POLICY IF EXISTS "Allow authenticated outbox" ON outbox;
@@ -329,23 +349,10 @@ CREATE POLICY "catalog_submissions_moderator_all" ON catalog_submissions
   );
 
 -- ============================================================
--- 4. ADDITIONAL SHARED TABLE POLICIES
+-- 4. ADDITIONAL SHARED TABLE POLICIES (documentation/redundancy removal)
 -- ============================================================
 
--- People: already covered above; also ensure
-DROP POLICY IF EXISTS "Allow authenticated people" ON people;
-DROP POLICY IF EXISTS "Allow authenticated authors" ON authors;
-DROP POLICY IF EXISTS "Allow authenticated book_authors" ON book_authors;
-DROP POLICY IF EXISTS "Allow authenticated publishers" ON publishers;
-DROP POLICY IF EXISTS "Allow authenticated genres" ON genres;
-DROP POLICY IF EXISTS "Allow authenticated series" ON series;
-DROP POLICY IF EXISTS "Allow authenticated roles" ON roles;
-DROP POLICY IF EXISTS "Allow public reading_statuses" ON reading_statuses;
-
--- Re-apply the shared table policies (already created above)
--- These are the same policies; listed for documentation completeness
-
--- Book people junction: read always; write moderator-only
+-- Ensure all shared table policies are in place (idempotent duplicates removed)
 DROP POLICY IF EXISTS "book_people_select_authenticated" ON book_people;
 DROP POLICY IF EXISTS "book_people_write_moderator" ON book_people;
 CREATE POLICY "book_people_select_authenticated" ON book_people
@@ -359,7 +366,6 @@ CREATE POLICY "book_people_write_moderator" ON book_people
     EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
   );
 
--- Book series junction: read always; write moderator-only
 DROP POLICY IF EXISTS "book_series_select_authenticated" ON book_series;
 DROP POLICY IF EXISTS "book_series_write_moderator" ON book_series;
 CREATE POLICY "book_series_select_authenticated" ON book_series
@@ -373,7 +379,6 @@ CREATE POLICY "book_series_write_moderator" ON book_series
     EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
   );
 
--- Book genres junction: read always; write moderator-only
 DROP POLICY IF EXISTS "book_genres_select_authenticated" ON book_genres;
 DROP POLICY IF EXISTS "book_genres_write_moderator" ON book_genres;
 CREATE POLICY "book_genres_select_authenticated" ON book_genres
