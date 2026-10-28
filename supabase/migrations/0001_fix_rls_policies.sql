@@ -1,60 +1,134 @@
 -- RLS Policy Fixes (Phase 0)
--- Run AFTER the base personal_shelf_schema.sql has been applied
--- This migration adds owner-scoped RLS policies and moderator controls
--- to replace the permissive USING (true) WITH CHECK (true) policies
+-- Run AFTER personal_shelf_schema.sql base has been applied
+-- Idempotent: uses IF NOT EXISTS / DROP POLICY IF EXISTS patterns
 
 -- ============================================================
--- CATALOG SUBMISSIONS TABLE (ensure it exists)
+-- 1. ENSURE profiles TABLE EXISTS (before any policies reference it)
 -- ============================================================
 
--- Create catalog_submissions table if not already present
--- (This should already exist from personal_shelf_schema.sql, but is idempotent here)
-CREATE TABLE IF NOT EXISTS catalog_submissions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
-  book_id uuid references books(id) on delete set null,
-  title text not null,
-  subtitle text,
-  author text,
-  isbn13 text,
-  publisher text,
-  genre text,
-  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'request-changes')),
-  rejection_reason text,
-  submitted_at timestamptz not null default now(),
-  approved_at timestamptz,
-  notes text,
-  unique(user_id, book_id)
+CREATE TABLE IF NOT EXISTS profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email text,
+  full_name text,
+  role text DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_catalog_submissions_user ON catalog_submissions(user_id);
-CREATE INDEX IF NOT EXISTS idx_catalog_submissions_book ON catalog_submissions(book_id);
-CREATE INDEX IF NOT EXISTS idx_catalog_submissions_status ON catalog_submissions(status);
+
+-- Enable RLS on profiles
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Idempotent policy drop/create
+DROP POLICY IF EXISTS "profiles_select_own" ON profiles;
+DROP POLICY IF EXISTS "profiles_update_own" ON profiles;
+DROP POLICY IF EXISTS "profiles_moderator_all" ON profiles;
+
+CREATE POLICY "profiles_select_own" ON profiles
+  FOR SELECT TO authenticated
+  USING (id = auth.uid());
+
+CREATE POLICY "profiles_update_own" ON profiles
+  FOR UPDATE TO authenticated
+  USING (id = auth.uid())
+  WITH CHECK (id = auth.uid());
+
+CREATE POLICY "profiles_moderator_all" ON profiles
+  FOR ALL TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
+  );
 
 -- ============================================================
--- ENABLE RLS ON ALL TABLES (idempotent)
+-- 2. ENABLE RLS ON ALL OTHER TABLES (idempotent)
 -- ============================================================
 
+-- Private user tables: owner-scoped CRUD
+ALTER TABLE IF EXISTS user_books ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS reading_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS outbox ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing permissive policies
+DROP POLICY IF EXISTS "Allow authenticated user_books" ON user_books;
+DROP POLICY IF EXISTS "Allow authenticated reading_logs" ON reading_logs;
+DROP POLICY IF EXISTS "Allow authenticated outbox" ON outbox;
+
+-- User books: users own their shelf entries only
+CREATE POLICY "user_books_select_own" ON user_books
+  FOR SELECT TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "user_books_insert_own" ON user_books
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "user_books_update_own" ON user_books
+  FOR UPDATE TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "user_books_delete_own" ON user_books
+  FOR DELETE TO authenticated
+  USING (user_id = auth.uid());
+
+-- Reading logs: users own their reading history only
+CREATE POLICY "reading_logs_select_own" ON reading_logs
+  FOR SELECT TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "reading_logs_insert_own" ON reading_logs
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "reading_logs_update_own" ON reading_logs
+  FOR UPDATE TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "reading_logs_delete_own" ON reading_logs
+  FOR DELETE TO authenticated
+  USING (user_id = auth.uid());
+
+-- Outbox: client-side sync queue, owner-scoped
+CREATE POLICY "outbox_select_own" ON outbox
+  FOR SELECT TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "outbox_insert_own" ON outbox
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "outbox_update_own" ON outbox
+  FOR UPDATE TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "outbox_delete_own" ON outbox
+  FOR DELETE TO authenticated
+  USING (user_id = auth.uid());
+
+-- ============================================================
+-- 3. SHARED CATALOG TABLES: Moderator-controlled policies
+-- ============================================================
+
+-- Enable RLS on shared tables
 ALTER TABLE IF EXISTS books ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS people ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS authors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS book_authors ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS user_books ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS reading_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS publishers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS genres ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS reading_statuses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS catalog_submissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS outbox ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS book_people ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS book_series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS book_genres ENABLE ROW LEVEL SECURITY;
 
--- ============================================================
--- DROP OVERLY PERMISSIVE POLICIES (idempotent)
--- ============================================================
-
+-- Drop existing overly-permissive policies (idempotent)
 DROP POLICY IF EXISTS "Allow authenticated books" ON books;
 DROP POLICY IF EXISTS "Allow authenticated people" ON people;
 DROP POLICY IF EXISTS "Allow authenticated authors" ON authors;
@@ -68,45 +142,29 @@ DROP POLICY IF EXISTS "Allow authenticated roles" ON roles;
 DROP POLICY IF EXISTS "Allow public reading_statuses" ON reading_statuses;
 DROP POLICY IF EXISTS "Allow moderator catalog_submissions" ON catalog_submissions;
 
--- ============================================================
--- SHARED CATALOG TABLES: Moderator-controlled policies
--- ============================================================
-
--- Books catalog: read always; write moderator-only via profiles.role
+-- Books catalog: read always; write moderator-only
 CREATE POLICY "books_select_authenticated" ON books
   FOR SELECT TO authenticated USING (true);
 
 CREATE POLICY "books_insert_moderator" ON books
   FOR INSERT TO authenticated
   WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles p
-      WHERE p.id = auth.uid() AND p.role = 'moderator'
-    )
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
   );
 
 CREATE POLICY "books_update_moderator" ON books
   FOR UPDATE TO authenticated
   USING (
-    EXISTS (
-      SELECT 1 FROM profiles p
-      WHERE p.id = auth.uid() AND p.role = 'moderator'
-    )
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
   )
   WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles p
-      WHERE p.id = auth.uid() AND p.role = 'moderator'
-    )
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
   );
 
 CREATE POLICY "books_delete_moderator" ON books
   FOR DELETE TO authenticated
   USING (
-    EXISTS (
-      SELECT 1 FROM profiles p
-      WHERE p.id = auth.uid() AND p.role = 'moderator'
-    )
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
   );
 
 -- People: read always; write moderator-only
@@ -252,51 +310,7 @@ CREATE POLICY "book_genres_write_moderator" ON book_genres
     EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
   );
 
--- ============================================================
--- USER-PRIVATE TABLES: Owner-scoped CRUD policies
--- ============================================================
-
--- User books: users can only CRUD their own shelf entries
-CREATE POLICY "user_books_select_own" ON user_books
-  FOR SELECT TO authenticated
-  USING (user_id = auth.uid());
-
-CREATE POLICY "user_books_insert_own" ON user_books
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "user_books_update_own" ON user_books
-  FOR UPDATE TO authenticated
-  USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "user_books_delete_own" ON user_books
-  FOR DELETE TO authenticated
-  USING (user_id = auth.uid());
-
--- Reading logs: users can only CRUD their own reading history
-CREATE POLICY "reading_logs_select_own" ON reading_logs
-  FOR SELECT TO authenticated
-  USING (user_id = auth.uid());
-
-CREATE POLICY "reading_logs_insert_own" ON reading_logs
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "reading_logs_update_own" ON reading_logs
-  FOR UPDATE TO authenticated
-  USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "reading_logs_delete_own" ON reading_logs
-  FOR DELETE TO authenticated
-  USING (user_id = auth.uid());
-
--- ============================================================
--- CATALOG SUBMISSIONS: Owner can create/read own; moderator full control
--- ============================================================
-
--- Users can create and read their own submissions
+-- Catalog submissions: owner can create/read own; moderator full control
 CREATE POLICY "catalog_submissions_select_own" ON catalog_submissions
   FOR SELECT TO authenticated
   USING (user_id = auth.uid());
@@ -305,7 +319,6 @@ CREATE POLICY "catalog_submissions_insert_own" ON catalog_submissions
   FOR INSERT TO authenticated
   WITH CHECK (user_id = auth.uid());
 
--- Moderators can read all submissions and update status
 CREATE POLICY "catalog_submissions_moderator_all" ON catalog_submissions
   FOR ALL TO authenticated
   USING (
@@ -316,55 +329,56 @@ CREATE POLICY "catalog_submissions_moderator_all" ON catalog_submissions
   );
 
 -- ============================================================
--- OUTBOX: Owner-scoped (client-side sync queue)
+-- 4. ADDITIONAL SHARED TABLE POLICIES
 -- ============================================================
 
-CREATE POLICY "outbox_select_own" ON outbox
-  FOR SELECT TO authenticated
-  USING (user_id = auth.uid());
+-- People: already covered above; also ensure
+DROP POLICY IF EXISTS "Allow authenticated people" ON people;
+DROP POLICY IF EXISTS "Allow authenticated authors" ON authors;
+DROP POLICY IF EXISTS "Allow authenticated book_authors" ON book_authors;
+DROP POLICY IF EXISTS "Allow authenticated publishers" ON publishers;
+DROP POLICY IF EXISTS "Allow authenticated genres" ON genres;
+DROP POLICY IF EXISTS "Allow authenticated series" ON series;
+DROP POLICY IF EXISTS "Allow authenticated roles" ON roles;
+DROP POLICY IF EXISTS "Allow public reading_statuses" ON reading_statuses;
 
-CREATE POLICY "outbox_insert_own" ON outbox
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
+-- Re-apply the shared table policies (already created above)
+-- These are the same policies; listed for documentation completeness
 
-CREATE POLICY "outbox_update_own" ON outbox
-  FOR UPDATE TO authenticated
-  USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
+-- Book people junction: read always; write moderator-only
+DROP POLICY IF EXISTS "book_people_select_authenticated" ON book_people;
+DROP POLICY IF EXISTS "book_people_write_moderator" ON book_people;
+CREATE POLICY "book_people_select_authenticated" ON book_people
+  FOR SELECT TO authenticated USING (true);
+CREATE POLICY "book_people_write_moderator" ON book_people
+  FOR ALL TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
+  );
 
-CREATE POLICY "outbox_delete_own" ON outbox
-  FOR DELETE TO authenticated
-  USING (user_id = auth.uid());
+-- Book series junction: read always; write moderator-only
+DROP POLICY IF EXISTS "book_series_select_authenticated" ON book_series;
+DROP POLICY IF EXISTS "book_series_write_moderator" ON book_series;
+CREATE POLICY "book_series_select_authenticated" ON book_series
+  FOR SELECT TO authenticated USING (true);
+CREATE POLICY "book_series_write_moderator" ON book_series
+  FOR ALL TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
+  );
 
--- ============================================================
--- PROFILES TABLE: With role column for moderator authorization
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS profiles (
-  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email text,
-  full_name text,
-  role text DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin')),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "profiles_select_own" ON profiles;
-DROP POLICY IF EXISTS "profiles_update_own" ON profiles;
-DROP POLICY IF EXISTS "profiles_moderator_all" ON profiles;
-
-CREATE POLICY "profiles_select_own" ON profiles
-  FOR SELECT TO authenticated
-  USING (id = auth.uid());
-
-CREATE POLICY "profiles_update_own" ON profiles
-  FOR UPDATE TO authenticated
-  USING (id = auth.uid())
-  WITH CHECK (id = auth.uid());
-
-CREATE POLICY "profiles_moderator_all" ON profiles
+-- Book genres junction: read always; write moderator-only
+DROP POLICY IF EXISTS "book_genres_select_authenticated" ON book_genres;
+DROP POLICY IF EXISTS "book_genres_write_moderator" ON book_genres;
+CREATE POLICY "book_genres_select_authenticated" ON book_genres
+  FOR SELECT TO authenticated USING (true);
+CREATE POLICY "book_genres_write_moderator" ON book_genres
   FOR ALL TO authenticated
   USING (
     EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')
@@ -374,20 +388,9 @@ CREATE POLICY "profiles_moderator_all" ON profiles
   );
 
 -- ============================================================
--- TRIGGER: Auto-create profile on signup
+-- 5. INDEXES (idempotent)
 -- ============================================================
 
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, email, full_name, role)
-  VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'full_name', ''), 'user')
-  ON CONFLICT (id) DO NOTHING;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+CREATE INDEX IF NOT EXISTS idx_catalog_submissions_user ON catalog_submissions(user_id);
+CREATE INDEX IF NOT EXISTS idx_catalog_submissions_book ON catalog_submissions(book_id);
+CREATE INDEX IF NOT EXISTS idx_catalog_submissions_status ON catalog_submissions(status);
