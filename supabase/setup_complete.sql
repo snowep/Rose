@@ -129,9 +129,39 @@ DO $$ BEGIN
   -- outbox
   DROP POLICY IF EXISTS outbox_select_own ON outbox;
   CREATE POLICY outbox_select_own ON outbox FOR SELECT TO authenticated USING (user_id = auth.uid());
-  -- books read
+  DROP POLICY IF EXISTS outbox_insert_own ON outbox;
+  CREATE POLICY outbox_insert_own ON outbox FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+  DROP POLICY IF EXISTS outbox_update_own ON outbox;
+  CREATE POLICY outbox_update_own ON outbox FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+  DROP POLICY IF EXISTS outbox_delete_own ON outbox;
+  CREATE POLICY outbox_delete_own ON outbox FOR DELETE TO authenticated USING (user_id = auth.uid());
+  -- books read (shared catalog)
   DROP POLICY IF EXISTS books_select_authenticated ON books;
   CREATE POLICY books_select_authenticated ON books FOR SELECT TO authenticated USING (true);
+  -- catalog tables - read for all authenticated users
+  DROP POLICY IF EXISTS people_select_authenticated ON people;
+  CREATE POLICY people_select_authenticated ON people FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS authors_select_authenticated ON authors;
+  CREATE POLICY authors_select_authenticated ON authors FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS publishers_select_authenticated ON publishers;
+  CREATE POLICY publishers_select_authenticated ON publishers FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS genres_select_authenticated ON genres;
+  CREATE POLICY genres_select_authenticated ON genres FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS series_select_authenticated ON series;
+  CREATE POLICY series_select_authenticated ON series FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS roles_select_authenticated ON roles;
+  CREATE POLICY roles_select_authenticated ON roles FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS reading_statuses_select_authenticated ON reading_statuses;
+  CREATE POLICY reading_statuses_select_authenticated ON reading_statuses FOR SELECT TO authenticated USING (true);
+  -- junction tables - read for all authenticated users
+  DROP POLICY IF EXISTS book_authors_select_authenticated ON book_authors;
+  CREATE POLICY book_authors_select_authenticated ON book_authors FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS book_people_select_authenticated ON book_people;
+  CREATE POLICY book_people_select_authenticated ON book_people FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS book_series_select_authenticated ON book_series;
+  CREATE POLICY book_series_select_authenticated ON book_series FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS book_genres_select_authenticated ON book_genres;
+  CREATE POLICY book_genres_select_authenticated ON book_genres FOR SELECT TO authenticated USING (true);
   -- catalog_submissions
   DROP POLICY IF EXISTS catalog_submissions_select_own ON catalog_submissions;
   CREATE POLICY catalog_submissions_select_own ON catalog_submissions FOR SELECT TO authenticated USING (user_id = auth.uid());

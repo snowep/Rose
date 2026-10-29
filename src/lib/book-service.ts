@@ -72,24 +72,26 @@ async function enqueueChange(
   if (!userId) return
 
   const outbox = db.table('sync_outbox') as Table<SyncOutboxEntry, string>
-  const previousEntries = await outbox
-    .where('[userId+entity+entityId]')
-    .equals([userId, entity, entityId])
-    .toArray()
-  const revision = previousEntries.reduce((max, entry) => Math.max(max, entry.revision), 0) + 1
+  await db.transaction('rw', outbox, async () => {
+    const previousEntries = await outbox
+      .where('[userId+entity+entityId]')
+      .equals([userId, entity, entityId])
+      .toArray()
+    const revision = previousEntries.reduce((max, entry) => Math.max(max, entry.revision), 0) + 1
 
-  await outbox.add({
-    id: generateId(),
-    operationId: generateId(),
-    userId,
-    entity,
-    entityId,
-    operation,
-    revision,
-    payload,
-    status: 'pending',
-    attempts: 0,
-    createdAt: nowISO(),
+    await outbox.add({
+      id: generateId(),
+      operationId: generateId(),
+      userId,
+      entity,
+      entityId,
+      operation,
+      revision,
+      payload,
+      status: 'pending',
+      attempts: 0,
+      createdAt: nowISO(),
+    })
   })
 }
 
@@ -116,43 +118,46 @@ db.version(3).stores({
   sync_state: 'userId',
   books_user_id_idx: 'user_id',
   reading_sessions: 'id, user_id, book_id, date, start_time, end_time, pages_read, session_notes, created_at',
-}).upgrade((tx: any) => {
+}).upgrade(async (tx: any) => {
   // Migration: Convert dailyLog to reading_sessions
   const booksTable = tx.table('books')
   const sessionsTable = tx.table('reading_sessions')
-  return booksTable.toArray().then((books: any[]) => {
-    const sessionEntries: any[] = []
-    books.forEach(book => {
-      const userId = book.user_id || 'legacy'
-      if (book.dailyLog && Array.isArray(book.dailyLog)) {
-        book.dailyLog.forEach((log: any) => {
-          const sessionId = `${book.id}-${log.date}-${log.pagesRead || 0}-${generateId().slice(0, 8)}`
-          sessionEntries.push({
-            id: sessionId,
-            user_id: userId,
-            book_id: book.id,
-            date: log.date,
-            start_time: log.startTime || null,
-            end_time: log.endTime || null,
-            pages_read: log.pagesRead || 0,
-            session_notes: null,
-            created_at: log.date ? new Date(log.date).toISOString() : nowISO(),
-          })
+  const books = await booksTable.toArray()
+  const sessionEntries: any[] = []
+  books.forEach((book: any) => {
+    const userId = book.user_id || 'legacy'
+    if (book.dailyLog && Array.isArray(book.dailyLog)) {
+      book.dailyLog.forEach((log: any) => {
+        const sessionId = `${book.id}-${log.date}-${log.pagesRead || 0}-${generateId()}`
+        sessionEntries.push({
+          id: sessionId,
+          user_id: userId,
+          book_id: book.id,
+          date: log.date,
+          start_time: log.startTime || null,
+          end_time: log.endTime || null,
+          pages_read: log.pagesRead || 0,
+          session_notes: null,
+          created_at: log.date ? new Date(log.date).toISOString() : nowISO(),
         })
-      }
-    })
-    if (sessionEntries.length > 0) {
-      return sessionsTable.bulkAdd(sessionEntries)
+      })
     }
   })
+  if (sessionEntries.length > 0) {
+    await sessionsTable.bulkAdd(sessionEntries)
+  }
+  // Assign legacy user_id to books that don't have one
+  const legacyBooks = books.filter((b: any) => !b.user_id)
+  if (legacyBooks.length > 0) {
+    await Promise.all(legacyBooks.map((b: any) => booksTable.update(b.id, { user_id: 'legacy' })))
+  }
 })
 
 export const BookService = {
   async getAll(): Promise<Book[]> {
     const userId = activeSyncUserId
-    return userId
-      ? ((db as any).books.where('user_id').equals(userId).toArray() as Book[])
-      : ((db as any).books.toArray() as Book[])
+    if (!userId) return []
+    return ((db as any).books.where('user_id').equals(userId).toArray() as Book[])
   },
 
   async getById(id: string): Promise<Book | undefined> {
@@ -270,12 +275,13 @@ export const BookService = {
       return { success: true, processed: [], failed: [] }
     }
 
+    const supabase = createClient()
     const processedIds: string[] = []
     const failedIds: string[] = []
 
     for (const entry of pending) {
       try {
-        const result = await this.processOutboxEntry(userId, entry)
+        const result = await this.processOutboxEntry(supabase, userId, entry)
         const now = nowISO()
         const attempts = (entry.attempts ?? 0) + 1
 
@@ -307,7 +313,7 @@ export const BookService = {
     }
   },
 
-  async processOutboxEntry(userId: string, entry: SyncOutboxEntry): Promise<{
+  async processOutboxEntry(supabase: any, userId: string, entry: SyncOutboxEntry): Promise<{
     success: boolean
     conflict: boolean
     retryable: boolean
@@ -315,9 +321,6 @@ export const BookService = {
     conflictData?: any
     needsAuth?: boolean
   }> {
-    // This would call the Supabase API in production
-    // For now, we implement the contract with a mock that can be swapped
-
     const payload = entry.payload as any
     const operation = entry.operation
     const entity = entry.entity
@@ -325,18 +328,6 @@ export const BookService = {
     const revision = entry.revision
 
     try {
-      // Get user session for auth
-      const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) {
-        // Distinguish between no session (needs login) and expired session (needs refresh)
-        const { data: { session: refreshSession } } = await supabase.auth.refreshSession()
-        if (!refreshSession?.user) {
-          return { success: false, conflict: false, retryable: false, error: 'Not authenticated', needsAuth: true }
-        }
-        // Session refreshed, continue with new session
-      }
-
       if (entity === 'book') {
         return await this.syncBookToSupabase(supabase, userId, operation, entityId, payload, revision)
       } else if (entity === 'person') {
@@ -348,7 +339,6 @@ export const BookService = {
       return { success: false, conflict: false, retryable: false, error: `Unknown entity: ${entity}` }
     } catch (error) {
       const err = error as Error
-      // Network errors are retryable
       if (err.name === 'NetworkError' || err.message.includes('fetch') || err.message.includes('network')) {
         return { success: false, conflict: false, retryable: true, error: err.message }
       }
@@ -456,15 +446,17 @@ export const BookService = {
       }
       return { success: true, conflict: false, retryable: false }
     } else if (operation === 'delete') {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('user_books')
         .delete()
         .eq('user_id', userId)
         .eq('book_id', entityId)
+        .select()
 
       if (error) {
         return { success: false, conflict: false, retryable: true, error: error.message }
       }
+      // Delete is idempotent - zero rows is OK (already deleted)
       return { success: true, conflict: false, retryable: false }
     }
 
@@ -487,6 +479,18 @@ export const BookService = {
         title: `Person: ${payload.name}`,
         status: 'pending',
         notes: JSON.stringify(payload),
+      })
+      if (error) {
+        return { success: false, conflict: false, retryable: true, error: error.message }
+      }
+    } else if (operation === 'update' || operation === 'delete') {
+      // Person updates/deletes are moderator-controlled catalog operations
+      // Create catalog submission for review
+      const { error } = await supabase.from('catalog_submissions').insert({
+        user_id: userId,
+        title: `Person ${operation}: ${payload.name || entityId}`,
+        status: 'pending',
+        notes: JSON.stringify({ operation, entityId, payload }),
       })
       if (error) {
         return { success: false, conflict: false, retryable: true, error: error.message }
@@ -672,23 +676,18 @@ export const BookService = {
         if (readingSessions.length > 0) {
           const sessionEntries = readingSessions
             .filter((s: any) => {
-              const baseId = s.bookId + '-' + s.date + '-' + (s.pagesRead || 0)
-              // Check if any session with this base ID exists (handles new format with suffix)
-              for (const existingId of sessionIds) {
-                if (existingId.startsWith(baseId)) return false
-              }
-              return true
+              const sessionId = `${s.bookId}-${s.date}-${s.pagesRead || 0}-${s.startTime || 'nostart'}`
+              return !sessionIds.has(sessionId)
             })
             .map((s: any) => {
-              const baseId = s.bookId + '-' + s.date + '-' + (s.pagesRead || 0)
-              const startSuffix = s.startTime ? `-${s.startTime.replace(/[:.]/g, '')}` : `-${generateId().slice(0, 8)}`
+              const sessionId = `${s.bookId}-${s.date}-${s.pagesRead || 0}-${s.startTime || generateId()}`
               return {
-                id: baseId + startSuffix,
+                id: sessionId,
                 user_id: currentUserId || 'legacy',
                 book_id: s.bookId,
                 date: s.date,
-                start_time: s.startTime,
-                end_time: s.endTime,
+                start_time: s.startTime || null,
+                end_time: s.endTime || null,
                 pages_read: s.pagesRead || 0,
                 session_notes: null,
                 created_at: nowISO(),
