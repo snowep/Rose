@@ -69,7 +69,7 @@ async function enqueueChange(
   payload: unknown,
 ) {
   const userId = activeSyncUserId
-  if (!userId) return
+  if (!userId) throw new Error('No active sync user - cannot enqueue change. Call setActiveSyncUser first.')
 
   const outbox = db.table('sync_outbox') as Table<SyncOutboxEntry, string>
   await db.transaction('rw', outbox, async () => {
@@ -118,14 +118,25 @@ db.version(3).stores({
   sync_state: 'userId',
   books_user_id_idx: 'user_id',
   reading_sessions: 'id, user_id, book_id, date, start_time, end_time, pages_read, session_notes, created_at',
+})
+
+db.version(4).stores({
+  books: 'id, title, author, status, genre, rating, pages, progress, createdAt, updatedAt, user_id, room, shelf, locationNotes, inventoryStatus',
+  user_books: 'id, user_id, book_id, read_count, added_at',
+  people: 'id, name, sort_name, first_name, middle_name, last_name, nationality, birth_year, death_year, biography, website, photo_url, created_at, updated_at',
+  sync_outbox: 'id, operationId, userId, [userId+status], [userId+entity+entityId], createdAt',
+  sync_state: 'userId',
+  books_user_id_idx: 'user_id',
+  reading_sessions: 'id, user_id, book_id, date, start_time, end_time, pages_read, session_notes, created_at, [user_id+book_id]',
+  book_covers: 'id, book_id, user_id, mime, data, created_at',
 }).upgrade(async (tx: any) => {
-  // Migration: Convert dailyLog to reading_sessions
+  // Migration v3->v4: Convert dailyLog to reading_sessions, add book_covers table
   const booksTable = tx.table('books')
   const sessionsTable = tx.table('reading_sessions')
   const books = await booksTable.toArray()
   const sessionEntries: any[] = []
   books.forEach((book: any) => {
-    const userId = book.user_id || 'legacy'
+    const userId = book.user_id || '00000000-0000-0000-0000-000000000001'
     if (book.dailyLog && Array.isArray(book.dailyLog)) {
       book.dailyLog.forEach((log: any) => {
         const sessionId = `${book.id}-${log.date}-${log.pagesRead || 0}-${generateId()}`
@@ -149,7 +160,7 @@ db.version(3).stores({
   // Assign legacy user_id to books that don't have one
   const legacyBooks = books.filter((b: any) => !b.user_id)
   if (legacyBooks.length > 0) {
-    await Promise.all(legacyBooks.map((b: any) => booksTable.update(b.id, { user_id: 'legacy' })))
+    await Promise.all(legacyBooks.map((b: any) => booksTable.update(b.id, { user_id: '00000000-0000-0000-0000-000000000001' })))
   }
 })
 
@@ -185,7 +196,12 @@ export const BookService = {
     return (db.table('sync_state') as Table<LocalSyncState, string>).get(userId)
   },
 
-  async acquireSyncLock(userId: string, lockId: string, now = Date.now(), leaseMs = 60_000): Promise<boolean> {
+  async acquireSyncLock(userId: string, lockId: string, leaseMs = 60_000): Promise<boolean> {
+    // Use server time to avoid client clock skew
+    const supabase = createClient()
+    const { data: serverTime } = await supabase.rpc('get_server_time')
+    const now = serverTime ? new Date(serverTime).getTime() : Date.now()
+
     return db.transaction('rw', db.sync_state, async () => {
       const stateTable = db.table('sync_state') as Table<LocalSyncState, string>
       const state = await stateTable.get(userId)
@@ -231,7 +247,7 @@ export const BookService = {
     payload: unknown,
   ): Promise<void> {
     const userId = activeSyncUserId
-    if (!userId) return
+    if (!userId) throw new Error('No active sync user - cannot record outbox entry. Call setActiveSyncUser first.')
 
     const outbox = db.table('sync_outbox') as Table<SyncOutboxEntry, string>
     const previousEntries = await outbox
@@ -357,6 +373,19 @@ export const BookService = {
     // Check if book is catalogued (has ISBN) - if not, create catalog submission
     const localBook = await (db as any).books.get(entityId)
     const hasCatalog = localBook?.isbn13 || localBook?.isbn10
+    const isbn13 = payload.isbn13 || localBook?.isbn13
+    const isbn10 = payload.isbn10 || localBook?.isbn10
+
+    // Helper: resolve remote book_id via ISBN when available
+    async function resolveRemoteBookId(): Promise<string | null> {
+      if (!isbn13 && !isbn10) return null
+      const { data } = await supabase
+        .from('books')
+        .select('id')
+        .or(`isbn13.eq.${isbn13},isbn10.eq.${isbn10}`)
+        .maybeSingle()
+      return data?.id ?? null
+    }
 
     if (operation === 'create') {
       if (!hasCatalog) {
@@ -411,53 +440,64 @@ export const BookService = {
           })
           .select()
 
-      if (error) {
-        if (error.code === '23505') { // unique violation
-          return { success: false, conflict: true, retryable: false, error: 'Duplicate shelf entry', conflictData: { remote: data, local: payload } }
+        if (error) {
+          if (error.code === '23505') { // unique violation
+            // Try to find the existing remote book by ISBN to get its real ID
+            const remoteBookId = await resolveRemoteBookId()
+            return { success: false, conflict: true, retryable: false, error: 'Duplicate shelf entry', conflictData: { remoteBookId, local: payload } }
+          }
+          return { success: false, conflict: false, retryable: true, error: error.message }
         }
-        return { success: false, conflict: false, retryable: true, error: error.message }
+        if (!data) return { success: false, conflict: false, retryable: true, error: 'Insert returned no data' }
+        return { success: true, conflict: false, retryable: false }
       }
-      if (!data) return { success: false, conflict: false, retryable: true, error: 'Insert returned no data' }
-      return { success: true, conflict: false, retryable: false }
     }
-  }
 
-  if (operation === 'update') {
-      const { data, error } = await supabase
-        .from('user_books')
-        .update({
-          read_count: payload.read_count,
-          status: payload.status,
-          progress: payload.progress,
-          rating: payload.rating,
-          cover_image: payload.coverImage,
-          notes: payload.notes,
-          tags: payload.tags,
-          updated_at: nowISO(),
-        })
-        .eq('user_id', userId)
-        .eq('book_id', entityId)
-        .select()
-      if (error) {
-        return { success: false, conflict: false, retryable: true, error: error.message }
+    if (operation === 'update' || operation === 'delete') {
+      // For catalogued books, try to resolve the remote book_id via ISBN
+      let remoteBookId = entityId
+      if (hasCatalog) {
+        const resolved = await resolveRemoteBookId()
+        if (resolved) remoteBookId = resolved
       }
-      if (!data || data.length === 0) {
-        return { success: false, conflict: false, retryable: false, error: 'Update affected zero rows' }
-      }
-      return { success: true, conflict: false, retryable: false }
-    } else if (operation === 'delete') {
-      const { data, error } = await supabase
-        .from('user_books')
-        .delete()
-        .eq('user_id', userId)
-        .eq('book_id', entityId)
-        .select()
 
-      if (error) {
-        return { success: false, conflict: false, retryable: true, error: error.message }
+      if (operation === 'update') {
+        const { data, error } = await supabase
+          .from('user_books')
+          .update({
+            read_count: payload.read_count,
+            status: payload.status,
+            progress: payload.progress,
+            rating: payload.rating,
+            cover_image: payload.coverImage,
+            notes: payload.notes,
+            tags: payload.tags,
+            updated_at: nowISO(),
+          })
+          .eq('user_id', userId)
+          .eq('book_id', remoteBookId)
+          .select()
+        if (error) {
+          return { success: false, conflict: false, retryable: true, error: error.message }
+        }
+        if (!data || data.length === 0) {
+          return { success: false, conflict: false, retryable: false, error: 'Update affected zero rows' }
+        }
+        return { success: true, conflict: false, retryable: false }
+      } else if (operation === 'delete') {
+        const { data, error } = await supabase
+          .from('user_books')
+          .delete()
+          .eq('user_id', userId)
+          .eq('book_id', remoteBookId)
+          .select()
+
+        if (error) {
+          return { success: false, conflict: false, retryable: true, error: error.message }
+        }
+        // Delete is idempotent - zero rows is OK (already deleted)
+        return { success: true, conflict: false, retryable: false }
       }
-      // Delete is idempotent - zero rows is OK (already deleted)
-      return { success: true, conflict: false, retryable: false }
     }
 
     return { success: false, conflict: false, retryable: false, error: `Unknown operation: ${operation}` }
@@ -473,12 +513,20 @@ export const BookService = {
   ): Promise<{ success: boolean; conflict: boolean; retryable: boolean; error?: string; conflictData?: any }> {
     // People are shared catalog - moderator controlled
     // For now, create catalog submission for new people
+    // Strip sensitive PII fields before storing in catalog_submissions.notes
+    const safePayload = {
+      id: payload.id,
+      name: payload.name,
+      sortName: payload.sortName,
+      // Exclude: birthDate, deathDate, nationality, biography, website, photoUrl, verifiedStatus
+    }
+
     if (operation === 'create') {
       const { error } = await supabase.from('catalog_submissions').insert({
         user_id: userId,
         title: `Person: ${payload.name}`,
         status: 'pending',
-        notes: JSON.stringify(payload),
+        notes: JSON.stringify(safePayload),
       })
       if (error) {
         return { success: false, conflict: false, retryable: true, error: error.message }
@@ -490,7 +538,7 @@ export const BookService = {
         user_id: userId,
         title: `Person ${operation}: ${payload.name || entityId}`,
         status: 'pending',
-        notes: JSON.stringify({ operation, entityId, payload }),
+        notes: JSON.stringify({ operation, entityId, payload: safePayload }),
       })
       if (error) {
         return { success: false, conflict: false, retryable: true, error: error.message }
@@ -683,7 +731,7 @@ export const BookService = {
               const sessionId = `${s.bookId}-${s.date}-${s.pagesRead || 0}-${s.startTime || generateId()}`
               return {
                 id: sessionId,
-                user_id: currentUserId || 'legacy',
+                user_id: currentUserId || '00000000-0000-0000-0000-000000000001',
                 book_id: s.bookId,
                 date: s.date,
                 start_time: s.startTime || null,
@@ -999,6 +1047,16 @@ export const BookService = {
     if (!book) return
     if (book.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
 
+    // Migration guard: ensure reading_sessions table exists (v3->v4 migration complete)
+    // If dailyLog is still being used, the migration may not have run yet
+    // Fall back to dailyLog approach if reading_sessions table doesn't exist
+    let useReadingSessions = true
+    try {
+      await db.reading_sessions.limit(1).toArray()
+    } catch {
+      useReadingSessions = false
+    }
+
     const currentLog = book.dailyLog || []
     const existingIndex = currentLog.findIndex((log: any) => log.date === date)
 
@@ -1040,7 +1098,7 @@ export const BookService = {
     }
 
     // Update all fields
-    await db.transaction('rw', db.books, db.sync_outbox, async () => {
+    await db.transaction('rw', db.books, db.sync_outbox, db.reading_sessions, async () => {
       const updated = {
         ...book,
         dailyLog: updatedLog,
@@ -1052,6 +1110,34 @@ export const BookService = {
       }
       await enqueueChange('book', id, 'update', updated)
       await db.books.put(updated)
+
+      // Also create/update reading_sessions entry for new unified history
+      if (useReadingSessions) {
+        const sessionId = `${book.id}-${date}-${pagesRead}-${generateId().slice(0, 8)}`
+        const existingSessions = await db.reading_sessions
+          .where('[user_id+book_id+date]')
+          .equals([userId, book.id, date])
+          .toArray()
+        if (existingSessions.length > 0) {
+          const existing = existingSessions[0]
+          await db.reading_sessions.update(existing.id, {
+            pages_read: existing.pages_read + pagesRead,
+            end_time: null,
+          })
+        } else {
+          await db.reading_sessions.add({
+            id: sessionId,
+            user_id: userId,
+            book_id: book.id,
+            date,
+            start_time: null,
+            end_time: null,
+            pages_read: pagesRead,
+            session_notes: null,
+            created_at: now,
+          })
+        }
+      }
     })
     notifyBooksChanged()
   },

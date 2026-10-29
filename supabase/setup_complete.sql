@@ -63,6 +63,8 @@ CREATE UNIQUE INDEX books_isbn10_key ON books(isbn10) WHERE isbn10 IS NOT NULL;
 -- Tables dependent on books
 CREATE TABLE catalog_submissions (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, book_id uuid references books(id) on delete set null, title text not null, subtitle text, author text, isbn13 text, publisher text, genre text, status text not null default 'pending' check (status in ('pending','approved','rejected','request-changes')), rejection_reason text, submitted_at timestamptz not null default now(), approved_at timestamptz, notes text, unique(user_id, book_id));
 CREATE INDEX idx_catalog_submissions_user ON catalog_submissions(user_id);
+CREATE INDEX idx_catalog_submissions_book ON catalog_submissions(book_id);
+CREATE INDEX idx_catalog_submissions_status ON catalog_submissions(status);
 
 CREATE TABLE user_books (id uuid primary key default gen_random_uuid(), user_id uuid not null, book_id uuid not null references books(id) on delete cascade, read_count int not null default 0, status text not null default 'want-to-read' check (status in ('want-to-read','reading','read','on-hold','dnf')), progress int not null default 0 check (progress between 0 and 100), rating int check (rating between 1 and 5), cover_image text, notes text, tags text[], added_at timestamptz not null default now(), updated_at timestamptz not null default now(), unique(user_id, book_id));
 CREATE INDEX idx_user_books_user ON user_books(user_id);
@@ -74,9 +76,16 @@ CREATE TABLE book_authors (book_id uuid not null references books(id) on delete 
 CREATE TABLE book_people (book_id uuid not null references books(id) on delete cascade, person_id uuid not null references people(id) on delete cascade, role_id uuid not null references roles(id) on delete restrict, is_primary boolean not null default false, position int, primary key (book_id, person_id, role_id));
 CREATE TABLE book_series (book_id uuid not null references books(id) on delete cascade, series_id uuid not null references series(id) on delete cascade, book_number numeric, primary key (book_id, series_id));
 CREATE TABLE book_genres (book_id uuid not null references books(id) on delete cascade, genre_id uuid not null references genres(id) on delete cascade, primary key (book_id, genre_id));
+CREATE TABLE book_covers (id uuid primary key default gen_random_uuid(), book_id uuid not null references books(id) on delete cascade, user_id uuid not null references auth.users(id) on delete cascade, mime text not null, data bytea not null, created_at timestamptz not null default now());
+CREATE INDEX idx_book_covers_book ON book_covers(book_id);
+CREATE INDEX idx_book_covers_user ON book_covers(user_id);
 
 -- Updated_at trigger
 CREATE OR REPLACE FUNCTION set_updated_at() RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$ LANGUAGE plpgsql;
+
+-- Server time RPC for sync lock (avoids client clock skew)
+CREATE OR REPLACE FUNCTION get_server_time() RETURNS timestamptz AS $$ BEGIN RETURN now(); END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+GRANT EXECUTE ON FUNCTION get_server_time() TO authenticated;
 DROP TRIGGER IF EXISTS books_updated_at ON books;
 CREATE TRIGGER books_updated_at BEFORE UPDATE ON books FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 DROP TRIGGER IF EXISTS user_books_updated_at ON user_books;
@@ -106,8 +115,10 @@ DO $$ BEGIN
   -- profiles
   DROP POLICY IF EXISTS profiles_select_own ON profiles;
   CREATE POLICY profiles_select_own ON profiles FOR SELECT TO authenticated USING (id = auth.uid());
+  DROP POLICY IF EXISTS profiles_insert_own ON profiles;
+  CREATE POLICY profiles_insert_own ON profiles FOR INSERT TO authenticated WITH CHECK (id = auth.uid() AND role = 'user');
   DROP POLICY IF EXISTS profiles_update_own ON profiles;
-  CREATE POLICY profiles_update_own ON profiles FOR UPDATE TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+  CREATE POLICY profiles_update_own ON profiles FOR UPDATE TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid() AND role = 'user');
   -- user_books (full owner-scoped CRUD)
   DROP POLICY IF EXISTS user_books_select_own ON user_books;
   CREATE POLICY user_books_select_own ON user_books FOR SELECT TO authenticated USING (user_id = auth.uid());
@@ -138,35 +149,60 @@ DO $$ BEGIN
   -- books read (shared catalog)
   DROP POLICY IF EXISTS books_select_authenticated ON books;
   CREATE POLICY books_select_authenticated ON books FOR SELECT TO authenticated USING (true);
-  -- catalog tables - read for all authenticated users
+  -- books write (moderators only - for catalog approval)
+  DROP POLICY IF EXISTS books_moderator_write ON books;
+  CREATE POLICY books_moderator_write ON books FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
+  -- catalog tables - read for all authenticated users, write for moderators
   DROP POLICY IF EXISTS people_select_authenticated ON people;
   CREATE POLICY people_select_authenticated ON people FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS people_moderator_write ON people;
+  CREATE POLICY people_moderator_write ON people FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   DROP POLICY IF EXISTS authors_select_authenticated ON authors;
   CREATE POLICY authors_select_authenticated ON authors FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS authors_moderator_write ON authors;
+  CREATE POLICY authors_moderator_write ON authors FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   DROP POLICY IF EXISTS publishers_select_authenticated ON publishers;
   CREATE POLICY publishers_select_authenticated ON publishers FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS publishers_moderator_write ON publishers;
+  CREATE POLICY publishers_moderator_write ON publishers FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   DROP POLICY IF EXISTS genres_select_authenticated ON genres;
   CREATE POLICY genres_select_authenticated ON genres FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS genres_moderator_write ON genres;
+  CREATE POLICY genres_moderator_write ON genres FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   DROP POLICY IF EXISTS series_select_authenticated ON series;
   CREATE POLICY series_select_authenticated ON series FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS series_moderator_write ON series;
+  CREATE POLICY series_moderator_write ON series FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   DROP POLICY IF EXISTS roles_select_authenticated ON roles;
   CREATE POLICY roles_select_authenticated ON roles FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS roles_moderator_write ON roles;
+  CREATE POLICY roles_moderator_write ON roles FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   DROP POLICY IF EXISTS reading_statuses_select_authenticated ON reading_statuses;
   CREATE POLICY reading_statuses_select_authenticated ON reading_statuses FOR SELECT TO authenticated USING (true);
-  -- junction tables - read for all authenticated users
+  DROP POLICY IF EXISTS reading_statuses_moderator_write ON reading_statuses;
+  CREATE POLICY reading_statuses_moderator_write ON reading_statuses FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
+  -- junction tables - read for all authenticated users, write for moderators
   DROP POLICY IF EXISTS book_authors_select_authenticated ON book_authors;
   CREATE POLICY book_authors_select_authenticated ON book_authors FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS book_authors_moderator_write ON book_authors;
+  CREATE POLICY book_authors_moderator_write ON book_authors FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   DROP POLICY IF EXISTS book_people_select_authenticated ON book_people;
   CREATE POLICY book_people_select_authenticated ON book_people FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS book_people_moderator_write ON book_people;
+  CREATE POLICY book_people_moderator_write ON book_people FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   DROP POLICY IF EXISTS book_series_select_authenticated ON book_series;
   CREATE POLICY book_series_select_authenticated ON book_series FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS book_series_moderator_write ON book_series;
+  CREATE POLICY book_series_moderator_write ON book_series FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   DROP POLICY IF EXISTS book_genres_select_authenticated ON book_genres;
   CREATE POLICY book_genres_select_authenticated ON book_genres FOR SELECT TO authenticated USING (true);
+  DROP POLICY IF EXISTS book_genres_moderator_write ON book_genres;
+  CREATE POLICY book_genres_moderator_write ON book_genres FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
   -- catalog_submissions
   DROP POLICY IF EXISTS catalog_submissions_select_own ON catalog_submissions;
   CREATE POLICY catalog_submissions_select_own ON catalog_submissions FOR SELECT TO authenticated USING (user_id = auth.uid());
   DROP POLICY IF EXISTS catalog_submissions_insert_own ON catalog_submissions;
   CREATE POLICY catalog_submissions_insert_own ON catalog_submissions FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
   DROP POLICY IF EXISTS catalog_submissions_moderator_all ON catalog_submissions;
-  CREATE POLICY catalog_submissions_moderator_all ON catalog_submissions FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
+  CREATE POLICY catalog_submissions_moderator_all ON catalog_submissions FOR SELECT, INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
 END $$;
