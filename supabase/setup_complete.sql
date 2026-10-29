@@ -108,16 +108,24 @@ DO $$ BEGIN
   CREATE POLICY profiles_select_own ON profiles FOR SELECT TO authenticated USING (id = auth.uid());
   DROP POLICY IF EXISTS profiles_update_own ON profiles;
   CREATE POLICY profiles_update_own ON profiles FOR UPDATE TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid());
-  -- user_books
+  -- user_books (full owner-scoped CRUD)
   DROP POLICY IF EXISTS user_books_select_own ON user_books;
   CREATE POLICY user_books_select_own ON user_books FOR SELECT TO authenticated USING (user_id = auth.uid());
   DROP POLICY IF EXISTS user_books_insert_own ON user_books;
   CREATE POLICY user_books_insert_own ON user_books FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
-  -- reading_logs
+  DROP POLICY IF EXISTS user_books_update_own ON user_books;
+  CREATE POLICY user_books_update_own ON user_books FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+  DROP POLICY IF EXISTS user_books_delete_own ON user_books;
+  CREATE POLICY user_books_delete_own ON user_books FOR DELETE TO authenticated USING (user_id = auth.uid());
+  -- reading_logs (full owner-scoped CRUD)
   DROP POLICY IF EXISTS reading_logs_select_own ON reading_logs;
   CREATE POLICY reading_logs_select_own ON reading_logs FOR SELECT TO authenticated USING (user_id = auth.uid());
   DROP POLICY IF EXISTS reading_logs_insert_own ON reading_logs;
   CREATE POLICY reading_logs_insert_own ON reading_logs FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+  DROP POLICY IF EXISTS reading_logs_update_own ON reading_logs;
+  CREATE POLICY reading_logs_update_own ON reading_logs FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+  DROP POLICY IF EXISTS reading_logs_delete_own ON reading_logs;
+  CREATE POLICY reading_logs_delete_own ON reading_logs FOR DELETE TO authenticated USING (user_id = auth.uid());
   -- outbox
   DROP POLICY IF EXISTS outbox_select_own ON outbox;
   CREATE POLICY outbox_select_own ON outbox FOR SELECT TO authenticated USING (user_id = auth.uid());
@@ -129,4 +137,6 @@ DO $$ BEGIN
   CREATE POLICY catalog_submissions_select_own ON catalog_submissions FOR SELECT TO authenticated USING (user_id = auth.uid());
   DROP POLICY IF EXISTS catalog_submissions_insert_own ON catalog_submissions;
   CREATE POLICY catalog_submissions_insert_own ON catalog_submissions FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+  DROP POLICY IF EXISTS catalog_submissions_moderator_all ON catalog_submissions;
+  CREATE POLICY catalog_submissions_moderator_all ON catalog_submissions FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
 END $$;
