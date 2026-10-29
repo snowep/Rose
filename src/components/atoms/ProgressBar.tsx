@@ -2,12 +2,14 @@
 
 import { Box, Typography, LinearProgress } from '@mui/material'
 
-type BookStatus = 'reading' | 'read' | 'want-to-read'
+import type { BookStatus } from '@/components/atoms/StatusChip'
 
 const statusColors: Record<BookStatus, string> = {
   reading: '#1976d2',
   read: '#2e7d32',
   'want-to-read': '#0288d1',
+  'on-hold': '#f57c00',
+  dnf: '#c62828',
 }
 
 export function ProgressBar({

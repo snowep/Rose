@@ -5,13 +5,14 @@ import { ChangeEvent } from 'react'
 
 type FieldType = 'text' | 'textarea' | 'select' | 'password'
 
-interface FormFieldProps extends Omit<TextFieldProps, 'value' | 'onChange' | 'select' | 'multiline' | 'rows'> {
+interface FormFieldProps extends Omit<TextFieldProps, 'value' | 'onChange' | 'select' | 'rows'> {
   value: string | number | undefined
   onChange: (value: string) => void
   label: string
   type?: FieldType
   options?: { value: string; label: string }[]
   rows?: number
+  multiline?: boolean
 }
 
 export function FormField({

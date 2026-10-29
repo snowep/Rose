@@ -126,17 +126,17 @@ db.version(3).stores({
       const userId = book.user_id || 'legacy'
       if (book.dailyLog && Array.isArray(book.dailyLog)) {
         book.dailyLog.forEach((log: any) => {
-          const sessionId = `${book.id}-${log.date}-${log.pagesRead || 0}`
+          const sessionId = `${book.id}-${log.date}-${log.pagesRead || 0}-${generateId().slice(0, 8)}`
           sessionEntries.push({
             id: sessionId,
             user_id: userId,
             book_id: book.id,
             date: log.date,
-            start_time: null,
-            end_time: null,
+            start_time: log.startTime || null,
+            end_time: log.endTime || null,
             pages_read: log.pagesRead || 0,
             session_notes: null,
-            created_at: log.date || nowISO(),  // Use log date if available, fallback to now
+            created_at: log.date ? new Date(log.date).toISOString() : nowISO(),
           })
         })
       }
@@ -156,7 +156,10 @@ export const BookService = {
   },
 
   async getById(id: string): Promise<Book | undefined> {
-    return (db as any).books.get(id)
+    const userId = activeSyncUserId
+    if (!userId) return undefined
+    const book = await (db as any).books.get(id)
+    return book?.user_id === userId ? book : undefined
   },
 
   async getPendingOutbox(userId: string): Promise<SyncOutboxEntry[]> {
@@ -250,6 +253,12 @@ export const BookService = {
   },
 
   async processOutbox(userId: string): Promise<{ success: boolean; processed: string[]; failed: string[] }> {
+    const lockId = generateId()
+    const acquired = await this.acquireSyncLock(userId, lockId)
+    if (!acquired) {
+      return { success: false, processed: [], failed: [] }
+    }
+
     const outbox = db.table('sync_outbox') as Table<SyncOutboxEntry, string>
     const pending = await outbox
       .where('[userId+status]')
@@ -257,6 +266,7 @@ export const BookService = {
       .toArray()
 
     if (pending.length === 0) {
+      await this.releaseSyncLock(userId, lockId)
       return { success: true, processed: [], failed: [] }
     }
 
@@ -288,6 +298,7 @@ export const BookService = {
     }
 
     notifyBooksChanged()
+    await this.releaseSyncLock(userId, lockId)
 
     return {
       success: failedIds.length === 0,
@@ -353,22 +364,62 @@ export const BookService = {
     payload: any,
     revision: number
   ): Promise<{ success: boolean; conflict: boolean; retryable: boolean; error?: string; conflictData?: any }> {
+    // Check if book is catalogued (has ISBN) - if not, create catalog submission
+    const localBook = await (db as any).books.get(entityId)
+    const hasCatalog = localBook?.isbn13 || localBook?.isbn10
+
     if (operation === 'create') {
-      const { data, error } = await supabase
-        .from('user_books')
-        .insert({
+      if (!hasCatalog) {
+        // Create catalog submission for uncatalogued book
+        const { error } = await supabase.from('catalog_submissions').insert({
           user_id: userId,
-          book_id: entityId,
-          read_count: payload.read_count || 0,
-          status: payload.status || 'want-to-read',
-          progress: payload.progress || 0,
-          rating: payload.rating,
-          cover_image: payload.coverImage,
-          notes: payload.notes,
-          tags: payload.tags,
-          added_at: payload.createdAt || (await (db as any).books.get(entityId))?.createdAt || nowISO(),
+          title: payload.title || localBook?.title,
+          subtitle: payload.subtitle || localBook?.subtitle,
+          author: payload.author || localBook?.author,
+          isbn13: payload.isbn13 || localBook?.isbn13,
+          publisher: payload.publisher || localBook?.publisher,
+          genre: payload.genre || localBook?.genre,
+          status: 'pending',
         })
-        .select()
+        if (error) {
+          return { success: false, conflict: false, retryable: true, error: error.message }
+        }
+        // Still create user_books entry with a temporary book_id
+        const { data, error: userBookError } = await supabase
+          .from('user_books')
+          .insert({
+            user_id: userId,
+            book_id: entityId,
+            read_count: payload.read_count || 0,
+            status: payload.status || 'want-to-read',
+            progress: payload.progress || 0,
+            rating: payload.rating,
+            cover_image: payload.coverImage,
+            notes: payload.notes,
+            tags: payload.tags,
+            added_at: payload.createdAt || localBook?.createdAt || nowISO(),
+          })
+          .select()
+        if (userBookError) {
+          return { success: false, conflict: false, retryable: true, error: userBookError.message }
+        }
+      } else {
+        // Catalogued book - sync to user_books
+        const { data, error } = await supabase
+          .from('user_books')
+          .insert({
+            user_id: userId,
+            book_id: entityId,
+            read_count: payload.read_count || 0,
+            status: payload.status || 'want-to-read',
+            progress: payload.progress || 0,
+            rating: payload.rating,
+            cover_image: payload.coverImage,
+            notes: payload.notes,
+            tags: payload.tags,
+            added_at: payload.createdAt || localBook?.createdAt || nowISO(),
+          })
+          .select()
 
       if (error) {
         if (error.code === '23505') { // unique violation
@@ -376,8 +427,12 @@ export const BookService = {
         }
         return { success: false, conflict: false, retryable: true, error: error.message }
       }
+      if (!data) return { success: false, conflict: false, retryable: true, error: 'Insert returned no data' }
       return { success: true, conflict: false, retryable: false }
-    } else if (operation === 'update') {
+    }
+  }
+
+  if (operation === 'update') {
       const { data, error } = await supabase
         .from('user_books')
         .update({
@@ -393,9 +448,11 @@ export const BookService = {
         .eq('user_id', userId)
         .eq('book_id', entityId)
         .select()
-
       if (error) {
         return { success: false, conflict: false, retryable: true, error: error.message }
+      }
+      if (!data || data.length === 0) {
+        return { success: false, conflict: false, retryable: false, error: 'Update affected zero rows' }
       }
       return { success: true, conflict: false, retryable: false }
     } else if (operation === 'delete') {
@@ -422,9 +479,19 @@ export const BookService = {
     payload: any,
     revision: number
   ): Promise<{ success: boolean; conflict: boolean; retryable: boolean; error?: string; conflictData?: any }> {
-    // People sync - for now just log and succeed (people are shared catalog)
-    // In production, this would sync to a user_people or similar table
-    console.log('Sync person:', { operation, entityId, payload })
+    // People are shared catalog - moderator controlled
+    // For now, create catalog submission for new people
+    if (operation === 'create') {
+      const { error } = await supabase.from('catalog_submissions').insert({
+        user_id: userId,
+        title: `Person: ${payload.name}`,
+        status: 'pending',
+        notes: JSON.stringify(payload),
+      })
+      if (error) {
+        return { success: false, conflict: false, retryable: true, error: error.message }
+      }
+    }
     return { success: true, conflict: false, retryable: false }
   },
 
@@ -472,6 +539,7 @@ export const BookService = {
 
   async createLocalBackup(): Promise<string> {
     const ownerUserId = activeSyncUserId
+    if (!ownerUserId) throw new Error('No active user for backup')
     const { books, people, userBooks, readingSessions } = await db.transaction(
       'r',
       db.books,
@@ -479,14 +547,10 @@ export const BookService = {
       db.user_books,
       db.reading_sessions,
       async () => ({
-        books: await db.books.toArray(),
+        books: await db.books.where('user_id').equals(ownerUserId).toArray(),
         people: await db.people.toArray(),
-        userBooks: ownerUserId
-          ? await db.user_books.where('user_id').equals(ownerUserId).toArray()
-          : [],
-        readingSessions: ownerUserId
-          ? await db.reading_sessions.where('user_id').equals(ownerUserId).toArray()
-          : [],
+        userBooks: await db.user_books.where('user_id').equals(ownerUserId).toArray(),
+        readingSessions: await db.reading_sessions.where('user_id').equals(ownerUserId).toArray(),
       }),
     )
     if (activeSyncUserId !== ownerUserId) {
@@ -554,6 +618,14 @@ export const BookService = {
       (!currentUserId && validatedBackup.data.userBooks.length > 0)
     ) {
       throw new Error('Shelf entries in this backup do not belong to the signed-in account.')
+    }
+    // Validate books ownership
+    if (validatedBackup.data.books.some((b: any) => b.user_id && b.user_id !== currentUserId && currentUserId)) {
+      throw new Error('Books in this backup do not belong to the signed-in account.')
+    }
+    // Validate people ownership if user_id field exists
+    if (validatedBackup.data.people.some((p: any) => p.user_id && p.user_id !== currentUserId && currentUserId)) {
+      throw new Error('People in this backup do not belong to the signed-in account.')
     }
 
     const result = await db.transaction(
@@ -861,9 +933,12 @@ export const BookService = {
   },
 
   async update(id: string, updates: Partial<Book>): Promise<void> {
+    const userId = activeSyncUserId
+    if (!userId) throw new Error('No active user')
     await db.transaction('rw', db.books, db.sync_outbox, async () => {
       const existing = await (db as any).books.get(id)
       if (!existing) throw new Error(`Book ${id} was not found`)
+      if (existing.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
       // Preserve user_id when updating
       const updated = { ...existing, ...updates, updatedAt: nowISO() }
       await enqueueChange('book', id, 'update', updated)
@@ -873,9 +948,12 @@ export const BookService = {
   },
 
   async delete(id: string): Promise<void> {
+    const userId = activeSyncUserId
+    if (!userId) throw new Error('No active user')
     await db.transaction('rw', db.books, db.sync_outbox, async () => {
       const existing = await (db as any).books.get(id)
       if (!existing) return
+      if (existing.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
       await enqueueChange('book', id, 'delete', { id })
       await db.books.delete(id)
     })
@@ -883,9 +961,12 @@ export const BookService = {
   },
 
   async updateProgress(id: string, progress: number): Promise<void> {
+    const userId = activeSyncUserId
+    if (!userId) throw new Error('No active user')
     await db.transaction('rw', db.books, db.sync_outbox, async () => {
       const existing = await (db as any).books.get(id)
       if (!existing) throw new Error(`Book ${id} was not found`)
+      if (existing.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
       const updated = { ...existing, progress, updatedAt: nowISO() }
       await enqueueChange('book', id, 'update', updated)
       await db.books.put(updated)
@@ -894,8 +975,11 @@ export const BookService = {
   },
 
   async updateStatus(id: string, status: 'want-to-read' | 'reading' | 'read' | 'on-hold' | 'dnf'): Promise<void> {
+    const userId = activeSyncUserId
+    if (!userId) throw new Error('No active user')
     const book = await (db as any).books.get(id)
     if (!book) return
+    if (book.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
     const now = nowISO()
     const updates: any = { status, updatedAt: now }
     if (status === 'reading' && !book.startedAt) updates.startedAt = now
@@ -910,8 +994,11 @@ export const BookService = {
   },
 
   async addDailyLog(id: string, date: string, pagesRead: number): Promise<void> {
+    const userId = activeSyncUserId
+    if (!userId) throw new Error('No active user')
     const book = await (db as any).books.get(id)
     if (!book) return
+    if (book.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
 
     const currentLog = book.dailyLog || []
     const existingIndex = currentLog.findIndex((log: any) => log.date === date)

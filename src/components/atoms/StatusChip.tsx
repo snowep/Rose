@@ -2,7 +2,7 @@
 
 import { Chip } from '@mui/material'
 
-type BookStatus = 'reading' | 'read' | 'want-to-read' | 'on-hold' | 'dnf'
+export type BookStatus = 'reading' | 'read' | 'want-to-read' | 'on-hold' | 'dnf'
 
 const statusColors: Record<BookStatus, string> = {
   reading: '#1976d2',
