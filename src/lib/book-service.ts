@@ -660,6 +660,9 @@ export const BookService = {
 
   async restoreLocalBackup(backup: LocalBackup) {
     const currentUserId = activeSyncUserId
+    if (!currentUserId) {
+      throw new Error('No active account. Sign in before restoring a backup.')
+    }
     const validatedBackup = parseLocalBackup(JSON.stringify(backup))
     if (validatedBackup.ownerUserId && validatedBackup.ownerUserId !== currentUserId) {
       throw new Error('This backup belongs to a different account. Sign in to that account before restoring it.')
@@ -731,7 +734,7 @@ export const BookService = {
               const sessionId = `${s.bookId}-${s.date}-${s.pagesRead || 0}-${s.startTime || generateId()}`
               return {
                 id: sessionId,
-                user_id: currentUserId || '00000000-0000-0000-0000-000000000001',
+                user_id: currentUserId,
                 book_id: s.bookId,
                 date: s.date,
                 start_time: s.startTime || null,
