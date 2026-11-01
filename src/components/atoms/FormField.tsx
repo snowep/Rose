@@ -13,6 +13,7 @@ interface FormFieldProps extends Omit<TextFieldProps, 'value' | 'onChange' | 'se
   options?: { value: string; label: string }[]
   rows?: number
   multiline?: boolean
+  endAdornment?: React.ReactNode
 }
 
 export function FormField({

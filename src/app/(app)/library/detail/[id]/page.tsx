@@ -1,22 +1,24 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BookService } from '@/lib/book-service'
 import { Book } from '@/lib/db'
 import { BookDetail } from '@/components/organisms/BookDetailFixed'
 import { BookModal } from '@/components/organisms/BookModal'
 import { LogProgressModal } from '@/components/molecules/LogProgressModal'
-import { useEffect } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function LibraryDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { loading: authLoading } = useAuth()
   const [book, setBook] = useState<Book>()
   const [showModal, setShowModal] = useState(false)
   const [showLogModal, setShowLogModal] = useState(false)
 
   useEffect(() => {
+    if (authLoading) return
     let active = true
     if (params.id) {
       void BookService.getById(params.id as string).then((data) => {
@@ -26,7 +28,7 @@ export default function LibraryDetailPage() {
     return () => {
       active = false
     }
-  }, [params.id])
+  }, [params.id, authLoading])
 
   const loadBook = async (id: string) => {
     const data = await BookService.getById(id)

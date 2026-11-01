@@ -5,6 +5,9 @@
 
 # testing
 /coverage
+tests-e2e/
+e2e/
+test-results/
 
 # next.js
 /.next/
@@ -41,3 +44,5 @@ next-env.d.ts
 # graphify
 graphify-out/
 docs/
+
+.*/*

@@ -3,6 +3,7 @@
 import { Box, Button, Typography, Paper, Alert } from '@mui/material'
 import { CloudUpload, Delete } from '@mui/icons-material'
 import { useState } from 'react'
+import { blobToBase64 } from '../../lib/utils'
 
 interface FormDragDropUploadProps {
   label: string
@@ -14,7 +15,7 @@ export function FormDragDropUpload({ label, value, onChange }: FormDragDropUploa
   const [dragOver, setDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     setError(null)
     if (!file.type.startsWith('image/')) {
       setError('Choose an image file.')
@@ -25,13 +26,12 @@ export function FormDragDropUpload({ label, value, onChange }: FormDragDropUploa
       return
     }
 
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (typeof reader.result === 'string') onChange(reader.result)
-      else setError('Unable to preview this image.')
+    try {
+      const dataUrl = await blobToBase64(file)
+      onChange(dataUrl)
+    } catch {
+      setError('Unable to read this image. Please try another file.')
     }
-    reader.onerror = () => setError('Unable to read this image. Please try another file.')
-    reader.readAsDataURL(file)
   }
 
   const handleDrop = (e: React.DragEvent) => {

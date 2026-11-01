@@ -109,6 +109,7 @@ ALTER TABLE book_authors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE book_people ENABLE ROW LEVEL SECURITY;
 ALTER TABLE book_series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE book_genres ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_covers ENABLE ROW LEVEL SECURITY;
 
 -- Policies (idempotent)
 DO $$ BEGIN
@@ -198,6 +199,15 @@ DO $$ BEGIN
   CREATE POLICY book_genres_select_authenticated ON book_genres FOR SELECT TO authenticated USING (true);
   DROP POLICY IF EXISTS book_genres_moderator_write ON book_genres;
   CREATE POLICY book_genres_moderator_write ON book_genres FOR INSERT, UPDATE, DELETE TO authenticated USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator')) WITH CHECK (EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'moderator'));
+  -- book_covers - owner-scoped CRUD
+  DROP POLICY IF EXISTS book_covers_select_own ON book_covers;
+  CREATE POLICY book_covers_select_own ON book_covers FOR SELECT TO authenticated USING (user_id = auth.uid());
+  DROP POLICY IF EXISTS book_covers_insert_own ON book_covers;
+  CREATE POLICY book_covers_insert_own ON book_covers FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+  DROP POLICY IF EXISTS book_covers_update_own ON book_covers;
+  CREATE POLICY book_covers_update_own ON book_covers FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+  DROP POLICY IF EXISTS book_covers_delete_own ON book_covers;
+  CREATE POLICY book_covers_delete_own ON book_covers FOR DELETE TO authenticated USING (user_id = auth.uid());
   -- catalog_submissions
   DROP POLICY IF EXISTS catalog_submissions_select_own ON catalog_submissions;
   CREATE POLICY catalog_submissions_select_own ON catalog_submissions FOR SELECT TO authenticated USING (user_id = auth.uid());

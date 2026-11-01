@@ -3,12 +3,15 @@
 import { BOOKS_CHANGED_EVENT, BookService } from '@/lib/book-service'
 import { Book } from '@/lib/db'
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 
 export function useBooks() {
+  const { loading: authLoading } = useAuth()
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
 
   const loadBooks = async () => {
+    if (authLoading) return
     try {
       const data = await BookService.getAll()
       setBooks(data)
@@ -22,10 +25,12 @@ export function useBooks() {
       void loadBooks()
     }
 
-    void loadBooks()
+    if (!authLoading) {
+      void loadBooks()
+    }
     window.addEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged)
     return () => window.removeEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged)
-  }, [])
+  }, [authLoading])
 
   const createBook = async (bookData: Omit<Book, 'id' | 'createdAt' | 'updatedAt'>) => {
     await BookService.create(bookData)

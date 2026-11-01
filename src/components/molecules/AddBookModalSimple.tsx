@@ -12,14 +12,13 @@ import { generateId } from '@/lib/utils'
 export type { BookFormState } from '@/types/book-form'
 
 export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [book, setBook] = useState<BookFormState>(createEmptyBookFormState)
+  const [book, setBook] = useState<BookFormState>(createEmptyBookFormState())
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) {
-      // Use setTimeout to avoid synchronous setState in effect
       const timer = setTimeout(() => {
         setBook(createEmptyBookFormState())
         setSaveError(null)
@@ -31,7 +30,8 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
 
   const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!book.title.trim() || saving) return
+    const authors = book.authors.length > 0 ? book.authors : []
+    if (!book.title.trim() || !authors.length || saving) return
     if (book.isbn10 && !isValidISBN(book.isbn10, 'ISBN-10')) {
       setSaveError('Please correct the ISBN-10 before saving.')
       return
@@ -44,12 +44,11 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
     setSaveError(null)
 
     try {
-      // Check for duplicates before saving
       const dup = await BookService.checkDuplicates(
         book.isbn10,
         book.isbn13,
         book.title.trim(),
-        book.authors.join(', ')
+        authors.join(', ')
       )
       const warnings: string[] = []
       if (dup.isbn) {
@@ -64,7 +63,7 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
 
       const newBook: Omit<Book, 'id' | 'createdAt' | 'updatedAt'> = {
         title: book.title.trim(),
-        author: book.authors.join(', '),
+        author: authors.join(', '),
         status: book.status || 'want-to-read',
         genre: book.genre,
         tags: book.tags,
@@ -73,15 +72,14 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
         isbn13: book.isbn13,
         publicationYear: book.publicationYear ? Number(book.publicationYear) : undefined,
         coverImage: book.coverImage,
-        language: book.language,
       }
       await BookService.create(newBook)
       onClose()
     } catch (error) {
+      console.error('Save error:', error)
       setSaveError(error instanceof Error ? error.message : 'Unable to save this book.')
     } finally {
       setSaving(false)
-      // Only clear duplicateWarning if save succeeded or was cancelled; if failed, keep warning so user sees the duplicate context
       if (!saveError) setDuplicateWarning(null)
     }
   }
@@ -108,6 +106,7 @@ export function AddBookModalSimple({ open, onClose }: { open: boolean; onClose: 
         <form id="add-book-form" onSubmit={handleSave}>
           <BookFormBasic book={book} onChange={setBook} />
           {saveError && <Alert severity="error" sx={{ mt: 2 }}>{saveError}</Alert>}
+          {duplicateWarning && <Alert severity="warning" sx={{ mt: 2 }}>{duplicateWarning}</Alert>}
         </form>
       </DialogContent>
       <DialogActions sx={{ px: 2, py: 1.5, pb: { xs: 'calc(12px + env(safe-area-inset-bottom))', sm: 1.5 } }}>
@@ -128,9 +127,18 @@ async function submitToCatalog(book: BookFormState) {
     'book',
     generateId(),
     'create',
-    { title: book.title, author: book.authors.join(', '), status: book.status || 'want-to-read' }
+    {
+      title: book.title.trim(),
+      author: book.authors.join(', '),
+      status: book.status || 'want-to-read',
+      isbn13: book.isbn13,
+      isbn10: book.isbn10,
+      subtitle: book.subtitle,
+      genre: book.genre,
+      publicationYear: book.publicationYear
+    }
   )
-  // Dispatch event to refresh book lists
+
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(BOOKS_CHANGED_EVENT))
     window.dispatchEvent(new Event(SYNC_OUTBOX_CHANGED_EVENT))
