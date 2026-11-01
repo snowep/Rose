@@ -20,6 +20,8 @@ export { db }
 export const BOOKS_CHANGED_EVENT = 'rose-books-changed'
 export const SYNC_OUTBOX_CHANGED_EVENT = 'rose-sync-outbox-changed'
 
+export const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000001'
+
 type SyncEntity = 'book' | 'person'
 type SyncOperation = 'create' | 'update' | 'delete'
 
@@ -164,16 +166,28 @@ db.version(4).stores({
   }
 })
 
+db.version(5).stores({
+  books: 'id, title, author, status, genre, rating, pages, progress, createdAt, updatedAt, user_id, room, shelf, locationNotes, inventoryStatus',
+  user_books: 'id, user_id, book_id, read_count, added_at',
+  people: 'id, name, sort_name, first_name, middle_name, last_name, nationality, birth_year, death_year, biography, website, photo_url, created_at, updated_at',
+  sync_outbox: 'id, operationId, userId, [userId+status], [userId+entity+entityId], createdAt',
+  sync_state: 'userId',
+  books_user_id_idx: 'user_id',
+  reading_sessions: 'id, user_id, book_id, date, start_time, end_time, pages_read, session_notes, created_at, [user_id+book_id]',
+  book_covers: 'id, book_id, user_id, mime, data, created_at',
+  book_people: 'book_id, person_id, role, sort_order, created_at',
+}).upgrade(async (tx: any) => {
+  // Migration v4->v5: Add book_people table (no data migration needed)
+})
+
 export const BookService = {
   async getAll(): Promise<Book[]> {
-    const userId = activeSyncUserId
-    if (!userId) return []
+    const userId = activeSyncUserId ?? ANONYMOUS_USER_ID
     return ((db as any).books.where('user_id').equals(userId).toArray() as Book[])
   },
 
   async getById(id: string): Promise<Book | undefined> {
-    const userId = activeSyncUserId
-    if (!userId) return undefined
+    const userId = activeSyncUserId ?? ANONYMOUS_USER_ID
     const book = await (db as any).books.get(id)
     return book?.user_id === userId ? book : undefined
   },
@@ -246,8 +260,7 @@ export const BookService = {
     operation: SyncOperation,
     payload: unknown,
   ): Promise<void> {
-    const userId = activeSyncUserId
-    if (!userId) throw new Error('No active sync user - cannot record outbox entry. Call setActiveSyncUser first.')
+    const userId = activeSyncUserId ?? ANONYMOUS_USER_ID
 
     const outbox = db.table('sync_outbox') as Table<SyncOutboxEntry, string>
     const previousEntries = await outbox
@@ -800,7 +813,9 @@ export const BookService = {
     }
     await db.transaction('rw', db.people, db.sync_outbox, async () => {
       await (db as any).people.add(record)
-      await enqueueChange('person', id, 'create', record)
+      if (activeSyncUserId) {
+        await enqueueChange('person', id, 'create', record)
+      }
     })
     notifyBooksChanged()
     return id
@@ -814,7 +829,9 @@ export const BookService = {
     await db.transaction('rw', db.people, db.sync_outbox, async () => {
       const person = await (db as any).people.get(id)
       if (!person) return
-      await enqueueChange('person', id, 'delete', { id })
+      if (activeSyncUserId) {
+        await enqueueChange('person', id, 'delete', { id })
+      }
       await (db as any).people.delete(id)
     })
     notifyBooksChanged()
@@ -963,7 +980,7 @@ export const BookService = {
   },
 
   async create(book: Omit<Book, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const userId = activeSyncUserId
+    const userId = activeSyncUserId ?? ANONYMOUS_USER_ID
     const id = generateId()
     const now = nowISO()
     const record = {
@@ -971,62 +988,109 @@ export const BookService = {
       id,
       createdAt: now,
       updatedAt: now,
-      ...(userId && { user_id: userId }),
+      user_id: userId,
     }
 
-    await db.transaction('rw', db.books, db.sync_outbox, async () => {
+    await db.transaction('rw', db.books, db.people, db.book_people, db.sync_outbox, async () => {
       await (db as any).books.add(record)
-      await enqueueChange('book', id, 'create', record)
+
+      const authorString = book.author || ''
+      const authorNames = authorString.split(',').map((a) => a.trim()).filter((a) => a.length > 0)
+
+      for (const authorName of authorNames) {
+        const existingPeople = await (db as any).people.toArray()
+        const alreadyExists = existingPeople.some(
+          (p: any) => p.name === authorName || (p.first_name + ' ' + p.last_name === authorName) || p.nationality === authorName
+        )
+
+        if (alreadyExists) {
+          const existingPerson = existingPeople.find(
+            (p: any) => p.name === authorName || (p.first_name + ' ' + p.last_name === authorName) || p.nationality === authorName
+          )
+          if (existingPerson) {
+            await (db as any).book_people.add({
+              book_id: id,
+              person_id: existingPerson.id,
+              role: 'author',
+              sort_order: 0,
+              created_at: now,
+            })
+          }
+        } else {
+          const personId = generateId()
+          await (db as any).people.add({
+            id: personId,
+            name: authorName,
+            sort_name: authorName,
+            first_name: authorName.split(' ')[0] || '',
+            last_name: authorName.split(' ').slice(1).join(' ') || '',
+            created_at: now,
+            updated_at: now,
+          })
+          await (db as any).book_people.add({
+            book_id: id,
+            person_id: personId,
+            role: 'author',
+            sort_order: 0,
+            created_at: now,
+          })
+        }
+      }
+
+      if (userId !== ANONYMOUS_USER_ID) {
+        await enqueueChange('book', id, 'create', record)
+      }
     })
     notifyBooksChanged()
     return id
   },
 
   async update(id: string, updates: Partial<Book>): Promise<void> {
-    const userId = activeSyncUserId
-    if (!userId) throw new Error('No active user')
+    const userId = activeSyncUserId ?? ANONYMOUS_USER_ID
     await db.transaction('rw', db.books, db.sync_outbox, async () => {
       const existing = await (db as any).books.get(id)
       if (!existing) throw new Error(`Book ${id} was not found`)
       if (existing.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
-      // Preserve user_id when updating
       const updated = { ...existing, ...updates, updatedAt: nowISO() }
-      await enqueueChange('book', id, 'update', updated)
+      if (activeSyncUserId) {
+        await enqueueChange('book', id, 'update', updated)
+      }
       await db.books.put(updated)
     })
     notifyBooksChanged()
   },
 
   async delete(id: string): Promise<void> {
-    const userId = activeSyncUserId
-    if (!userId) throw new Error('No active user')
+    const userId = activeSyncUserId ?? ANONYMOUS_USER_ID
     await db.transaction('rw', db.books, db.sync_outbox, async () => {
       const existing = await (db as any).books.get(id)
       if (!existing) return
       if (existing.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
-      await enqueueChange('book', id, 'delete', { id })
+      if (activeSyncUserId) {
+        await enqueueChange('book', id, 'delete', { id })
+      }
       await db.books.delete(id)
     })
     notifyBooksChanged()
   },
 
   async updateProgress(id: string, progress: number): Promise<void> {
-    const userId = activeSyncUserId
-    if (!userId) throw new Error('No active user')
+    const userId = activeSyncUserId ?? ANONYMOUS_USER_ID
     await db.transaction('rw', db.books, db.sync_outbox, async () => {
       const existing = await (db as any).books.get(id)
       if (!existing) throw new Error(`Book ${id} was not found`)
       if (existing.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
       const updated = { ...existing, progress, updatedAt: nowISO() }
-      await enqueueChange('book', id, 'update', updated)
+      if (activeSyncUserId) {
+        await enqueueChange('book', id, 'update', updated)
+      }
       await db.books.put(updated)
     })
     notifyBooksChanged()
   },
 
   async updateStatus(id: string, status: 'want-to-read' | 'reading' | 'read' | 'on-hold' | 'dnf'): Promise<void> {
-    const userId = activeSyncUserId
-    if (!userId) throw new Error('No active user')
+    const userId = activeSyncUserId ?? ANONYMOUS_USER_ID
     const book = await (db as any).books.get(id)
     if (!book) return
     if (book.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
@@ -1037,15 +1101,16 @@ export const BookService = {
     if (status === 'want-to-read') { updates.startedAt = null; updates.finishedAt = null }
     await db.transaction('rw', db.books, db.sync_outbox, async () => {
       const updated = { ...book, ...updates }
-      await enqueueChange('book', id, 'update', updated)
+      if (activeSyncUserId) {
+        await enqueueChange('book', id, 'update', updated)
+      }
       await db.books.put(updated)
     })
     notifyBooksChanged()
   },
 
   async addDailyLog(id: string, date: string, pagesRead: number): Promise<void> {
-    const userId = activeSyncUserId
-    if (!userId) throw new Error('No active user')
+    const userId = activeSyncUserId ?? ANONYMOUS_USER_ID
     const book = await (db as any).books.get(id)
     if (!book) return
     if (book.user_id !== userId) throw new Error(`Book ${id} does not belong to active user`)
@@ -1111,7 +1176,9 @@ export const BookService = {
         finishedAt,
         updatedAt: nowISO(),
       }
-      await enqueueChange('book', id, 'update', updated)
+      if (activeSyncUserId) {
+        await enqueueChange('book', id, 'update', updated)
+      }
       await db.books.put(updated)
 
       // Also create/update reading_sessions entry for new unified history
